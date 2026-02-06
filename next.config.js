@@ -5,7 +5,8 @@ const nextConfig = {
       'lh3.googleusercontent.com',
       'storage.googleapis.com',
       'firebasestorage.googleapis.com',
-      'barbera-uneyeable-scrutinizingly.ngrok-free.dev'
+      'barbera-uneyeable-scrutinizingly.ngrok-free.dev',
+      'love-app-production.up.railway.app'
     ],
   }
 }
