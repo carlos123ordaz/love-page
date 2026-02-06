@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, X, LogOut, User, Crown, Settings } from 'lucide-react';
+import { Heart, Menu, X, LogOut, User, Crown } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,10 @@ export function Header() {
 
     const handleLogout = async () => {
         try {
+            if (!auth) {
+                toast.error('Error de autenticación');
+                return;
+            }
             await signOut(auth);
             toast.success('Sesión cerrada');
             router.push('/');
