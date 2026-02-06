@@ -34,7 +34,7 @@ export default function UpgradePage() {
             const { data } = await api.payments.createProPayment();
 
             // Abrir en nueva ventana para evitar problemas con tarjetas guardadas
-            const checkoutUrl = data.data.initPoint || data.data.sandboxInitPoint;
+            const checkoutUrl = data.data.initPoint;
             const newWindow = window.open(checkoutUrl, '_blank');
             if (!newWindow) {
                 window.location.href = checkoutUrl;
