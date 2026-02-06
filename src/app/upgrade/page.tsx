@@ -208,7 +208,7 @@ export default function UpgradePage() {
                             <CardContent className="space-y-3">
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    5 páginas máximo
+                                    3 páginas máximo
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
