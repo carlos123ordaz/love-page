@@ -39,12 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     // 2. Luego obtener datos completos del usuario (con canCreatePage, isPro, etc)
                     const { data } = await api.auth.getMe();
                     setUser(data.data);
-
-                    console.log('✅ Usuario cargado:', data.data);
                 } catch (error: any) {
-                    console.error('❌ Error loading user:', error);
-
-                    // Si es error 401, el token expiró
                     if (error.response?.status === 401) {
                         toast.error('Sesión expirada. Por favor inicia sesión nuevamente.');
                         setUser(null);

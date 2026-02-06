@@ -32,8 +32,6 @@ export default function UpgradePage() {
         setLoading(true);
         try {
             const { data } = await api.payments.createProPayment();
-            console.log('✅ Preferencia creada:', data.data);
-            console.log('🔗 Init Point:', data.data.initPoint);
 
             // Abrir en nueva ventana para evitar problemas con tarjetas guardadas
             const checkoutUrl = data.data.sandboxInitPoint || data.data.initPoint;
@@ -43,7 +41,6 @@ export default function UpgradePage() {
             }
             setLoading(false);
         } catch (error: any) {
-            console.error('❌ Error creating payment:', error);
             toast.error(error.response?.data?.message || 'Error al procesar el pago');
             setLoading(false);
         }
@@ -141,7 +138,7 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <Sparkles className="w-5 h-5 text-amber-500" />
-                                            Diseño con IA (Gemini 2.0)
+                                            Diseño con IA
                                         </h3>
                                         <p className="text-sm text-gray-600">
                                             Sube una imagen y la IA creará un diseño personalizado único
@@ -242,7 +239,7 @@ export default function UpgradePage() {
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Diseño con IA Gemini 2.0
+                                    Diseño con IA
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />

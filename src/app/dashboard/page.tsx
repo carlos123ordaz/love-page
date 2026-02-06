@@ -26,7 +26,6 @@ import { getTimeAgo, copyToClipboard } from '@/lib/utils';
 export default function DashboardPage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuthStore();
-    console.log(user);
     const { pages, setPages, loading: pagesLoading, removePage, updatePage } = usePageStore();
     const [loadingPages, setLoadingPages] = useState(true);
 
