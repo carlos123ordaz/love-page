@@ -119,7 +119,7 @@ export function LoginPage() {
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t">
+                    <div className="pt-4 border-t text-center">
                         <LoginButton />
                     </div>
 
