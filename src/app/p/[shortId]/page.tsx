@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { Heart, Volume2, VolumeX } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ProPageRenderer } from '@/components/ProPageRenderer';
+import { createPortal } from 'react-dom';
 
 // ============================================================
 // STICKER MAP (mismo que en create-page-enhanced)
@@ -360,21 +361,46 @@ export default function PublicPageView() {
             toast.error('Error al enviar respuesta');
         }
     };
+    const [noButtonPos, setNoButtonPos] = useState<{ x: number; y: number } | null>(null);
+    const [noButtonInitialized, setNoButtonInitialized] = useState(false);
 
     const handleNoButtonMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (!page?.noButtonEscapes || answered) return;
 
         const button = e.currentTarget;
-        const maxX = window.innerWidth - button.offsetWidth - 20;
-        const maxY = window.innerHeight - button.offsetHeight - 20;
+        const bw = button.offsetWidth;
+        const bh = button.offsetHeight;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const margin = 20;
 
-        const randomX = Math.random() * maxX;
-        const randomY = Math.random() * maxY;
+        // Primera vez: capturar posición original
+        if (!noButtonInitialized) {
+            const rect = button.getBoundingClientRect();
+            setNoButtonInitialized(true);
+            // Generar primera posición aleatoria
+            const safeMaxX = vw - bw - margin;
+            const safeMaxY = vh - bh - margin;
+            setNoButtonPos({
+                x: margin + Math.random() * Math.max(0, safeMaxX - margin),
+                y: margin + Math.random() * Math.max(0, safeMaxY - margin),
+            });
+            return;
+        }
 
-        button.style.position = 'fixed';
-        button.style.left = `${randomX}px`;
-        button.style.top = `${randomY}px`;
-        button.style.transition = 'all 0.3s ease';
+        const safeMaxX = vw - bw - margin;
+        const safeMaxY = vh - bh - margin;
+
+        setNoButtonPos({
+            x: margin + Math.random() * Math.max(0, safeMaxX - margin),
+            y: margin + Math.random() * Math.max(0, safeMaxY - margin),
+        });
+    };
+
+    const handleNoButtonTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
+        if (!page?.noButtonEscapes || answered) return;
+        e.preventDefault();
+        handleNoButtonMouseEnter(e as any);
     };
 
     // ---- Loading ----
@@ -532,18 +558,50 @@ export default function PublicPageView() {
                             {page.yesButtonText}
                         </button>
 
-                        <button
-                            ref={noButtonRef}
-                            onMouseEnter={handleNoButtonMouseEnter}
-                            onClick={() => !page.noButtonEscapes && handleAnswer('no')}
-                            className="px-8 py-4 text-lg font-semibold bg-white/10 backdrop-blur rounded-xl hover:bg-white/20 transition-all min-w-[150px]"
-                            style={{
-                                color: page.textColor,
-                                fontFamily: `'${bodyFont}', sans-serif`,
-                            }}
-                        >
-                            {page.noButtonText}
-                        </button>
+                        {/* Botón No: si NO está escapando, renderizar inline */}
+                        {!noButtonInitialized && (
+                            <button
+                                ref={noButtonRef}
+                                onMouseEnter={handleNoButtonMouseEnter}
+                                onTouchStart={handleNoButtonTouchStart}
+                                onClick={() => !page.noButtonEscapes && handleAnswer('no')}
+                                className="px-8 py-4 text-lg font-semibold bg-white/10 backdrop-blur rounded-xl hover:bg-white/20 transition-colors min-w-[150px]"
+                                style={{
+                                    color: page.textColor,
+                                    fontFamily: `'${bodyFont}', sans-serif`,
+                                }}
+                            >
+                                {page.noButtonText}
+                            </button>
+                        )}
+
+                        {/* Botón No escapando: renderizar con portal fuera de cualquier transform */}
+                        {noButtonInitialized && noButtonPos && typeof document !== 'undefined' &&
+                            createPortal(
+                                <button
+                                    onMouseEnter={handleNoButtonMouseEnter}
+                                    onTouchStart={handleNoButtonTouchStart}
+                                    onClick={() => {
+                                        if (page.noButtonEscapes) return;
+                                        handleAnswer('no');
+                                    }}
+                                    className="px-8 py-4 text-lg font-semibold bg-white/10 backdrop-blur rounded-xl hover:bg-white/20 min-w-[150px]"
+                                    style={{
+                                        position: 'fixed',
+                                        left: `${noButtonPos.x}px`,
+                                        top: `${noButtonPos.y}px`,
+                                        zIndex: 9999,
+                                        color: page.textColor,
+                                        fontFamily: `'${bodyFont}', sans-serif`,
+                                        transition: 'left 0.25s ease-out, top 0.25s ease-out',
+                                        margin: 0,
+                                    }}
+                                >
+                                    {page.noButtonText}
+                                </button>,
+                                document.body
+                            )
+                        }
                     </div>
                 ) : (
                     <div
