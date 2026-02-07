@@ -20,6 +20,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
+      <head>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZE75X1X5E2"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-ZE75X1X5E2');
+            `,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <AuthProvider>
           {children}
