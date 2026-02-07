@@ -134,7 +134,7 @@ export function LoginPage() {
                     <div className="inline-flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                             <Heart className="w-4 h-4 text-pink-500" />
-                            <span>5 páginas gratis</span>
+                            <span>2 páginas gratis</span>
                         </div>
                         <span>•</span>
                         <div>

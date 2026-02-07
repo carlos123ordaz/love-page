@@ -108,7 +108,7 @@ export default function DashboardPage() {
                                     Usuario PRO - Páginas ilimitadas
                                 </span>
                             ) : (
-                                `Has creado ${user.pagesCreated} de 3 páginas gratuitas`
+                                `Has creado ${user.pagesCreated} de 2 páginas gratuitas`
                             )}
                         </p>
                     </div>
