@@ -106,7 +106,7 @@ export default function UpgradePage() {
                                 <CardTitle className="text-3xl">Plan PRO</CardTitle>
                             </div>
                             <div className="mb-4">
-                                <span className="text-5xl font-bold text-gray-900">$3</span>
+                                <span className="text-5xl font-bold text-gray-900">$1</span>
                                 <span className="text-gray-600 text-xl"> USD</span>
                             </div>
                             <CardDescription className="text-lg">
@@ -184,7 +184,7 @@ export default function UpgradePage() {
                                     className="w-full h-14 text-lg bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white shadow-lg"
                                 >
                                     <Crown className="w-5 h-5 mr-2" />
-                                    Actualizar a PRO por $3 USD
+                                    Actualizar a PRO por $1 USD
                                 </Button>
 
 
@@ -263,7 +263,7 @@ export default function UpgradePage() {
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-gray-600">
-                                        Es un pago único de $3 USD. Una vez que pagas, tienes acceso PRO para
+                                        Es un pago único de $1 USD. Una vez que pagas, tienes acceso PRO para
                                         siempre, sin renovaciones ni cargos adicionales.
                                     </p>
                                 </CardContent>

@@ -138,7 +138,7 @@ export function LoginPage() {
                         </div>
                         <span>•</span>
                         <div>
-                            <span>PRO por solo $3</span>
+                            <span>PRO por solo $1</span>
                         </div>
                     </div>
                 </div>
