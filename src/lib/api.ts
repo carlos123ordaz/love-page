@@ -10,6 +10,7 @@ if (typeof window !== 'undefined') {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://love-app-production.up.railway.app/api';
+//const API_URL = 'http://localhost:5000/api';
 
 // Crear instancia de axios
 const apiClient = axios.create({
@@ -86,5 +87,13 @@ export const api = {
         checkStatus: (paymentId: string) => apiClient.get(`/payments/${paymentId}/status`),
         getHistory: () => apiClient.get('/payments/history'),
         simulateSuccess: () => apiClient.post('/payments/simulate-success'),
+    },
+    contact: {
+        create: (data: any) => apiClient.post('/contact', data),
+        getMyMessages: () => apiClient.get('/contact/my-messages'),
+        getMessage: (id: string) => apiClient.get(`/contact/${id}`),
+        // Admin routes (si necesitas panel de admin)
+        getAllMessages: (params?: any) => apiClient.get('/contact/admin/all', { params }),
+        updateStatus: (id: string, data: any) => apiClient.patch(`/contact/admin/${id}`, data),
     },
 };
