@@ -144,7 +144,7 @@ export default function DashboardPage() {
                             <Heart className="w-4 h-4 text-pink-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-gray-900">{pages.length}</div>
+                            <div className="text-3xl font-bold text-gray-900">{user.pagesCreated}</div>
                         </CardContent>
                     </Card>
 
