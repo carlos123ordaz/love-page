@@ -21,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        {/* Google Analytics */}
         <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-ZE75X1X5E2"
@@ -34,6 +35,12 @@ export default function RootLayout({
               gtag('config', 'G-ZE75X1X5E2');
             `,
           }}
+        />
+        {/* Google AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1738334012076528"
+          crossOrigin="anonymous"
         />
       </head>
       <body className={inter.className}>
