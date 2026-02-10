@@ -17,6 +17,8 @@ const apiClient = axios.create({
     },
 });
 
+
+// Interceptor para agregar token de autenticación
 apiClient.interceptors.request.use(
     async (config) => {
         if (typeof window !== 'undefined' && auth?.currentUser) {
