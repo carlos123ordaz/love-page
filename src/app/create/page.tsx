@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
+import { CustomSlugInput } from '@/components/CustomSlugInput';
+
 import {
     Heart,
     Sparkles,
@@ -236,6 +238,7 @@ interface PageFormData {
     backgroundMusic: string;
     // Extras
     showWatermark: boolean; // free = true siempre
+    customSlug: string;
 }
 
 type Step = 'content' | 'design' | 'media' | 'effects' | 'preview';
@@ -372,6 +375,7 @@ export default function CreatePageEnhanced() {
         animation: 'hearts-falling',
         backgroundMusic: 'none',
         showWatermark: !isPro,
+        customSlug: '',
     });
 
     // Cargar Google Fonts dinámicamente
@@ -584,10 +588,13 @@ export default function CreatePageEnhanced() {
             if (formData.referenceImage) {
                 data.append('referenceImage', formData.referenceImage);
             }
-
+            if (isPro && formData.customSlug && formData.customSlug.trim()) {
+                data.append('customSlug', formData.customSlug.trim());
+            }
             const response = await api.pages.create(data);
             toast.success('¡Página creada exitosamente!');
-            router.push(`/p/${response.data.data.shortId}`);
+            const identifier = response.data.data.customSlug || response.data.data.shortId;
+            router.push(`/p/${identifier}`);
         } catch (error: any) {
             console.error('Error creating page:', error);
             toast.error(error.response?.data?.message || 'Error al crear la página');
@@ -724,7 +731,17 @@ export default function CreatePageEnhanced() {
                                             onChange={(e) => updateForm({ recipientName: e.target.value })}
                                             maxLength={100}
                                         />
-
+                                        {isPro && (
+                                            <div className="border-t pt-4 mt-4">
+                                                <CustomSlugInput
+                                                    value={formData.customSlug}
+                                                    onChange={(value) => updateForm({ customSlug: value })}
+                                                    isPro={isPro}
+                                                    onUpgrade={goToUpgrade}
+                                                    recipientName={formData.recipientName} // 🆕 NUEVO: Pasar el nombre para generar preview
+                                                />
+                                            </div>
+                                        )}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1.5">
                                                 Mensaje (opcional)
@@ -1266,6 +1283,52 @@ export default function CreatePageEnhanced() {
                                         <CardDescription>Revisa tu página y publícala</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
+                                        {isPro && formData.customSlug && (
+                                            <div className="p-4 bg-gradient-to-r from-pink-50 to-rose-50 border-2 border-pink-300 rounded-xl">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Crown className="w-4 h-4 text-pink-600" />
+                                                    <p className="text-sm font-bold text-pink-700">
+                                                        URL Personalizada
+                                                    </p>
+                                                </div>
+                                                <div className="bg-white rounded-lg p-3 border border-pink-200">
+                                                    <p className="font-mono text-sm text-pink-800 break-all">
+                                                        {window.location.origin}/p/{formData.customSlug}
+                                                    </p>
+                                                </div>
+                                                <p className="text-xs text-pink-600 mt-2 flex items-center gap-1">
+                                                    <Sparkles className="w-3 h-3" />
+                                                    ¡{formData.recipientName} verá esto primero!
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* 🆕 Mensaje motivacional para FREE que llegó hasta el preview */}
+                                        {!isPro && (
+                                            <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-xl">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Crown className="w-5 h-5 text-amber-600" />
+                                                    <p className="text-sm font-bold text-amber-900">
+                                                        ¿Aún no probaste las URLs personalizadas?
+                                                    </p>
+                                                </div>
+                                                <p className="text-xs text-amber-700 mb-3">
+                                                    Tu página tendrá: <span className="font-mono bg-white px-2 py-0.5 rounded">/p/xK9mP2nQ7z</span>
+                                                    <br />
+                                                    Con PRO podría ser: <span className="font-mono bg-white px-2 py-0.5 rounded text-pink-600 font-bold">/p/para-{formData.recipientName.toLowerCase()}</span>
+                                                </p>
+                                                <Button
+                                                    onClick={goToUpgrade}
+                                                    variant="gradient"
+                                                    size="sm"
+                                                    className="w-full"
+                                                >
+                                                    <Crown className="w-4 h-4 mr-1" />
+                                                    Upgrade a PRO ahora
+                                                </Button>
+                                            </div>
+                                        )}
+
                                         <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                                             <div>
                                                 <p className="text-xs text-gray-500">Título</p>

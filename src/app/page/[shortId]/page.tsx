@@ -50,7 +50,7 @@ export default function PageDetailView() {
             // First get the page list to find the _id from shortId
             const { data: pagesData } = await api.pages.getMyPages();
             const page = pagesData.data.find((p: any) => p.shortId === shortId);
-
+            console.log('page', page);
             if (!page) {
                 toast.error('Página no encontrada');
                 router.push('/dashboard');
@@ -71,13 +71,16 @@ export default function PageDetailView() {
     };
 
     const handleCopyUrl = () => {
-        const url = pageData?.url || `${window.location.origin}/p/${shortId}`;
+        const identifier = pageData?.customSlug || pageData?.shortId || shortId;
+        const url = pageData?.url || `${window.location.origin}/p/${identifier}`;
         copyToClipboard(url);
         toast.success('¡Enlace copiado!');
     };
 
     const handleOpenPublic = () => {
-        window.open(`/p/${shortId}`, '_blank');
+        console.log(pageData);
+        const identifier = pageData?.customSlug || pageData?.shortId || shortId;
+        window.open(`/p/${identifier}`, '_blank');
     };
 
     const formatDate = (dateStr: string) => {
@@ -244,14 +247,14 @@ export default function PageDetailView() {
                                     <div
                                         key={response._id || index}
                                         className={`flex items-center justify-between p-4 rounded-lg border ${response.answer === 'yes'
-                                                ? 'bg-green-50 border-green-200'
-                                                : 'bg-red-50 border-red-200'
+                                            ? 'bg-green-50 border-green-200'
+                                            : 'bg-red-50 border-red-200'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${response.answer === 'yes'
-                                                    ? 'bg-green-100'
-                                                    : 'bg-red-100'
+                                                ? 'bg-green-100'
+                                                : 'bg-red-100'
                                                 }`}>
                                                 {response.answer === 'yes' ? (
                                                     <ThumbsUp className="w-5 h-5 text-green-600" />
@@ -261,8 +264,8 @@ export default function PageDetailView() {
                                             </div>
                                             <div>
                                                 <span className={`font-semibold ${response.answer === 'yes'
-                                                        ? 'text-green-700'
-                                                        : 'text-red-700'
+                                                    ? 'text-green-700'
+                                                    : 'text-red-700'
                                                     }`}>
                                                     {response.answer === 'yes' ? '¡Sí! 💕' : 'No 😢'}
                                                 </span>

@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Usar importación dinámica para auth para evitar errores de tipo
 let auth: any = null;
 
 if (typeof window !== 'undefined') {
@@ -8,11 +7,9 @@ if (typeof window !== 'undefined') {
         auth = firebase.auth;
     });
 }
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://love-app-production.up.railway.app/api';
 //const API_URL = 'http://localhost:5000/api';
 
-// Crear instancia de axios
 const apiClient = axios.create({
     baseURL: API_URL,
     headers: {
@@ -20,7 +17,6 @@ const apiClient = axios.create({
     },
 });
 
-// Interceptor para agregar token de autenticación
 apiClient.interceptors.request.use(
     async (config) => {
         if (typeof window !== 'undefined' && auth?.currentUser) {
@@ -38,12 +34,10 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Interceptor para manejar errores
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Token expirado o inválido
             console.error('Token expirado o inválido');
         }
         return Promise.reject(error);
@@ -52,9 +46,7 @@ apiClient.interceptors.response.use(
 
 export default apiClient;
 
-// API Helpers
 export const api = {
-    // Auth
     auth: {
         getMe: () => apiClient.get('/auth/me'),
         syncUser: (data: any) => apiClient.post('/auth/sync', data),
@@ -62,7 +54,6 @@ export const api = {
         deleteAccount: () => apiClient.delete('/auth/account'),
     },
 
-    // Pages
     pages: {
         create: (data: FormData) =>
             apiClient.post('/pages', data, {
@@ -78,9 +69,10 @@ export const api = {
         delete: (pageId: string) => apiClient.delete(`/pages/${pageId}`),
         toggleStatus: (pageId: string) => apiClient.patch(`/pages/${pageId}/toggle`),
         getStats: () => apiClient.get('/pages/stats'),
+        // 🆕 NUEVO: Verificar disponibilidad de slug
+        checkSlug: (slug: string) => apiClient.get(`/pages/check-slug/${slug}`),
     },
 
-    // Payments
     payments: {
         createProPayment: () => apiClient.post('/payments/create-preference'),
         createPreference: () => apiClient.post('/payments/create-preference'),
@@ -88,11 +80,11 @@ export const api = {
         getHistory: () => apiClient.get('/payments/history'),
         simulateSuccess: () => apiClient.post('/payments/simulate-success'),
     },
+
     contact: {
         create: (data: any) => apiClient.post('/contact', data),
         getMyMessages: () => apiClient.get('/contact/my-messages'),
         getMessage: (id: string) => apiClient.get(`/contact/${id}`),
-        // Admin routes (si necesitas panel de admin)
         getAllMessages: (params?: any) => apiClient.get('/contact/admin/all', { params }),
         updateStatus: (id: string, data: any) => apiClient.patch(`/contact/admin/${id}`, data),
     },
