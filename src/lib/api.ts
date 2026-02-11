@@ -76,6 +76,9 @@ export const api = {
     },
 
     payments: {
+        createMercadoPagoPayment: () => apiClient.post('/payments/mercadopago/create-preference'),
+        createPayPalOrder: () => apiClient.post('/payments/paypal/create-order'),
+        capturePayPalPayment: (orderId: string) => apiClient.post(`/payments/paypal/capture/${orderId}`),
         createProPayment: () => apiClient.post('/payments/create-preference'),
         createPreference: () => apiClient.post('/payments/create-preference'),
         checkStatus: (paymentId: string) => apiClient.get(`/payments/${paymentId}/status`),

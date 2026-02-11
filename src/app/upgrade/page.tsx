@@ -7,13 +7,33 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
-import { Crown, Check, Sparkles, Zap, Heart, Infinity } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Heart, Infinity, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Logos (puedes usar imágenes reales o iconos)
+const MercadoPagoLogo = () => (
+    <div className="flex items-center gap-2 text-blue-600 font-bold">
+        <CreditCard className="w-5 h-5" />
+        <span>Mercado Pago</span>
+    </div>
+);
+
+const PayPalLogo = () => (
+    <div className="flex items-center gap-2 text-[#0070ba] font-bold">
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.129a.773.773 0 0 1 .762-.644h8.37c2.726 0 4.597 1.347 5.017 3.625.357 1.938-.047 3.403-1.198 4.357-1.187 1.054-3.004 1.522-5.392 1.522H8.815l-1.046 5.603a.633.633 0 0 1-.693.745zm13.356-7.666c-.365 2.07-1.354 3.574-3.045 4.484-1.55.834-3.574 1.186-5.975 1.186h-1.76l.786-4.414h1.76c1.83 0 3.278-.407 4.284-1.186 1.005-.778 1.487-1.928 1.487-3.416 0-1.057-.244-1.855-.732-2.393-.488-.539-1.279-.809-2.373-.809h-5.39l-2.35 12.486a.641.641 0 0 1-.633.74H2.47a.641.641 0 0 1-.633-.74L4.944 3.129a.773.773 0 0 1 .762-.644h8.37c2.726 0 4.597 1.347 5.017 3.625.357 1.938-.047 3.403-1.198 4.357z" />
+        </svg>
+        <span>PayPal</span>
+    </div>
+);
+
+type PaymentProvider = 'mercadopago' | 'paypal';
 
 export default function UpgradePage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuthStore();
     const [loading, setLoading] = useState(false);
+    const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('mercadopago');
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -28,36 +48,31 @@ export default function UpgradePage() {
         }
     }, [user, router]);
 
-    const handleUpgrade = async () => {
+    const handlePayment = async () => {
         setLoading(true);
         try {
-            const { data } = await api.payments.createProPayment();
+            if (selectedProvider === 'mercadopago') {
+                const { data } = await api.payments.createMercadoPagoPayment();
 
-            // Abrir en nueva ventana para evitar problemas con tarjetas guardadas
-            const checkoutUrl = data.data.initPoint;
-            const newWindow = window.open(checkoutUrl, '_blank');
-            if (!newWindow) {
-                window.location.href = checkoutUrl;
+                const checkoutUrl = data.data.initPoint;
+                const newWindow = window.open(checkoutUrl, '_blank');
+                if (!newWindow) {
+                    window.location.href = checkoutUrl;
+                }
+            } else {
+                // PayPal
+                const { data } = await api.payments.createPayPalOrder();
+
+                const approvalUrl = data.data.approvalUrl;
+                const newWindow = window.open(approvalUrl, '_blank');
+                if (!newWindow) {
+                    window.location.href = approvalUrl;
+                }
             }
+
             setLoading(false);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Error al procesar el pago');
-            setLoading(false);
-        }
-    };
-
-    // SOLO PARA DESARROLLO - Simular pago exitoso
-    const handleSimulatePayment = async () => {
-        setLoading(true);
-        try {
-            await api.payments.simulateSuccess();
-            toast.success('¡Pago simulado exitosamente!');
-            setTimeout(() => {
-                router.push('/payment/success');
-            }, 500);
-        } catch (error: any) {
-            console.error('Error simulating payment:', error);
-            toast.error('Error al simular pago');
             setLoading(false);
         }
     };
@@ -92,7 +107,7 @@ export default function UpgradePage() {
                     </div>
 
                     {/* Pricing Card */}
-                    <Card className="border-4 border-amber-400 shadow-2xl mb-12 overflow-hidden">
+                    <Card className="border-4 border-amber-400 shadow-2xl mb-8 overflow-hidden">
                         <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-3 px-6">
                             <div className="flex items-center justify-between">
                                 <span className="font-semibold">¡Oferta Especial!</span>
@@ -115,6 +130,7 @@ export default function UpgradePage() {
                         </CardHeader>
 
                         <CardContent className="space-y-6">
+                            {/* Features */}
                             <div className="space-y-4">
                                 <div className="flex items-start gap-3">
                                     <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
@@ -177,19 +193,53 @@ export default function UpgradePage() {
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t space-y-3">
+                            {/* Payment Method Selection */}
+                            <div className="pt-6 border-t">
+                                <h3 className="text-sm font-medium text-gray-700 mb-3">
+                                    Selecciona tu método de pago:
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => setSelectedProvider('mercadopago')}
+                                        className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'mercadopago'
+                                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                                                : 'border-gray-200 hover:border-blue-300'
+                                            }`}
+                                    >
+                                        <MercadoPagoLogo />
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            Tarjetas, efectivo y más
+                                        </p>
+                                    </button>
+
+                                    <button
+                                        onClick={() => setSelectedProvider('paypal')}
+                                        className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'paypal'
+                                                ? 'border-[#0070ba] bg-blue-50 ring-2 ring-blue-200'
+                                                : 'border-gray-200 hover:border-blue-300'
+                                            }`}
+                                    >
+                                        <PayPalLogo />
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            PayPal, tarjetas
+                                        </p>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Payment Button */}
+                            <div className="pt-3 space-y-3">
                                 <Button
-                                    onClick={handleUpgrade}
+                                    onClick={handlePayment}
                                     loading={loading}
                                     className="w-full h-14 text-lg bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white shadow-lg"
                                 >
                                     <Crown className="w-5 h-5 mr-2" />
-                                    Actualizar a PRO por $1.39 USD
+                                    Pagar $1.39 USD con {selectedProvider === 'mercadopago' ? 'Mercado Pago' : 'PayPal'}
                                 </Button>
 
-
-                                <p className="text-center text-sm text-gray-500 mt-4">
-                                    Pago seguro procesado por Mercado Pago
+                                <p className="text-center text-sm text-gray-500">
+                                    Pago seguro procesado por {selectedProvider === 'mercadopago' ? 'Mercado Pago' : 'PayPal'}
                                 </p>
                             </div>
                         </CardContent>
@@ -251,49 +301,6 @@ export default function UpgradePage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </div>
-
-                    {/* FAQ */}
-                    <div className="mt-12 text-center">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Preguntas Frecuentes</h2>
-                        <div className="grid gap-4 text-left">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">¿Es un pago único o suscripción?</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-gray-600">
-                                        Es un pago único de $1.39 USD. Una vez que pagas, tienes acceso PRO para
-                                        siempre, sin renovaciones ni cargos adicionales.
-                                    </p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">¿Cómo funciona el diseño con IA?</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-gray-600">
-                                        Subes una imagen de referencia (ej: una tarjeta que te guste) y nuestra
-                                        IA analiza el estilo y genera HTML/CSS personalizado manteniendo tu
-                                        contenido.
-                                    </p>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">¿Métodos de pago aceptados?</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-gray-600">
-                                        Aceptamos todos los métodos disponibles en Mercado Pago Perú: tarjetas
-                                        de crédito, débito, y pagos en efectivo.
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </div>
                     </div>
                 </div>
             </main>
