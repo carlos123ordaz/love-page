@@ -1323,7 +1323,7 @@ export default function CreatePageEnhanced() {
                                                     className="w-full"
                                                 >
                                                     <Crown className="w-4 h-4 mr-1" />
-                                                    Upgrade a PRO ahora
+                                                    Hacerlo más especial – $1.39
                                                 </Button>
                                             </div>
                                         )}
