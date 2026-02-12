@@ -10,6 +10,8 @@ interface User {
     pagesCreated: number;
     canCreatePage: boolean;
     remainingPages: number | 'unlimited';
+    dailyAdViews: number,
+    bonusPages: number,
 }
 
 interface AuthStore {

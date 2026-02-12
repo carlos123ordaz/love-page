@@ -93,4 +93,12 @@ export const api = {
         getAllMessages: (params?: any) => apiClient.get('/contact/admin/all', { params }),
         updateStatus: (id: string, data: any) => apiClient.patch(`/contact/admin/${id}`, data),
     },
+    rewards: {
+        requestReward: () =>
+            apiClient.post('/rewards/request'),
+        confirmReward: (token: string) =>
+            apiClient.post('/rewards/confirm', { token }),
+        getStatus: () =>
+            apiClient.get('/rewards/status'),
+    },
 };

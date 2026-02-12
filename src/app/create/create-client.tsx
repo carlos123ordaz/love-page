@@ -403,7 +403,7 @@ export default function CreatePageEnhanced() {
             toast.error('Has alcanzado el límite de páginas gratuitas');
             setShowUpgradeModal(true);
         }
-    }, [user]);
+    }, [user, user?.canCreatePage, user?.isPro]);
 
     const updateForm = (updates: Partial<PageFormData>) => {
         setFormData((prev) => ({ ...prev, ...updates }));

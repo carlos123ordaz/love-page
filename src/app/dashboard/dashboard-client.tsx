@@ -12,24 +12,24 @@ import {
     Heart,
     Eye,
     MessageCircle,
-    ExternalLink,
     Trash2,
     ToggleLeft,
     ToggleRight,
     Crown,
     Sparkles,
-    Copy,
     MoreVertical,
     Link2,
+    Gift,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { getTimeAgo, copyToClipboard } from '@/lib/utils';
+import { RewardedAdBanner } from '@/components/ads/RewardedAdBanner';
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { user, loading: authLoading } = useAuthStore();
-    const { pages, setPages, loading: pagesLoading, removePage, updatePage } = usePageStore();
+    const { user, setUser, loading: authLoading } = useAuthStore();
+    const { pages, setPages, removePage, updatePage } = usePageStore();
     const [loadingPages, setLoadingPages] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
@@ -63,6 +63,17 @@ export default function DashboardPage() {
             toast.error('Error al cargar páginas');
         } finally {
             setLoadingPages(false);
+        }
+    };
+
+    // Refrescar datos del usuario después de ganar recompensa
+    const refreshUser = async () => {
+        try {
+            const { data } = await api.auth.getMe();
+            setUser(data.data);
+            await loadPages();
+        } catch (error) {
+            console.error('Error refreshing user:', error);
         }
     };
 
@@ -106,12 +117,16 @@ export default function DashboardPage() {
     const totalViews = pages.reduce((sum, page) => sum + page.views, 0);
     const totalResponses = pages.reduce((sum, page) => sum + page.totalResponses, 0);
 
+    // Calcular páginas disponibles para usuarios free
+    const totalAllowed = user.isPro ? Infinity : 1 + (user.bonusPages || 0);
+    const pagesRemaining = user.isPro ? Infinity : Math.max(0, totalAllowed - user.pagesCreated);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
             <Header />
 
             <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
-                {/* Header Section - stack vertical en móvil */}
+                {/* Header Section */}
                 <div className="flex flex-col gap-4 mb-6 sm:mb-8">
                     <div className="min-w-0">
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 truncate">
@@ -124,20 +139,35 @@ export default function DashboardPage() {
                                     Usuario PRO - Páginas ilimitadas
                                 </span>
                             ) : (
-                                `Has creado ${user.pagesCreated} de 1 páginas gratuitas`
+                                <span className="flex items-center gap-2 flex-wrap">
+                                    Has creado {user.pagesCreated} de {totalAllowed} página{totalAllowed !== 1 ? 's' : ''}
+                                    {(user.bonusPages || 0) > 0 && (
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                                            <Gift className="w-3 h-3" />
+                                            +{user.bonusPages} bonus
+                                        </span>
+                                    )}
+                                    {pagesRemaining > 0 && (
+                                        <span className="text-green-600 font-medium">
+                                            — {pagesRemaining} disponible{pagesRemaining !== 1 ? 's' : ''}
+                                        </span>
+                                    )}
+                                </span>
                             )}
                         </p>
                     </div>
 
-                    {/* Botones de acción - ancho completo en móvil */}
+                    {/* Botones de acción */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                        {!user.isPro && user.pagesCreated >= 5 && (
-                            <Link href="/upgrade" className="w-full sm:w-auto">
-                                <Button variant="gradient" className="gap-2 w-full sm:w-auto">
-                                    <Crown className="w-4 h-4" />
-                                    Upgrade a PRO
-                                </Button>
-                            </Link>
+                        {/* Banner de recompensa cuando NO puede crear páginas */}
+                        {!user.isPro && !user.canCreatePage && (
+                            <div className="w-full">
+                                <RewardedAdBanner
+                                    context="dashboard"
+                                    compact={true}
+                                    onRewardEarned={refreshUser}
+                                />
+                            </div>
                         )}
 
                         {user.canCreatePage && (
@@ -151,7 +181,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Stats Cards - scroll horizontal en móvil o grid */}
+                {/* Stats Cards */}
                 <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
                     <Card className="min-w-0">
                         <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-1 sm:pb-2">
@@ -165,7 +195,7 @@ export default function DashboardPage() {
                                 {user.pagesCreated}
                             </div>
                             <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:block">
-                                Creadas
+                                {user.isPro ? 'Creadas' : `de ${totalAllowed} disponibles`}
                             </p>
                         </CardContent>
                     </Card>
@@ -252,7 +282,6 @@ export default function DashboardPage() {
                                                         PRO
                                                     </div>
                                                 )}
-                                                {/* Indicador de estado compacto */}
                                                 <div
                                                     className={`w-2 h-2 rounded-full flex-shrink-0 ${page.isActive ? 'bg-green-500' : 'bg-gray-300'
                                                         }`}
@@ -296,9 +325,8 @@ export default function DashboardPage() {
                                             {getTimeAgo(page.createdAt)}
                                         </div>
 
-                                        {/* Acciones - mejoradas para móvil */}
+                                        {/* Acciones */}
                                         <div className="flex items-center gap-1.5 sm:gap-2 pt-1">
-                                            {/* Copiar enlace - botón principal */}
                                             <Button
                                                 onClick={() => handleCopyUrl(page.url)}
                                                 variant="outline"
@@ -309,7 +337,6 @@ export default function DashboardPage() {
                                                 <span className="sm:inline">Copiar</span>
                                             </Button>
 
-                                            {/* Ver página */}
                                             <Link href={`/page/${page.shortId}`} className="flex-shrink-0">
                                                 <Button variant="outline" size="sm" className="h-9 text-xs sm:text-sm">
                                                     <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
@@ -317,7 +344,7 @@ export default function DashboardPage() {
                                                 </Button>
                                             </Link>
 
-                                            {/* Menú de más opciones en móvil */}
+                                            {/* Menú móvil */}
                                             <div className="relative flex-shrink-0">
                                                 <Button
                                                     onClick={(e) => {
@@ -333,7 +360,6 @@ export default function DashboardPage() {
                                                     <MoreVertical className="w-4 h-4 text-gray-500" />
                                                 </Button>
 
-                                                {/* Dropdown en móvil */}
                                                 {openMenuId === page._id && (
                                                     <div className="absolute right-0 bottom-full mb-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[160px] sm:hidden">
                                                         <button
@@ -369,11 +395,9 @@ export default function DashboardPage() {
                                                 )}
                                             </div>
 
-                                            {/* Botones normales en desktop */}
+                                            {/* Botones desktop */}
                                             <Button
-                                                onClick={() =>
-                                                    handleToggleStatus(page._id, page.isActive)
-                                                }
+                                                onClick={() => handleToggleStatus(page._id, page.isActive)}
                                                 variant="ghost"
                                                 size="icon"
                                                 className="hidden sm:flex h-9 w-9"
@@ -403,10 +427,7 @@ export default function DashboardPage() {
 
                 {/* FAB para crear página en móvil */}
                 {user.canCreatePage && pages.length > 0 && (
-                    <Link
-                        href="/create"
-                        className="fixed bottom-6 right-6 sm:hidden z-40"
-                    >
+                    <Link href="/create" className="fixed bottom-6 right-6 sm:hidden z-40">
                         <Button
                             variant="gradient"
                             size="icon"
