@@ -1323,7 +1323,7 @@ export default function CreatePageEnhanced() {
                                                     className="w-full"
                                                 >
                                                     <Crown className="w-4 h-4 mr-1" />
-                                                    Hacerlo más especial – $1.39
+                                                    Hacerlo más especial – $1.75
                                                 </Button>
                                             </div>
                                         )}
