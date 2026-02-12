@@ -287,15 +287,17 @@ export function RewardedAdBanner({
 
                         {/* ★ KEY FIX: suppressHydrationWarning + ref-only container */}
                         <div className="p-4 sm:p-6">
-                            <div
-                                ref={adContainerRef}
-                                suppressHydrationWarning
-                                className="w-full min-h-[250px] bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden"
-                            >
+                            <div className="relative w-full min-h-[250px] bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 overflow-hidden">
+                                {/* Contenedor imperativo para AdSense — SIN hijos React */}
+                                <div ref={adContainerRef} className="w-full min-h-[250px]" />
+
+                                {/* Overlay de carga — gestionado por React, fuera del ref */}
                                 {!adLoaded && (
-                                    <div className="flex flex-col items-center gap-3 text-gray-400">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
-                                        <span className="text-sm">Cargando anuncio...</span>
+                                    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                                        <div className="flex flex-col items-center gap-3 text-gray-400">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+                                            <span className="text-sm">Cargando anuncio...</span>
+                                        </div>
                                     </div>
                                 )}
                             </div>
