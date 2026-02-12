@@ -256,7 +256,7 @@ export default function UpgradePage() {
                                     className="w-full h-14 text-lg bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white shadow-lg"
                                 >
                                     <Crown className="w-5 h-5 mr-2" />
-                                    Pagar $1.75 USD con {selectedProvider === 'mercadopago' ? 'Mercado Pago' : 'PayPal'}
+                                    Pagar $1.75 USD
                                 </Button>
 
                                 <p className="text-center text-sm text-gray-500">
