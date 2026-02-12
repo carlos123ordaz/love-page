@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
-import { LoginPage } from '@/components/auth/login-page';
+import LandingPage from '@/components/landing/landing-page';
 
 export default function HomePage() {
   const { user, loading } = useAuthStore();
@@ -17,15 +17,15 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
       </div>
     );
   }
 
   if (user) {
-    return null; // Redirigiendo...
+    return null;
   }
 
-  return <LoginPage />;
+  return <LandingPage />;
 }
