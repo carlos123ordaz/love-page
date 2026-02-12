@@ -7,10 +7,52 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Love Pages - Páginas Personalizadas para Ocasiones Especiales',
+  metadataBase: new URL('https://lovepages.ink'),
+  title: {
+    default: 'Love Pages - Páginas Personalizadas para Ocasiones Especiales',
+    template: '%s | Love Pages',
+  },
   description:
     'Crea páginas personalizadas para San Valentín, declaraciones, y ocasiones especiales. Diseño con IA y páginas ilimitadas.',
-  keywords: ['san valentín', 'declaración', 'amor', 'páginas personalizadas'],
+  keywords: ['san valentín', 'declaración', 'amor', 'páginas personalizadas', 'love pages', 'regalos románticos'],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_PE',
+    url: 'https://lovepages.ink',
+    siteName: 'Love Pages',
+    title: 'Love Pages - Dile lo que sientes de forma única',
+    description:
+      'Crea páginas personalizadas con animaciones, stickers y el botón que escapa. Comparte un link único y ve su respuesta en tiempo real.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Love Pages - Páginas Personalizadas',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Love Pages - Dile lo que sientes de forma única',
+    description:
+      'Crea páginas personalizadas con animaciones, stickers y el botón que escapa.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
