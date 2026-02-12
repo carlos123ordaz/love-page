@@ -127,97 +127,97 @@ export function RewardedAdBanner({ context, onRewardEarned, compact = false }: R
     }
 
     // ---- Versión compacta (inline en el dashboard) ----
-    if (compact) {
-        return (
-            <div className="relative bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl p-4 flex items-center gap-3">
-                <button
-                    onClick={() => setDismissed(true)}
-                    className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-                >
-                    <X className="w-4 h-4" />
-                </button>
-                <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Gift className="w-5 h-5 text-purple-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">
-                        ¿Quieres otra página gratis?
-                    </p>
-                    <p className="text-xs text-gray-600">
-                        Mira un breve anuncio y gana 1 página extra ({MAX_DAILY_ADS - dailyAdViews}{' '}
-                        restantes hoy)
-                    </p>
-                </div>
-                <Button
-                    onClick={handleWatchAd}
-                    disabled={showingAd}
-                    size="sm"
-                    className="flex-shrink-0 bg-purple-600 hover:bg-purple-700 text-white gap-1"
-                >
-                    <Play className="w-3.5 h-3.5" />
-                    {showingAd ? 'Cargando...' : 'Ver anuncio'}
-                </Button>
-            </div>
-        );
-    }
+    // if (compact) {
+    //     return (
+    //         <div className="relative bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl p-4 flex items-center gap-3">
+    //             <button
+    //                 onClick={() => setDismissed(true)}
+    //                 className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+    //             >
+    //                 <X className="w-4 h-4" />
+    //             </button>
+    //             <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+    //                 <Gift className="w-5 h-5 text-purple-600" />
+    //             </div>
+    //             <div className="flex-1 min-w-0">
+    //                 <p className="text-sm font-semibold text-gray-900">
+    //                     ¿Quieres otra página gratis?
+    //                 </p>
+    //                 <p className="text-xs text-gray-600">
+    //                     Mira un breve anuncio y gana 1 página extra ({MAX_DAILY_ADS - dailyAdViews}{' '}
+    //                     restantes hoy)
+    //                 </p>
+    //             </div>
+    //             <Button
+    //                 onClick={handleWatchAd}
+    //                 disabled={showingAd}
+    //                 size="sm"
+    //                 className="flex-shrink-0 bg-purple-600 hover:bg-purple-700 text-white gap-1"
+    //             >
+    //                 <Play className="w-3.5 h-3.5" />
+    //                 {showingAd ? 'Cargando...' : 'Ver anuncio'}
+    //             </Button>
+    //         </div>
+    //     );
+    // }
 
     // ---- Versión completa (en la página de crear) ----
-    return (
-        <div className="relative bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 border-2 border-purple-300 rounded-2xl p-6 sm:p-8 text-center overflow-hidden">
-            <button
-                onClick={() => setDismissed(true)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
-            >
-                <X className="w-5 h-5" />
-            </button>
+    // return (
+    //     <div className="relative bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 border-2 border-purple-300 rounded-2xl p-6 sm:p-8 text-center overflow-hidden">
+    //         <button
+    //             onClick={() => setDismissed(true)}
+    //             className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
+    //         >
+    //             <X className="w-5 h-5" />
+    //         </button>
 
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-purple-200/30 rounded-full blur-2xl" />
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-indigo-200/30 rounded-full blur-2xl" />
-            </div>
+    //         <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    //             <div className="absolute -top-4 -right-4 w-24 h-24 bg-purple-200/30 rounded-full blur-2xl" />
+    //             <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-indigo-200/30 rounded-full blur-2xl" />
+    //         </div>
 
-            <div className="relative z-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-                    <Gift className="w-8 h-8 text-white" />
-                </div>
+    //         <div className="relative z-10">
+    //             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
+    //                 <Gift className="w-8 h-8 text-white" />
+    //             </div>
 
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    ¡Gana una página extra gratis! 🎁
-                </h3>
+    //             <h3 className="text-xl font-bold text-gray-900 mb-2">
+    //                 ¡Gana una página extra gratis! 🎁
+    //             </h3>
 
-                <p className="text-sm text-gray-600 mb-4 max-w-sm mx-auto">
-                    Has usado tu página gratuita. Mira un breve anuncio y desbloquea
-                    <strong> 1 página adicional</strong> al instante.
-                </p>
+    //             <p className="text-sm text-gray-600 mb-4 max-w-sm mx-auto">
+    //                 Has usado tu página gratuita. Mira un breve anuncio y desbloquea
+    //                 <strong> 1 página adicional</strong> al instante.
+    //             </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-                    <Button
-                        onClick={handleWatchAd}
-                        disabled={showingAd}
-                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white gap-2 px-6 py-3 text-base shadow-lg shadow-purple-500/20"
-                    >
-                        <Play className="w-5 h-5" />
-                        {showingAd ? 'Mostrando anuncio...' : 'Ver anuncio (~15 seg)'}
-                    </Button>
-                </div>
+    //             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
+    //                 <Button
+    //                     onClick={handleWatchAd}
+    //                     disabled={showingAd}
+    //                     className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white gap-2 px-6 py-3 text-base shadow-lg shadow-purple-500/20"
+    //                 >
+    //                     <Play className="w-5 h-5" />
+    //                     {showingAd ? 'Mostrando anuncio...' : 'Ver anuncio (~15 seg)'}
+    //                 </Button>
+    //             </div>
 
-                <p className="text-xs text-gray-500">
-                    {MAX_DAILY_ADS - dailyAdViews} de {MAX_DAILY_ADS} recompensas disponibles hoy
-                </p>
+    //             <p className="text-xs text-gray-500">
+    //                 {MAX_DAILY_ADS - dailyAdViews} de {MAX_DAILY_ADS} recompensas disponibles hoy
+    //             </p>
 
-                <div className="mt-5 pt-5 border-t border-purple-200">
-                    <p className="text-xs text-gray-500 mb-2">¿Prefieres no ver anuncios?</p>
-                    <a
-                        href="/upgrade"
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 hover:text-amber-700"
-                    >
-                        <Crown className="w-4 h-4" />
-                        Pasa a PRO por $1.75 — Páginas ilimitadas
-                    </a>
-                </div>
-            </div>
-        </div>
-    );
+    //             <div className="mt-5 pt-5 border-t border-purple-200">
+    //                 <p className="text-xs text-gray-500 mb-2">¿Prefieres no ver anuncios?</p>
+    //                 <a
+    //                     href="/upgrade"
+    //                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 hover:text-amber-700"
+    //                 >
+    //                     <Crown className="w-4 h-4" />
+    //                     Pasa a PRO por $1.75 — Páginas ilimitadas
+    //                 </a>
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
 }
 
 // ================================================================
