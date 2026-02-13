@@ -101,4 +101,27 @@ export const api = {
         getStatus: () =>
             apiClient.get('/rewards/status'),
     },
+    templates: {
+        // Listar plantillas activas (público)
+        getAll: (category?: string) =>
+            apiClient.get('/templates', { params: category ? { category } : {} }),
+
+        // Obtener plantilla por ID (con HTML/CSS)
+        getById: (templateId: string) =>
+            apiClient.get(`/templates/${templateId}`),
+
+        // Renderizar plantilla con valores custom (preview)
+        render: (templateId: string, values: Record<string, string>) =>
+            apiClient.post(`/templates/${templateId}/render`, { values }),
+
+        // Crear página desde plantilla (PRO)
+        createPage: (templateId: string, data: {
+            values: Record<string, string>;
+            recipientName: string;
+            yesButtonText?: string;
+            noButtonText?: string;
+            noButtonEscapes?: boolean;
+            customSlug?: string;
+        }) => apiClient.post(`/templates/${templateId}/create-page`, data),
+    },
 };

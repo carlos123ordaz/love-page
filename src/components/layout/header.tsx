@@ -58,6 +58,12 @@ export function Header() {
                         Crear Nueva
                     </Link>
                     <Link
+                        href="/templates"
+                        className="text-sm font-medium transition-colors hover:text-pink-600"
+                    >
+                        Plantillas
+                    </Link>
+                    <Link
                         href="/contact"
                         className="text-sm font-medium transition-colors hover:text-pink-600"
                     >

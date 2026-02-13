@@ -1,0 +1,548 @@
+'use client';
+
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store';
+import { Header } from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { api } from '@/lib/api';
+import {
+    ArrowLeft,
+    Crown,
+    Sparkles,
+    Lock,
+    Eye,
+    Pencil,
+    Rocket,
+    Users,
+    Heart,
+    RefreshCw,
+    Monitor,
+    Smartphone,
+    CheckCircle2,
+} from 'lucide-react';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { CustomSlugInput } from '@/components/CustomSlugInput';
+
+interface EditableField {
+    key: string;
+    label: string;
+    type: 'text' | 'textarea' | 'color' | 'image_url';
+    defaultValue: string;
+    placeholder: string;
+    maxLength: number;
+    required: boolean;
+    order: number;
+}
+
+interface TemplateData {
+    _id: string;
+    name: string;
+    description: string;
+    previewImageUrl: string;
+    category: string;
+    html: string;
+    css: string;
+    editableFields: EditableField[];
+    isPro: boolean;
+    tags: string[];
+    usageCount: number;
+}
+
+export default function TemplateDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const templateId = params.templateId as string;
+    const { user, loading: authLoading } = useAuthStore();
+
+    const [template, setTemplate] = useState<TemplateData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [creating, setCreating] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+
+    // Valores editables del usuario
+    const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+
+    // Campos extra para crear la página
+    const [recipientName, setRecipientName] = useState('');
+    const [yesButtonText, setYesButtonText] = useState('Sí');
+    const [noButtonText, setNoButtonText] = useState('No');
+    const [noButtonEscapes, setNoButtonEscapes] = useState(false);
+    const [customSlug, setCustomSlug] = useState('');
+
+    // Ref para el iframe de preview
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+
+    const isPro = user?.isPro || false;
+
+    useEffect(() => {
+        loadTemplate();
+    }, [templateId]);
+
+    // Inicializar valores con defaults cuando carga la plantilla
+    useEffect(() => {
+        if (template) {
+            const defaults: Record<string, string> = {};
+            template.editableFields
+                .sort((a, b) => a.order - b.order)
+                .forEach((field) => {
+                    defaults[field.key] = field.defaultValue || '';
+                });
+            setFieldValues(defaults);
+        }
+    }, [template]);
+
+    // Actualizar preview cuando cambian los valores
+    useEffect(() => {
+        if (template && Object.keys(fieldValues).length > 0) {
+            updatePreview();
+        }
+    }, [fieldValues, template]);
+
+    const loadTemplate = async () => {
+        try {
+            setLoading(true);
+            const { data } = await api.templates.getById(templateId);
+            setTemplate(data.data);
+        } catch (error) {
+            console.error('Error loading template:', error);
+            toast.error('Error al cargar plantilla');
+            router.push('/templates');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updatePreview = useCallback(() => {
+        if (!template || !iframeRef.current) return;
+
+        // Renderizar HTML/CSS con los valores actuales del usuario
+        let renderedHtml = template.html;
+        let renderedCss = template.css;
+
+        for (const field of template.editableFields) {
+            const value = fieldValues[field.key] || field.defaultValue || '';
+            const placeholder = `{{${field.key}}}`;
+
+            // Escapar HTML para seguridad
+            const escaped = value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+            renderedHtml = renderedHtml.replaceAll(placeholder, escaped);
+            renderedCss = renderedCss.replaceAll(placeholder, escaped);
+        }
+
+        const fullHtml = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow-x: hidden; }
+        ${renderedCss}
+    </style>
+</head>
+<body>
+    ${renderedHtml}
+</body>
+</html>`;
+
+        const blob = new Blob([fullHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        iframeRef.current.src = url;
+
+        // Limpiar URL blob anterior
+        return () => URL.revokeObjectURL(url);
+    }, [template, fieldValues]);
+
+    const updateField = (key: string, value: string) => {
+        setFieldValues((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleCreatePage = async () => {
+        if (!user) {
+            toast.error('Debes iniciar sesión');
+            router.push('/');
+            return;
+        }
+
+        if (!isPro) {
+            toast.error('Necesitas el plan PRO para usar plantillas');
+            return;
+        }
+
+        if (!recipientName.trim()) {
+            toast.error('El nombre del destinatario es requerido');
+            return;
+        }
+
+        // Validar campos requeridos
+        for (const field of template?.editableFields || []) {
+            if (field.required && (!fieldValues[field.key] || !fieldValues[field.key].trim())) {
+                toast.error(`El campo "${field.label}" es requerido`);
+                return;
+            }
+        }
+
+        setCreating(true);
+        try {
+            const { data } = await api.templates.createPage(templateId, {
+                values: fieldValues,
+                recipientName: recipientName.trim(),
+                yesButtonText,
+                noButtonText,
+                noButtonEscapes,
+                customSlug: customSlug.trim() || undefined,
+            });
+
+            toast.success('¡Página creada desde plantilla!');
+            const identifier = data.data.customSlug || data.data.shortId;
+            router.push(`/p/${identifier}`);
+        } catch (error: any) {
+            console.error('Error creating page:', error);
+            toast.error(error.response?.data?.message || 'Error al crear la página');
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    if (authLoading || loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
+            </div>
+        );
+    }
+
+    if (!template) return null;
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+            <Header />
+
+            <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
+                {/* Top bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                    <Link href="/templates">
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Button>
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                            {template.name}
+                            {template.isPro && (
+                                <span className="px-2 py-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                                    <Crown className="w-3 h-3" />
+                                    PRO
+                                </span>
+                            )}
+                        </h1>
+                        <p className="text-gray-500 text-sm mt-0.5">{template.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <Users className="w-3.5 h-3.5" />
+                        {template.usageCount} usos
+                    </div>
+                </div>
+
+                {/* Main layout: 2 columns */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* LEFT: Preview */}
+                    <div className="order-2 lg:order-1">
+                        <Card className="overflow-hidden sticky top-24">
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Eye className="w-4 h-4 text-gray-500" />
+                                        Vista Previa
+                                    </CardTitle>
+                                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                                        <button
+                                            onClick={() => setPreviewDevice('desktop')}
+                                            className={`p-1.5 rounded-md transition-all ${previewDevice === 'desktop'
+                                                ? 'bg-white shadow-sm text-pink-600'
+                                                : 'text-gray-400 hover:text-gray-600'
+                                                }`}
+                                        >
+                                            <Monitor className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => setPreviewDevice('mobile')}
+                                            className={`p-1.5 rounded-md transition-all ${previewDevice === 'mobile'
+                                                ? 'bg-white shadow-sm text-pink-600'
+                                                : 'text-gray-400 hover:text-gray-600'
+                                                }`}
+                                        >
+                                            <Smartphone className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className={`bg-gray-200 flex justify-center ${previewDevice === 'mobile' ? 'p-4' : ''
+                                    }`}>
+                                    <div
+                                        className={`bg-white overflow-hidden transition-all duration-300 ${previewDevice === 'mobile'
+                                            ? 'w-[375px] rounded-[2rem] border-[8px] border-gray-800 shadow-xl'
+                                            : 'w-full'
+                                            }`}
+                                    >
+                                        <iframe
+                                            ref={iframeRef}
+                                            title="Template Preview"
+                                            className="w-full border-0"
+                                            style={{
+                                                height: previewDevice === 'mobile' ? '667px' : '600px',
+                                            }}
+                                            sandbox="allow-same-origin allow-scripts"
+                                        />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* RIGHT: Editor / Info */}
+                    <div className="order-1 lg:order-2 space-y-5">
+                        {/* Default view (not editing) */}
+                        {!isEditing ? (
+                            <>
+                                {/* Template info card */}
+                                <Card>
+                                    <CardContent className="p-5 space-y-4">
+                                        <img
+                                            src={template.previewImageUrl}
+                                            alt={template.name}
+                                            className="w-full aspect-video object-cover rounded-xl"
+                                        />
+
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 mb-1">
+                                                {template.name}
+                                            </h2>
+                                            <p className="text-gray-500 text-sm">
+                                                {template.description}
+                                            </p>
+                                        </div>
+
+                                        {/* Tags */}
+                                        {template.tags.length > 0 && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {template.tags.map((tag) => (
+                                                    <span
+                                                        key={tag}
+                                                        className="px-2.5 py-1 bg-pink-50 text-pink-600 text-xs rounded-full font-medium"
+                                                    >
+                                                        #{tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Editable fields summary */}
+                                        <div className="p-3 bg-gray-50 rounded-xl">
+                                            <p className="text-xs font-medium text-gray-500 mb-2">
+                                                Campos personalizables:
+                                            </p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {template.editableFields
+                                                    .sort((a, b) => a.order - b.order)
+                                                    .map((field) => (
+                                                        <span
+                                                            key={field.key}
+                                                            className="px-2 py-0.5 bg-white border border-gray-200 text-gray-600 text-xs rounded-md"
+                                                        >
+                                                            {field.label}
+                                                            {field.required && (
+                                                                <span className="text-red-400 ml-0.5">*</span>
+                                                            )}
+                                                        </span>
+                                                    ))}
+                                            </div>
+                                        </div>
+
+                                        {/* CTA */}
+                                        {isPro ? (
+                                            <Button
+                                                onClick={() => setIsEditing(true)}
+                                                variant="gradient"
+                                                className="w-full gap-2"
+                                                size="lg"
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                                Personalizar y Crear
+                                            </Button>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-xl text-center">
+                                                    <Lock className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                                                    <p className="font-semibold text-gray-900 mb-1">
+                                                        Función exclusiva PRO
+                                                    </p>
+                                                    <p className="text-sm text-gray-600 mb-3">
+                                                        Actualiza a PRO para personalizar plantillas y crear páginas con diseños profesionales
+                                                    </p>
+                                                    <Link href="/upgrade">
+                                                        <Button className="gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white">
+                                                            <Crown className="w-4 h-4" />
+                                                            Obtener PRO — $1.75 USD
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </>
+                        ) : (
+                            /* Editing mode */
+                            <>
+                                <Card>
+                                    <CardHeader>
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                <Pencil className="w-5 h-5 text-pink-600" />
+                                                Personalizar
+                                            </CardTitle>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setIsEditing(false)}
+                                                className="text-gray-500"
+                                            >
+                                                Cancelar
+                                            </Button>
+                                        </div>
+                                        <CardDescription>
+                                            Edita los campos y ve los cambios en la vista previa en tiempo real
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {/* Template editable fields */}
+                                        {template.editableFields
+                                            .sort((a, b) => a.order - b.order)
+                                            .map((field) => (
+                                                <div key={field.key}>
+                                                    {field.type === 'textarea' ? (
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                                                {field.label}
+                                                                {field.required && (
+                                                                    <span className="text-red-500 ml-1">*</span>
+                                                                )}
+                                                            </label>
+                                                            <textarea
+                                                                value={fieldValues[field.key] || ''}
+                                                                onChange={(e) =>
+                                                                    updateField(field.key, e.target.value)
+                                                                }
+                                                                placeholder={field.placeholder}
+                                                                maxLength={field.maxLength}
+                                                                className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all min-h-[80px] resize-none"
+                                                            />
+                                                            <p className="text-xs text-gray-400 mt-1 text-right">
+                                                                {(fieldValues[field.key] || '').length}/
+                                                                {field.maxLength}
+                                                            </p>
+                                                        </div>
+                                                    ) : field.type === 'color' ? (
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                                                {field.label}
+                                                            </label>
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="color"
+                                                                    value={fieldValues[field.key] || '#000000'}
+                                                                    onChange={(e) =>
+                                                                        updateField(field.key, e.target.value)
+                                                                    }
+                                                                    className="w-10 h-10 rounded-lg border cursor-pointer"
+                                                                />
+                                                                <input
+                                                                    type="text"
+                                                                    value={fieldValues[field.key] || ''}
+                                                                    onChange={(e) =>
+                                                                        updateField(field.key, e.target.value)
+                                                                    }
+                                                                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono"
+                                                                    placeholder="#ff69b4"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <Input
+                                                            label={`${field.label}${field.required ? ' *' : ''}`}
+                                                            value={fieldValues[field.key] || ''}
+                                                            onChange={(e) =>
+                                                                updateField(field.key, e.target.value)
+                                                            }
+                                                            placeholder={field.placeholder}
+                                                            maxLength={field.maxLength}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
+                                    </CardContent>
+                                </Card>
+
+                                {/* Page settings */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <Heart className="w-4 h-4 text-pink-600" />
+                                            Configuración de la página
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <Input
+                                            label="Nombre del destinatario *"
+                                            value={recipientName}
+                                            onChange={(e) => setRecipientName(e.target.value)}
+                                            placeholder="María"
+                                            maxLength={100}
+                                        />
+
+                                        {isPro && (
+                                            <div className="border-t pt-4">
+                                                <CustomSlugInput
+                                                    value={customSlug}
+                                                    onChange={setCustomSlug}
+                                                    isPro={isPro}
+                                                    onUpgrade={() => { }}
+                                                    recipientName={recipientName}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <Button
+                                            onClick={handleCreatePage}
+                                            loading={creating}
+                                            variant="gradient"
+                                            className="w-full gap-2"
+                                            size="lg"
+                                        >
+                                            <Rocket className="w-5 h-5" />
+                                            Crear Página con esta Plantilla
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
+}

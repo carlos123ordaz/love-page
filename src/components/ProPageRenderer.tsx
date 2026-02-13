@@ -41,10 +41,33 @@ export function ProPageRenderer({ html, css, noButtonEscapes, onYesClick, onNoCl
         styleElement.textContent = css;
         containerRef.current.appendChild(styleElement);
 
-        // Inyectar HTML
+        // Inyectar HTML (sin scripts primero)
         const contentDiv = document.createElement('div');
         contentDiv.innerHTML = html;
         containerRef.current.appendChild(contentDiv);
+
+        // ============================================
+        // EJECUTAR SCRIPTS MANUALMENTE
+        // innerHTML NO ejecuta <script> tags por seguridad del navegador.
+        // Necesitamos extraerlos y re-crearlos como elementos nuevos.
+        // ============================================
+        const scripts = contentDiv.querySelectorAll('script');
+        scripts.forEach((oldScript) => {
+            const newScript = document.createElement('script');
+
+            // Copiar atributos (src, type, etc.)
+            Array.from(oldScript.attributes).forEach((attr) => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+
+            // Copiar contenido inline del script
+            if (oldScript.textContent) {
+                newScript.textContent = oldScript.textContent;
+            }
+
+            // Reemplazar el viejo script con el nuevo (esto lo ejecuta)
+            oldScript.parentNode?.replaceChild(newScript, oldScript);
+        });
 
         // Agregar event listeners a los botones
         const yesButton = containerRef.current.querySelector('#yes-button');
