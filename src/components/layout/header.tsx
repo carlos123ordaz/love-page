@@ -141,6 +141,13 @@ export function Header() {
                             Crear Nueva
                         </Link>
                         <Link
+                            href="/templates"
+                            className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            Plantillas
+                        </Link>
+                        <Link
                             href="/contact"
                             className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
                             onClick={() => setMobileMenuOpen(false)}
