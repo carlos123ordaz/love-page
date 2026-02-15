@@ -71,7 +71,6 @@ export const api = {
         delete: (pageId: string) => apiClient.delete(`/pages/${pageId}`),
         toggleStatus: (pageId: string) => apiClient.patch(`/pages/${pageId}/toggle`),
         getStats: () => apiClient.get('/pages/stats'),
-        // 🆕 NUEVO: Verificar disponibilidad de slug
         checkSlug: (slug: string) => apiClient.get(`/pages/check-slug/${slug}`),
     },
 
@@ -113,6 +112,12 @@ export const api = {
         // Renderizar plantilla con valores custom (preview)
         render: (templateId: string, values: Record<string, string>) =>
             apiClient.post(`/templates/${templateId}/render`, { values }),
+
+        // 🆕 Subir imagen para un campo de plantilla (requiere PRO)
+        uploadImage: (templateId: string, formData: FormData) =>
+            apiClient.post(`/templates/${templateId}/upload-image`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            }),
 
         // Crear página desde plantilla (PRO)
         createPage: (templateId: string, data: {

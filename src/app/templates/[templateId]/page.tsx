@@ -22,10 +22,20 @@ import {
     Monitor,
     Smartphone,
     CheckCircle2,
+    Image as ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { CustomSlugInput } from '@/components/CustomSlugInput';
+import { TemplateImageUpload } from '@/components/TemplateImageUpload';
+
+interface ImageConfig {
+    maxSizeMB?: number;
+    aspectRatio?: string | null;
+    minWidth?: number;
+    minHeight?: number;
+    fallbackImageUrl?: string | null;
+}
 
 interface EditableField {
     key: string;
@@ -36,6 +46,7 @@ interface EditableField {
     maxLength: number;
     required: boolean;
     order: number;
+    imageConfig?: ImageConfig | null;
 }
 
 interface TemplateData {
@@ -50,6 +61,25 @@ interface TemplateData {
     isPro: boolean;
     tags: string[];
     usageCount: number;
+}
+
+/**
+ * Sanitizar URL para uso seguro en src="" dentro del preview del iframe.
+ * Replica la lógica del backend para mantener consistencia.
+ */
+function sanitizeUrl(url: string): string {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+            return parsed.href.replace(/"/g, '%22');
+        }
+        return '';
+    } catch {
+        return '';
+    }
 }
 
 export default function TemplateDetailPage() {
@@ -128,16 +158,37 @@ export default function TemplateDetailPage() {
             const value = fieldValues[field.key] || field.defaultValue || '';
             const placeholder = `{{${field.key}}}`;
 
-            // Escapar HTML para seguridad
-            const escaped = value
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
+            let processedValue: string;
 
-            renderedHtml = renderedHtml.replaceAll(placeholder, escaped);
-            renderedCss = renderedCss.replaceAll(placeholder, escaped);
+            switch (field.type) {
+                case 'image_url':
+                    // Para imágenes: sanitizar URL, no escapar como HTML
+                    processedValue = sanitizeUrl(value);
+                    if (!processedValue && field.imageConfig?.fallbackImageUrl) {
+                        processedValue = sanitizeUrl(field.imageConfig.fallbackImageUrl);
+                    }
+                    break;
+
+                case 'color':
+                    // Para colores: validar formato hex
+                    processedValue = /^#[0-9a-fA-F]{3,8}$/.test(value)
+                        ? value
+                        : field.defaultValue || '#000000';
+                    break;
+
+                default:
+                    // Para texto: escapar HTML para seguridad
+                    processedValue = value
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                    break;
+            }
+
+            renderedHtml = renderedHtml.replaceAll(placeholder, processedValue);
+            renderedCss = renderedCss.replaceAll(placeholder, processedValue);
         }
 
         const fullHtml = `
@@ -188,9 +239,20 @@ export default function TemplateDetailPage() {
 
         // Validar campos requeridos
         for (const field of template?.editableFields || []) {
-            if (field.required && (!fieldValues[field.key] || !fieldValues[field.key].trim())) {
-                toast.error(`El campo "${field.label}" es requerido`);
-                return;
+            if (field.required) {
+                const value = fieldValues[field.key];
+                if (field.type === 'image_url') {
+                    // Para imágenes requeridas: verificar que hay una URL
+                    if (!value || !value.trim()) {
+                        toast.error(`La imagen "${field.label}" es requerida`);
+                        return;
+                    }
+                } else {
+                    if (!value || !value.trim()) {
+                        toast.error(`El campo "${field.label}" es requerido`);
+                        return;
+                    }
+                }
             }
         }
 
@@ -216,6 +278,22 @@ export default function TemplateDetailPage() {
         }
     };
 
+    /**
+     * Contar campos por tipo para mostrar resumen
+     */
+    const getFieldTypeCounts = () => {
+        if (!template) return { text: 0, image: 0, color: 0 };
+        return template.editableFields.reduce(
+            (acc, f) => {
+                if (f.type === 'image_url') acc.image++;
+                else if (f.type === 'color') acc.color++;
+                else acc.text++;
+                return acc;
+            },
+            { text: 0, image: 0, color: 0 }
+        );
+    };
+
     if (authLoading || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -225,6 +303,8 @@ export default function TemplateDetailPage() {
     }
 
     if (!template) return null;
+
+    const fieldCounts = getFieldTypeCounts();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
@@ -271,8 +351,8 @@ export default function TemplateDetailPage() {
                                         <button
                                             onClick={() => setPreviewDevice('desktop')}
                                             className={`p-1.5 rounded-md transition-all ${previewDevice === 'desktop'
-                                                ? 'bg-white shadow-sm text-pink-600'
-                                                : 'text-gray-400 hover:text-gray-600'
+                                                    ? 'bg-white shadow-sm text-pink-600'
+                                                    : 'text-gray-400 hover:text-gray-600'
                                                 }`}
                                         >
                                             <Monitor className="w-4 h-4" />
@@ -280,8 +360,8 @@ export default function TemplateDetailPage() {
                                         <button
                                             onClick={() => setPreviewDevice('mobile')}
                                             className={`p-1.5 rounded-md transition-all ${previewDevice === 'mobile'
-                                                ? 'bg-white shadow-sm text-pink-600'
-                                                : 'text-gray-400 hover:text-gray-600'
+                                                    ? 'bg-white shadow-sm text-pink-600'
+                                                    : 'text-gray-400 hover:text-gray-600'
                                                 }`}
                                         >
                                             <Smartphone className="w-4 h-4" />
@@ -290,12 +370,14 @@ export default function TemplateDetailPage() {
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className={`bg-gray-200 flex justify-center ${previewDevice === 'mobile' ? 'p-4' : ''
-                                    }`}>
+                                <div
+                                    className={`bg-gray-200 flex justify-center ${previewDevice === 'mobile' ? 'p-4' : ''
+                                        }`}
+                                >
                                     <div
                                         className={`bg-white overflow-hidden transition-all duration-300 ${previewDevice === 'mobile'
-                                            ? 'w-[375px] rounded-[2rem] border-[8px] border-gray-800 shadow-xl'
-                                            : 'w-full'
+                                                ? 'w-[375px] rounded-[2rem] border-[8px] border-gray-800 shadow-xl'
+                                                : 'w-full'
                                             }`}
                                     >
                                         <iframe
@@ -303,7 +385,10 @@ export default function TemplateDetailPage() {
                                             title="Template Preview"
                                             className="w-full border-0"
                                             style={{
-                                                height: previewDevice === 'mobile' ? '667px' : '600px',
+                                                height:
+                                                    previewDevice === 'mobile'
+                                                        ? '667px'
+                                                        : '600px',
                                             }}
                                             sandbox="allow-same-origin allow-scripts"
                                         />
@@ -361,15 +446,34 @@ export default function TemplateDetailPage() {
                                                     .map((field) => (
                                                         <span
                                                             key={field.key}
-                                                            className="px-2 py-0.5 bg-white border border-gray-200 text-gray-600 text-xs rounded-md"
+                                                            className={`px-2 py-0.5 border text-xs rounded-md flex items-center gap-1 ${field.type === 'image_url'
+                                                                    ? 'bg-purple-50 border-purple-200 text-purple-600'
+                                                                    : field.type === 'color'
+                                                                        ? 'bg-blue-50 border-blue-200 text-blue-600'
+                                                                        : 'bg-white border-gray-200 text-gray-600'
+                                                                }`}
                                                         >
+                                                            {field.type === 'image_url' && (
+                                                                <ImageIcon className="w-3 h-3" />
+                                                            )}
                                                             {field.label}
                                                             {field.required && (
-                                                                <span className="text-red-400 ml-0.5">*</span>
+                                                                <span className="text-red-400 ml-0.5">
+                                                                    *
+                                                                </span>
                                                             )}
                                                         </span>
                                                     ))}
                                             </div>
+                                            {/* Resumen de tipos */}
+                                            {fieldCounts.image > 0 && (
+                                                <p className="text-xs text-purple-500 mt-2 flex items-center gap-1">
+                                                    <ImageIcon className="w-3 h-3" />
+                                                    {fieldCounts.image} campo
+                                                    {fieldCounts.image > 1 ? 's' : ''} de
+                                                    imagen — sube tus propias fotos
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* CTA */}
@@ -391,7 +495,9 @@ export default function TemplateDetailPage() {
                                                         Función exclusiva PRO
                                                     </p>
                                                     <p className="text-sm text-gray-600 mb-3">
-                                                        Actualiza a PRO para personalizar plantillas y crear páginas con diseños profesionales
+                                                        Actualiza a PRO para personalizar
+                                                        plantillas y crear páginas con diseños
+                                                        profesionales
                                                     </p>
                                                     <Link href="/upgrade">
                                                         <Button className="gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white">
@@ -425,7 +531,8 @@ export default function TemplateDetailPage() {
                                             </Button>
                                         </div>
                                         <CardDescription>
-                                            Edita los campos y ve los cambios en la vista previa en tiempo real
+                                            Edita los campos y ve los cambios en la vista
+                                            previa en tiempo real
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
@@ -434,64 +541,117 @@ export default function TemplateDetailPage() {
                                             .sort((a, b) => a.order - b.order)
                                             .map((field) => (
                                                 <div key={field.key}>
-                                                    {field.type === 'textarea' ? (
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                                                {field.label}
-                                                                {field.required && (
-                                                                    <span className="text-red-500 ml-1">*</span>
-                                                                )}
-                                                            </label>
-                                                            <textarea
-                                                                value={fieldValues[field.key] || ''}
-                                                                onChange={(e) =>
-                                                                    updateField(field.key, e.target.value)
-                                                                }
-                                                                placeholder={field.placeholder}
-                                                                maxLength={field.maxLength}
-                                                                className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all min-h-[80px] resize-none"
-                                                            />
-                                                            <p className="text-xs text-gray-400 mt-1 text-right">
-                                                                {(fieldValues[field.key] || '').length}/
-                                                                {field.maxLength}
-                                                            </p>
-                                                        </div>
-                                                    ) : field.type === 'color' ? (
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                                                {field.label}
-                                                            </label>
-                                                            <div className="flex items-center gap-2">
-                                                                <input
-                                                                    type="color"
-                                                                    value={fieldValues[field.key] || '#000000'}
-                                                                    onChange={(e) =>
-                                                                        updateField(field.key, e.target.value)
-                                                                    }
-                                                                    className="w-10 h-10 rounded-lg border cursor-pointer"
-                                                                />
-                                                                <input
-                                                                    type="text"
-                                                                    value={fieldValues[field.key] || ''}
-                                                                    onChange={(e) =>
-                                                                        updateField(field.key, e.target.value)
-                                                                    }
-                                                                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono"
-                                                                    placeholder="#ff69b4"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <Input
-                                                            label={`${field.label}${field.required ? ' *' : ''}`}
-                                                            value={fieldValues[field.key] || ''}
-                                                            onChange={(e) =>
-                                                                updateField(field.key, e.target.value)
+                                                    {/* === IMAGE_URL FIELD === */}
+                                                    {field.type === 'image_url' ? (
+                                                        <TemplateImageUpload
+                                                            templateId={templateId}
+                                                            fieldKey={field.key}
+                                                            label={field.label}
+                                                            required={field.required}
+                                                            value={
+                                                                fieldValues[field.key] || ''
                                                             }
-                                                            placeholder={field.placeholder}
-                                                            maxLength={field.maxLength}
+                                                            onChange={(url) =>
+                                                                updateField(field.key, url)
+                                                            }
+                                                            imageConfig={
+                                                                field.imageConfig || null
+                                                            }
                                                         />
-                                                    )}
+                                                    ) : /* === TEXTAREA FIELD === */
+                                                        field.type === 'textarea' ? (
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                                                    {field.label}
+                                                                    {field.required && (
+                                                                        <span className="text-red-500 ml-1">
+                                                                            *
+                                                                        </span>
+                                                                    )}
+                                                                </label>
+                                                                <textarea
+                                                                    value={
+                                                                        fieldValues[field.key] ||
+                                                                        ''
+                                                                    }
+                                                                    onChange={(e) =>
+                                                                        updateField(
+                                                                            field.key,
+                                                                            e.target.value
+                                                                        )
+                                                                    }
+                                                                    placeholder={
+                                                                        field.placeholder
+                                                                    }
+                                                                    maxLength={field.maxLength}
+                                                                    className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all min-h-[80px] resize-none"
+                                                                />
+                                                                <p className="text-xs text-gray-400 mt-1 text-right">
+                                                                    {(
+                                                                        fieldValues[field.key] ||
+                                                                        ''
+                                                                    ).length}
+                                                                    /{field.maxLength}
+                                                                </p>
+                                                            </div>
+                                                        ) : /* === COLOR FIELD === */
+                                                            field.type === 'color' ? (
+                                                                <div>
+                                                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                                                        {field.label}
+                                                                    </label>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <input
+                                                                            type="color"
+                                                                            value={
+                                                                                fieldValues[
+                                                                                field.key
+                                                                                ] || '#000000'
+                                                                            }
+                                                                            onChange={(e) =>
+                                                                                updateField(
+                                                                                    field.key,
+                                                                                    e.target.value
+                                                                                )
+                                                                            }
+                                                                            className="w-10 h-10 rounded-lg border cursor-pointer"
+                                                                        />
+                                                                        <input
+                                                                            type="text"
+                                                                            value={
+                                                                                fieldValues[
+                                                                                field.key
+                                                                                ] || ''
+                                                                            }
+                                                                            onChange={(e) =>
+                                                                                updateField(
+                                                                                    field.key,
+                                                                                    e.target.value
+                                                                                )
+                                                                            }
+                                                                            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono"
+                                                                            placeholder="#ff69b4"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                /* === TEXT FIELD (default) === */
+                                                                <Input
+                                                                    label={`${field.label}${field.required ? ' *' : ''
+                                                                        }`}
+                                                                    value={
+                                                                        fieldValues[field.key] || ''
+                                                                    }
+                                                                    onChange={(e) =>
+                                                                        updateField(
+                                                                            field.key,
+                                                                            e.target.value
+                                                                        )
+                                                                    }
+                                                                    placeholder={field.placeholder}
+                                                                    maxLength={field.maxLength}
+                                                                />
+                                                            )}
                                                 </div>
                                             ))}
                                     </CardContent>
@@ -509,7 +669,9 @@ export default function TemplateDetailPage() {
                                         <Input
                                             label="Nombre del destinatario *"
                                             value={recipientName}
-                                            onChange={(e) => setRecipientName(e.target.value)}
+                                            onChange={(e) =>
+                                                setRecipientName(e.target.value)
+                                            }
                                             placeholder="María"
                                             maxLength={100}
                                         />

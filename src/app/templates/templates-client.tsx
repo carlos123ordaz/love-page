@@ -98,35 +98,7 @@ export default function TemplatesPage() {
             <Header />
 
             <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
-                {/* Hero Section */}
-                {/* <div className="text-center mb-8 sm:mb-10">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl mb-4 shadow-lg shadow-pink-500/20">
-                        <LayoutTemplate className="w-8 h-8 text-white" />
-                    </div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                        Plantillas
-                    </h1>
-                     <p className="text-gray-600 max-w-lg mx-auto">
-                        Elige un diseño profesional, personaliza el contenido y compártelo.
-                        Cada plantilla tiene un estilo único creado a mano.
-                    </p> 
-                </div> */}
 
-                {/* Search bar */}
-                {/* <div className="max-w-md mx-auto mb-6">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar plantillas..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
-                        />
-                    </div>
-                </div> */}
-
-                {/* Category filters */}
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide justify-start sm:justify-center">
                     {CATEGORIES.map((cat) => (
                         <button

@@ -461,7 +461,7 @@ export default function CreatePageEnhanced() {
         (acceptedFiles: File[]) => {
             const file = acceptedFiles[0];
             if (file) {
-                if (file.size > 5 * 1024 * 1024) {
+                if (file.size > 15 * 1024 * 1024) {
                     toast.error('La imagen no debe superar 5MB');
                     return;
                 }
@@ -486,7 +486,7 @@ export default function CreatePageEnhanced() {
 
             const file = acceptedFiles[0];
             if (file) {
-                if (file.size > 5 * 1024 * 1024) {
+                if (file.size > 15 * 1024 * 1024) {
                     toast.error('La imagen no debe superar 5MB');
                     return;
                 }
@@ -500,7 +500,7 @@ export default function CreatePageEnhanced() {
     const onDropReference = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
         if (file) {
-            if (file.size > 5 * 1024 * 1024) {
+            if (file.size > 15 * 1024 * 1024) {
                 toast.error('La imagen no debe superar 5MB');
                 return;
             }
