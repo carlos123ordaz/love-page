@@ -52,7 +52,15 @@ export function TemplateImageUpload({
 
     const handleFileSelect = async (file: File) => {
         // Validar tipo
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        const allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/heic',
+            'image/heif'
+        ];
+
         if (!allowedTypes.includes(file.type)) {
             toast.error('Solo se permiten imágenes JPG, PNG, GIF y WebP');
             return;
