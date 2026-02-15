@@ -20,6 +20,7 @@ import {
     MoreVertical,
     Link2,
     Gift,
+    LayoutTemplate,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -178,6 +179,13 @@ export default function DashboardPage() {
                                 </Button>
                             </Link>
                         )}
+
+                        <Link href="/templates" className="w-full sm:w-auto">
+                            <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto border-pink-200 text-pink-700 hover:bg-pink-50">
+                                <LayoutTemplate className="w-5 h-5" />
+                                Ver Plantillas
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 
@@ -253,12 +261,20 @@ export default function DashboardPage() {
                                 <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 px-4">
                                     Crea tu primera página personalizada para una ocasión especial
                                 </p>
-                                <Link href="/create">
-                                    <Button variant="gradient" size="lg" className="gap-2">
-                                        <Plus className="w-5 h-5" />
-                                        Crear Mi Primera Página
-                                    </Button>
-                                </Link>
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                                    <Link href="/create">
+                                        <Button variant="gradient" size="lg" className="gap-2">
+                                            <Plus className="w-5 h-5" />
+                                            Crear Mi Primera Página
+                                        </Button>
+                                    </Link>
+                                    <Link href="/templates">
+                                        <Button variant="outline" size="lg" className="gap-2 border-pink-200 text-pink-700 hover:bg-pink-50">
+                                            <LayoutTemplate className="w-5 h-5" />
+                                            Usar una Plantilla
+                                        </Button>
+                                    </Link>
+                                </div>
                             </CardContent>
                         </Card>
                     ) : (
