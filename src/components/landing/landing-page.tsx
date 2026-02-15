@@ -335,7 +335,7 @@ function DemoBuilder() {
                 </label>
 
                 {/* CTA */}
-                <div className="pt-2">
+                <div className="pt-2 text-center">
                     <p className="text-xs text-gray-500 text-center mb-3">
                         ¿Te gusta cómo se ve? Crea tu página real gratis 👇
                     </p>
@@ -536,7 +536,7 @@ export default function LandingPage() {
                     <div className="flex items-center justify-center gap-6 text-sm text-gray-500 animate-fadeInUp animation-delay-600">
                         <span className="flex items-center gap-1.5">
                             <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
-                            1 página gratis
+                            Páginas ilimitadas
                         </span>
                         <span className="w-1 h-1 rounded-full bg-gray-300" />
                         <span className="flex items-center gap-1.5">
