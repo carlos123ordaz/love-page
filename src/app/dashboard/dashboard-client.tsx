@@ -19,17 +19,15 @@ import {
     Sparkles,
     MoreVertical,
     Link2,
-    Gift,
     LayoutTemplate,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { getTimeAgo, copyToClipboard } from '@/lib/utils';
-import { RewardedAdBanner } from '@/components/ads/RewardedAdBanner';
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { user, setUser, loading: authLoading } = useAuthStore();
+    const { user, loading: authLoading } = useAuthStore();
     const { pages, setPages, removePage, updatePage } = usePageStore();
     const [loadingPages, setLoadingPages] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -64,17 +62,6 @@ export default function DashboardPage() {
             toast.error('Error al cargar páginas');
         } finally {
             setLoadingPages(false);
-        }
-    };
-
-    // Refrescar datos del usuario después de ganar recompensa
-    const refreshUser = async () => {
-        try {
-            const { data } = await api.auth.getMe();
-            setUser(data.data);
-            await loadPages();
-        } catch (error) {
-            console.error('Error refreshing user:', error);
         }
     };
 
@@ -118,10 +105,6 @@ export default function DashboardPage() {
     const totalViews = pages.reduce((sum, page) => sum + page.views, 0);
     const totalResponses = pages.reduce((sum, page) => sum + page.totalResponses, 0);
 
-    // Calcular páginas disponibles para usuarios free
-    const totalAllowed = user.isPro ? Infinity : 1 + (user.bonusPages || 0);
-    const pagesRemaining = user.isPro ? Infinity : Math.max(0, totalAllowed - user.pagesCreated);
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
             <Header />
@@ -137,22 +120,11 @@ export default function DashboardPage() {
                             {user.isPro ? (
                                 <span className="flex items-center gap-2">
                                     <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                                    Usuario PRO - Páginas ilimitadas
+                                    Usuario PRO - Features premium desbloqueadas
                                 </span>
                             ) : (
-                                <span className="flex items-center gap-2 flex-wrap">
-                                    Has creado {user.pagesCreated} de {totalAllowed} página{totalAllowed !== 1 ? 's' : ''}
-                                    {(user.bonusPages || 0) > 0 && (
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
-                                            <Gift className="w-3 h-3" />
-                                            +{user.bonusPages} bonus
-                                        </span>
-                                    )}
-                                    {pagesRemaining > 0 && (
-                                        <span className="text-green-600 font-medium">
-                                            — {pagesRemaining} disponible{pagesRemaining !== 1 ? 's' : ''}
-                                        </span>
-                                    )}
+                                <span>
+                                    Has creado {user.pagesCreated} página{user.pagesCreated !== 1 ? 's' : ''}
                                 </span>
                             )}
                         </p>
@@ -160,25 +132,12 @@ export default function DashboardPage() {
 
                     {/* Botones de acción */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                        {/* Banner de recompensa cuando NO puede crear páginas */}
-                        {!user.isPro && !user.canCreatePage && (
-                            <div className="w-full">
-                                <RewardedAdBanner
-                                    context="dashboard"
-                                    compact={true}
-                                    onRewardEarned={refreshUser}
-                                />
-                            </div>
-                        )}
-
-                        {user.canCreatePage && (
-                            <Link href="/create" className="w-full sm:w-auto">
-                                <Button variant="gradient" size="lg" className="gap-2 w-full sm:w-auto">
-                                    <Plus className="w-5 h-5" />
-                                    Crear Página
-                                </Button>
-                            </Link>
-                        )}
+                        <Link href="/create" className="w-full sm:w-auto">
+                            <Button variant="gradient" size="lg" className="gap-2 w-full sm:w-auto">
+                                <Plus className="w-5 h-5" />
+                                Crear Página
+                            </Button>
+                        </Link>
 
                         <Link href="/templates" className="w-full sm:w-auto">
                             <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto border-pink-200 text-pink-700 hover:bg-pink-50">
@@ -186,6 +145,15 @@ export default function DashboardPage() {
                                 Ver Plantillas
                             </Button>
                         </Link>
+
+                        {!user.isPro && (
+                            <Link href="/upgrade" className="w-full sm:w-auto">
+                                <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto border-amber-200 text-amber-700 hover:bg-amber-50">
+                                    <Crown className="w-5 h-5" />
+                                    Desbloquear PRO
+                                </Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -203,7 +171,7 @@ export default function DashboardPage() {
                                 {user.pagesCreated}
                             </div>
                             <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:block">
-                                {user.isPro ? 'Creadas' : `de ${totalAllowed} disponibles`}
+                                Creadas
                             </p>
                         </CardContent>
                     </Card>
@@ -442,7 +410,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* FAB para crear página en móvil */}
-                {user.canCreatePage && pages.length > 0 && (
+                {pages.length > 0 && (
                     <Link href="/create" className="fixed bottom-6 right-6 sm:hidden z-40">
                         <Button
                             variant="gradient"

@@ -398,13 +398,6 @@ export default function CreatePageEnhanced() {
         }
     }, [user, authLoading, router]);
 
-    useEffect(() => {
-        if (user && !user.canCreatePage && !user.isPro) {
-            toast.error('Has alcanzado el límite de páginas gratuitas');
-            setShowUpgradeModal(true);
-        }
-    }, [user, user?.canCreatePage, user?.isPro]);
-
     const updateForm = (updates: Partial<PageFormData>) => {
         setFormData((prev) => ({ ...prev, ...updates }));
     };

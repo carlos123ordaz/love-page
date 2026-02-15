@@ -7,10 +7,9 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
-import { Crown, Check, Sparkles, Zap, Heart, Infinity, CreditCard, LinkIcon } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Heart, CreditCard, LinkIcon, Wand2, Music, Palette } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// Logos (puedes usar imágenes reales o iconos)
 const MercadoPagoLogo = () => (
     <div className="flex items-center gap-2 text-blue-600 font-bold">
         <CreditCard className="w-5 h-5" />
@@ -53,23 +52,15 @@ export default function UpgradePage() {
         try {
             if (selectedProvider === 'mercadopago') {
                 const { data } = await api.payments.createMercadoPagoPayment();
-
                 const checkoutUrl = data.data.initPoint;
                 const newWindow = window.open(checkoutUrl, '_blank');
-                if (!newWindow) {
-                    window.location.href = checkoutUrl;
-                }
+                if (!newWindow) window.location.href = checkoutUrl;
             } else {
-                // PayPal
                 const { data } = await api.payments.createPayPalOrder();
-
                 const approvalUrl = data.data.approvalUrl;
                 const newWindow = window.open(approvalUrl, '_blank');
-                if (!newWindow) {
-                    window.location.href = approvalUrl;
-                }
+                if (!newWindow) window.location.href = approvalUrl;
             }
-
             setLoading(false);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Error al procesar el pago');
@@ -99,10 +90,10 @@ export default function UpgradePage() {
                             <Crown className="w-10 h-10 text-white" />
                         </div>
                         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                            Upgrade a Love Pages PRO
+                            Desbloquea Features PRO
                         </h1>
                         <p className="text-xl text-gray-600">
-                            Desbloquea el poder de la IA y crea páginas ilimitadas
+                            Lleva tus páginas al siguiente nivel con herramientas premium
                         </p>
                     </div>
 
@@ -118,7 +109,7 @@ export default function UpgradePage() {
                         <CardHeader className="text-center pb-4">
                             <div className="inline-flex items-center gap-2 mb-4">
                                 <Crown className="w-8 h-8 text-amber-500" />
-                                <CardTitle className="text-3xl">Plan PRO</CardTitle>
+                                <CardTitle className="text-3xl">Features PRO</CardTitle>
                             </div>
                             <div className="mb-4">
                                 <span className="text-5xl font-bold text-gray-900">$1.75</span>
@@ -138,11 +129,11 @@ export default function UpgradePage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                            <Infinity className="w-5 h-5 text-amber-500" />
-                                            Páginas Ilimitadas
+                                            <Palette className="w-5 h-5 text-amber-500" />
+                                            Temas y Animaciones Premium
                                         </h3>
                                         <p className="text-sm text-gray-600">
-                                            Crea tantas páginas como desees, sin restricciones
+                                            Neón, Aurora, Vintage, confetti, fuegos artificiales, nieve y más
                                         </p>
                                     </div>
                                 </div>
@@ -153,7 +144,7 @@ export default function UpgradePage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                            <Sparkles className="w-5 h-5 text-amber-500" />
+                                            <Wand2 className="w-5 h-5 text-amber-500" />
                                             Diseño con IA
                                         </h3>
                                         <p className="text-sm text-gray-600">
@@ -168,37 +159,8 @@ export default function UpgradePage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                            <Zap className="w-5 h-5 text-amber-500" />
-                                            Personalización Total
-                                        </h3>
-                                        <p className="text-sm text-gray-600">
-                                            HTML/CSS generado específicamente para tu estilo
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                                        <Check className="w-4 h-4 text-green-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                            <Heart className="w-5 h-5 text-amber-500" />
-                                            Soporte Prioritario
-                                        </h3>
-                                        <p className="text-sm text-gray-600">
-                                            Atención rápida para usuarios PRO
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                                        <Check className="w-4 h-4 text-green-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <LinkIcon className="w-5 h-5 text-amber-500" />
-                                            Enlace con su nombre 💕
+                                            URL personalizada con su nombre 💕
                                         </h3>
                                         <p className="text-sm text-gray-600">
                                             En lugar de un link aleatorio, será algo como:
@@ -206,12 +168,53 @@ export default function UpgradePage() {
                                         <p className="text-sm font-mono bg-gray-100 px-2 py-1 rounded mt-1 text-pink-600 font-bold">
                                             lovepages.ink/para-maria
                                         </p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Es lo primero que verá cuando abra tu detalle 💖
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                            <Music className="w-5 h-5 text-amber-500" />
+                                            Música de fondo
+                                        </h3>
+                                        <p className="text-sm text-gray-600">
+                                            Piano romántico, guitarra acústica, caja musical y más
                                         </p>
                                     </div>
                                 </div>
 
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                            <Sparkles className="w-5 h-5 text-amber-500" />
+                                            Plantillas premium + Sin marca de agua
+                                        </h3>
+                                        <p className="text-sm text-gray-600">
+                                            Accede a plantillas diseñadas profesionalmente y elimina el "Hecho con Love Pages"
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                            <Zap className="w-5 h-5 text-amber-500" />
+                                            Más stickers e imágenes
+                                        </h3>
+                                        <p className="text-sm text-gray-600">
+                                            Hasta 10 stickers y 5 imágenes decorativas por página
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Payment Method Selection */}
@@ -222,28 +225,17 @@ export default function UpgradePage() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={() => setSelectedProvider('mercadopago')}
-                                        className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'mercadopago'
-                                            ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                                            : 'border-gray-200 hover:border-blue-300'
-                                            }`}
+                                        className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'mercadopago' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'}`}
                                     >
                                         <MercadoPagoLogo />
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            Tarjetas, efectivo y más
-                                        </p>
+                                        <p className="text-xs text-gray-500 mt-2">Tarjetas, efectivo y más</p>
                                     </button>
-
                                     <button
                                         onClick={() => setSelectedProvider('paypal')}
-                                        className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'paypal'
-                                            ? 'border-[#0070ba] bg-blue-50 ring-2 ring-blue-200'
-                                            : 'border-gray-200 hover:border-blue-300'
-                                            }`}
+                                        className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'paypal' ? 'border-[#0070ba] bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'}`}
                                     >
                                         <PayPalLogo />
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            PayPal, tarjetas
-                                        </p>
+                                        <p className="text-xs text-gray-500 mt-2">PayPal, tarjetas</p>
                                     </button>
                                 </div>
                             </div>
@@ -256,9 +248,8 @@ export default function UpgradePage() {
                                     className="w-full h-14 text-lg bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white shadow-lg"
                                 >
                                     <Crown className="w-5 h-5 mr-2" />
-                                    Pagar $1.75 USD
+                                    Desbloquear PRO por $1.75 USD
                                 </Button>
-
                                 <p className="text-center text-sm text-gray-500">
                                     Pago seguro procesado por {selectedProvider === 'mercadopago' ? 'Mercado Pago' : 'PayPal'}
                                 </p>
@@ -276,18 +267,31 @@ export default function UpgradePage() {
                             <CardContent className="space-y-3">
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    1 página máximo
+                                    Páginas ilimitadas
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    4 temas prediseñados
+                                    8 temas básicos
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    Personalización básica
+                                    4 animaciones básicas
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-600">
+                                    <Check className="w-4 h-4" />
+                                    3 stickers, 1 imagen decorativa
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
                                     ✗ Sin diseño con IA
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400">
+                                    ✗ Sin URL personalizada
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400">
+                                    ✗ Sin música de fondo
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400">
+                                    ✗ Incluye marca de agua
                                 </div>
                             </CardContent>
                         </Card>
@@ -299,14 +303,18 @@ export default function UpgradePage() {
                             <CardHeader>
                                 <CardTitle className="text-xl flex items-center gap-2">
                                     <Crown className="w-5 h-5 text-amber-500" />
-                                    Plan PRO
+                                    Features PRO
                                 </CardTitle>
                                 <CardDescription>Desbloquea todo el potencial</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Páginas ilimitadas
+                                    Todo lo del plan gratuito
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                    <Check className="w-4 h-4 text-green-600" />
+                                    Temas y animaciones premium
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
@@ -314,11 +322,23 @@ export default function UpgradePage() {
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Personalización total
+                                    URL personalizada
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Soporte prioritario
+                                    Música de fondo
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                    <Check className="w-4 h-4 text-green-600" />
+                                    10 stickers, 5 imágenes
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                    <Check className="w-4 h-4 text-green-600" />
+                                    Sin marca de agua
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                    <Check className="w-4 h-4 text-green-600" />
+                                    Plantillas premium
                                 </div>
                             </CardContent>
                         </Card>

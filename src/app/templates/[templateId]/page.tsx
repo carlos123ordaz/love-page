@@ -227,11 +227,10 @@ export default function TemplateDetailPage() {
             return;
         }
 
-        if (!isPro) {
-            toast.error('Necesitas el plan PRO para usar plantillas');
+        if (template?.isPro && !isPro) {
+            toast.error('Esta plantilla requiere el plan PRO');
             return;
         }
-
         if (!recipientName.trim()) {
             toast.error('El nombre del destinatario es requerido');
             return;
@@ -351,8 +350,8 @@ export default function TemplateDetailPage() {
                                         <button
                                             onClick={() => setPreviewDevice('desktop')}
                                             className={`p-1.5 rounded-md transition-all ${previewDevice === 'desktop'
-                                                    ? 'bg-white shadow-sm text-pink-600'
-                                                    : 'text-gray-400 hover:text-gray-600'
+                                                ? 'bg-white shadow-sm text-pink-600'
+                                                : 'text-gray-400 hover:text-gray-600'
                                                 }`}
                                         >
                                             <Monitor className="w-4 h-4" />
@@ -360,8 +359,8 @@ export default function TemplateDetailPage() {
                                         <button
                                             onClick={() => setPreviewDevice('mobile')}
                                             className={`p-1.5 rounded-md transition-all ${previewDevice === 'mobile'
-                                                    ? 'bg-white shadow-sm text-pink-600'
-                                                    : 'text-gray-400 hover:text-gray-600'
+                                                ? 'bg-white shadow-sm text-pink-600'
+                                                : 'text-gray-400 hover:text-gray-600'
                                                 }`}
                                         >
                                             <Smartphone className="w-4 h-4" />
@@ -376,8 +375,8 @@ export default function TemplateDetailPage() {
                                 >
                                     <div
                                         className={`bg-white overflow-hidden transition-all duration-300 ${previewDevice === 'mobile'
-                                                ? 'w-[375px] rounded-[2rem] border-[8px] border-gray-800 shadow-xl'
-                                                : 'w-full'
+                                            ? 'w-[375px] rounded-[2rem] border-[8px] border-gray-800 shadow-xl'
+                                            : 'w-full'
                                             }`}
                                     >
                                         <iframe
@@ -447,10 +446,10 @@ export default function TemplateDetailPage() {
                                                         <span
                                                             key={field.key}
                                                             className={`px-2 py-0.5 border text-xs rounded-md flex items-center gap-1 ${field.type === 'image_url'
-                                                                    ? 'bg-purple-50 border-purple-200 text-purple-600'
-                                                                    : field.type === 'color'
-                                                                        ? 'bg-blue-50 border-blue-200 text-blue-600'
-                                                                        : 'bg-white border-gray-200 text-gray-600'
+                                                                ? 'bg-purple-50 border-purple-200 text-purple-600'
+                                                                : field.type === 'color'
+                                                                    ? 'bg-blue-50 border-blue-200 text-blue-600'
+                                                                    : 'bg-white border-gray-200 text-gray-600'
                                                                 }`}
                                                         >
                                                             {field.type === 'image_url' && (
@@ -477,7 +476,7 @@ export default function TemplateDetailPage() {
                                         </div>
 
                                         {/* CTA */}
-                                        {isPro ? (
+                                        {(!template.isPro || isPro) ? (
                                             <Button
                                                 onClick={() => setIsEditing(true)}
                                                 variant="gradient"
@@ -492,12 +491,10 @@ export default function TemplateDetailPage() {
                                                 <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-xl text-center">
                                                     <Lock className="w-8 h-8 text-amber-500 mx-auto mb-2" />
                                                     <p className="font-semibold text-gray-900 mb-1">
-                                                        Función exclusiva PRO
+                                                        Plantilla exclusiva PRO
                                                     </p>
                                                     <p className="text-sm text-gray-600 mb-3">
-                                                        Actualiza a PRO para personalizar
-                                                        plantillas y crear páginas con diseños
-                                                        profesionales
+                                                        Actualiza a PRO para usar plantillas premium
                                                     </p>
                                                     <Link href="/upgrade">
                                                         <Button className="gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white">
