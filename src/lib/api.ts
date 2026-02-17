@@ -91,6 +91,7 @@ export const api = {
         getMessage: (id: string) => apiClient.get(`/contact/${id}`),
         getAllMessages: (params?: any) => apiClient.get('/contact/admin/all', { params }),
         updateStatus: (id: string, data: any) => apiClient.patch(`/contact/admin/${id}`, data),
+        getMyMessage: (contactId: string) => apiClient.get(`/contact/${contactId}`),
     },
     rewards: {
         requestReward: () =>
@@ -99,6 +100,16 @@ export const api = {
             apiClient.post('/rewards/confirm', { token }),
         getStatus: () =>
             apiClient.get('/rewards/status'),
+    },
+    notifications: {
+        getAll: (params?: any) =>
+            apiClient.get('/notifications', { params }),
+        getUnreadCount: () =>
+            apiClient.get('/notifications/unread-count'),
+        markAsRead: (notificationId: string) =>
+            apiClient.patch(`/notifications/${notificationId}/read`),
+        markAllAsRead: () =>
+            apiClient.patch('/notifications/read-all'),
     },
     templates: {
         // Listar plantillas activas (público)

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export function Header() {
     const { user, firebaseUser } = useAuthStore();
@@ -75,6 +76,7 @@ export function Header() {
                 <div className="flex items-center gap-3">
                     {user && (
                         <div className="hidden md:flex items-center gap-3">
+                            <NotificationBell />
                             {!user.isPro && (
                                 <Link href="/upgrade">
                                     <Button variant="gradient" size="sm" className="gap-1">
@@ -153,6 +155,13 @@ export function Header() {
                             onClick={() => setMobileMenuOpen(false)}
                         >
                             Contacto
+                        </Link>
+                        <Link
+                            href="/notifications"
+                            className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <NotificationBell />
                         </Link>
                         {user && (
                             <>
