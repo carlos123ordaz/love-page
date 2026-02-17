@@ -145,15 +145,6 @@ export default function DashboardPage() {
                                 Ver Plantillas
                             </Button>
                         </Link>
-
-                        {!user.isPro && (
-                            <Link href="/upgrade" className="w-full sm:w-auto">
-                                <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto border-amber-200 text-amber-700 hover:bg-amber-50">
-                                    <Crown className="w-5 h-5" />
-                                    Desbloquear PRO
-                                </Button>
-                            </Link>
-                        )}
                     </div>
                 </div>
 
