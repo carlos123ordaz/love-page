@@ -65,6 +65,12 @@ export function Header() {
                         Plantillas
                     </Link>
                     <Link
+                        href="/games"
+                        className="text-sm font-medium transition-colors hover:text-pink-600"
+                    >
+                        Juegos
+                    </Link>
+                    <Link
                         href="/contact"
                         className="text-sm font-medium transition-colors hover:text-pink-600"
                     >
@@ -148,6 +154,13 @@ export function Header() {
                             onClick={() => setMobileMenuOpen(false)}
                         >
                             Plantillas
+                        </Link>
+                        <Link
+                            href="/games"
+                            className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            Juegos
                         </Link>
                         <Link
                             href="/contact"

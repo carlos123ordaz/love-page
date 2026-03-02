@@ -20,10 +20,14 @@ import {
     MoreVertical,
     Link2,
     LayoutTemplate,
+    Gamepad2,
+    ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { getTimeAgo, copyToClipboard } from '@/lib/utils';
+
+
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -145,6 +149,13 @@ export default function DashboardPage() {
                                 Ver Plantillas
                             </Button>
                         </Link>
+
+                        <Link href="/games" className="w-full sm:w-auto">
+                            <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto border-purple-200 text-purple-700 hover:bg-purple-50">
+                                <Gamepad2 className="w-5 h-5" />
+                                Juegos
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 
@@ -258,8 +269,7 @@ export default function DashboardPage() {
                                                     </div>
                                                 )}
                                                 <div
-                                                    className={`w-2 h-2 rounded-full flex-shrink-0 ${page.isActive ? 'bg-green-500' : 'bg-gray-300'
-                                                        }`}
+                                                    className={`w-2 h-2 rounded-full flex-shrink-0 ${page.isActive ? 'bg-green-500' : 'bg-gray-300'}`}
                                                     title={page.isActive ? 'Activa' : 'Desactivada'}
                                                 />
                                             </div>
