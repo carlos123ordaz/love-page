@@ -3,7 +3,6 @@
 import { Header } from '@/components/layout/header';
 import { Gamepad2, ExternalLink } from 'lucide-react';
 
-// ── Agrega más juegos aquí ──────────────────────────────────────────────────
 const GAMES = [
     {
         id: 'tutifruti',
@@ -15,17 +14,17 @@ const GAMES = [
         color: 'from-green-400 to-emerald-500',
         badge: 'Nuevo',
     },
-    // {
-    //   id: 'otro-juego',
-    //   name: 'Nombre del juego',
-    //   description: 'Descripción corta.',
-    //   url: 'https://...',
-    //   emoji: '🎮',
-    //   color: 'from-purple-400 to-indigo-500',
-    //   badge: null,
-    // },
+    {
+        id: 'quiz-compatibilidad',
+        name: '¿Qué tanto se conocen?',
+        description:
+            'Respondan las mismas preguntas y descubran qué tan compatibles son. ¡Para parejas y amigos!',
+        url: 'https://games-bay-rho.vercel.app/games/quiz',
+        emoji: '💜',
+        color: 'from-purple-400 to-indigo-500',
+        badge: 'Nuevo',
+    },
 ];
-// ───────────────────────────────────────────────────────────────────────────
 
 export default function GamesPage() {
     return (
