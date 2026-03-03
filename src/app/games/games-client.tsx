@@ -54,6 +54,16 @@ const GAMES = [
         color: 'from-blue-400 to-cyan-500',
         badge: 'Nuevo',
     },
+    {
+        id: 'sopa-de-letras',
+        name: 'Sopa de Letras',
+        description:
+            'Encuentra las palabras ocultas antes que tus rivales. ¡Compite en tiempo real con hasta 8 jugadores!',
+        url: 'https://games-bay-rho.vercel.app/games/word-search',
+        emoji: '🔤',
+        color: 'from-sky-400 to-blue-500',
+        badge: 'Nuevo',
+    },
 ];
 export default function GamesPage() {
     return (
