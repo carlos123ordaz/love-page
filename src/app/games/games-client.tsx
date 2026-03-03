@@ -24,8 +24,27 @@ const GAMES = [
         color: 'from-purple-400 to-indigo-500',
         badge: 'Nuevo',
     },
+    {
+        id: 'would-you-rather',
+        name: '¿Qué Prefieres?',
+        description:
+            'Dilemas divertidos para descubrir qué tan parecidos piensan. Elige entre dos opciones y compara.',
+        url: 'https://games-bay-rho.vercel.app/games/would-you-rather',
+        emoji: '🤔',
+        color: 'from-orange-400 to-amber-500',
+        badge: 'Nuevo',
+    },
+    {
+        id: 'pictionary',
+        name: 'Pictionary',
+        description:
+            'Dibuja, adivina y diviértete. Elige una palabra, haz tu mejor dibujo y mira si te adivinan.',
+        url: 'https://games-bay-rho.vercel.app/games/pictionary',
+        emoji: '🎨',
+        color: 'from-emerald-400 to-teal-500',
+        badge: 'Nuevo',
+    },
 ];
-
 export default function GamesPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
