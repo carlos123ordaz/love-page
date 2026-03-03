@@ -44,6 +44,16 @@ const GAMES = [
         color: 'from-emerald-400 to-teal-500',
         badge: 'Nuevo',
     },
+    {
+        id: 'pixel-adventure',
+        name: 'Pixel Adventure',
+        description:
+            'Juego multijugador en tiempo real con dados, eventos, trampas y poderes especiales. ¡Llega primero a la meta y gana!',
+        url: 'http://localhost:5173/games/pixel-adventure', // <-- cambia esto
+        emoji: '🧩',
+        color: 'from-blue-400 to-cyan-500',
+        badge: 'Nuevo',
+    },
 ];
 export default function GamesPage() {
     return (
