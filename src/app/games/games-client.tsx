@@ -49,7 +49,7 @@ const GAMES = [
         name: 'Pixel Adventure',
         description:
             'Juego multijugador en tiempo real con dados, eventos, trampas y poderes especiales. ¡Llega primero a la meta y gana!',
-        url: 'https://games-bay-rho.vercel.app/games/pixel-adventure', // <-- cambia esto
+        url: 'https://games-bay-rho.vercel.app/games/pixel-adventure',
         emoji: '🧩',
         color: 'from-blue-400 to-cyan-500',
         badge: 'Nuevo',
@@ -64,7 +64,18 @@ const GAMES = [
         color: 'from-sky-400 to-blue-500',
         badge: 'Nuevo',
     },
+    {
+        id: 'ludo',
+        name: 'Ludo',
+        description:
+            'El clásico juego de mesa. Lleva tus 4 fichas a casa antes que nadie. ¡Para 2 a 4 jugadores!',
+        url: 'https://games-bay-rho.vercel.app/games/ludo',
+        emoji: '🎲',
+        color: 'from-red-400 to-yellow-500',
+        badge: 'Nuevo',
+    },
 ];
+
 export default function GamesPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
