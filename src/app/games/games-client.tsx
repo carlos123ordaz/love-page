@@ -49,7 +49,7 @@ const GAMES = [
         name: 'Pixel Adventure',
         description:
             'Juego multijugador en tiempo real con dados, eventos, trampas y poderes especiales. ¡Llega primero a la meta y gana!',
-        url: 'http://localhost:5173/games/pixel-adventure', // <-- cambia esto
+        url: 'https://games-bay-rho.vercel.app/games/pixel-adventure', // <-- cambia esto
         emoji: '🧩',
         color: 'from-blue-400 to-cyan-500',
         badge: 'Nuevo',
