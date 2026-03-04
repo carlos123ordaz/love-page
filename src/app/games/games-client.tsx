@@ -55,7 +55,7 @@ const GAMES = [
         badge: 'Nuevo',
     },
     {
-        id: 'minesweeper',
+        id: 'minesweeper', //BUscaminas
         name: 'Buscaminas Competitivo',
         description:
             'Despejen el mismo tablero compitiendo por puntos. Revela celdas, coloca banderas y no pises las minas. 2-8 jugadores.',
