@@ -49,12 +49,63 @@ const GAMES = [
         name: 'Pixel Adventure',
         description:
             'Juego multijugador en tiempo real con dados, eventos, trampas y poderes especiales. ¡Llega primero a la meta y gana!',
-        url: 'https://games-bay-rho.vercel.app/games/pixel-adventure', // <-- cambia esto
-        emoji: '🧩',
+        url: 'https://games-bay-rho.vercel.app/games/pixel-adventure',
+        emoji: '👾',
         color: 'from-blue-400 to-cyan-500',
         badge: 'Nuevo',
     },
+    {
+        id: 'minesweeper',
+        name: 'Buscaminas Competitivo',
+        description:
+            'Despejen el mismo tablero compitiendo por puntos. Revela celdas, coloca banderas y no pises las minas. 2-8 jugadores.',
+        url: 'https://games-bay-rho.vercel.app/games/minesweeper',
+        emoji: '💣',
+        color: 'from-sky-400 to-blue-500',
+        badge: 'Nuevo',
+    },
+    {
+        id: 'anonymous-questions',
+        name: 'Preguntas Anónimas',
+        description:
+            'Escribe preguntas en secreto, todos responden, y adivina quién preguntó qué. ¡El que más engaña gana!',
+        url: 'https://games-bay-rho.vercel.app/games/anonymous-questions',
+        emoji: '🎭',
+        color: 'from-amber-400 to-yellow-500',
+        badge: 'Nuevo',
+    },
+    {
+        id: 'puzzle',
+        name: 'Rompecabezas',
+        description:
+            'Compite armando el mismo rompecabezas contra tu oponente. ¡El más rápido gana! 3 dificultades con fotos reales.',
+        url: 'https://games-bay-rho.vercel.app/games/puzzle',
+        emoji: '🧩',
+        color: 'from-violet-400 to-purple-500',
+        badge: 'Nuevo',
+    },
+    {
+        id: 'word-search',
+        name: 'Sopa de letras',
+        description:
+            'Encuentra palabras ocultas en una cuadrícula antes que los demás. ¡2-8 jugadores!',
+        url: 'https://games-bay-rho.vercel.app/games/word-search',
+        emoji: '🔎',
+        color: 'from-rose-400 to-pink-500',
+        badge: 'Nuevo',
+    },
+    {
+        id: 'ludo',
+        name: 'Ludo',
+        description:
+            'El clásico juego de mesa. Lleva tus 4 fichas a casa antes que nadie. 2-4 jugadores.',
+        url: 'https://games-bay-rho.vercel.app/games/ludo',
+        emoji: '🎲',
+        color: 'from-yellow-400 to-orange-500',
+        badge: 'Nuevo',
+    },
 ];
+
 export default function GamesPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
@@ -117,22 +168,6 @@ export default function GamesPage() {
                         </a>
                     ))}
                 </div>
-
-                {/* Coming soon placeholder — quítalo cuando tengas más juegos */}
-                {GAMES.length < 3 && (
-                    <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        {Array.from({ length: 3 - GAMES.length }).map((_, i) => (
-                            <div
-                                key={i}
-                                className="rounded-2xl border-2 border-dashed border-gray-200 bg-white/50 flex flex-col items-center justify-center py-14 text-center px-6"
-                            >
-                                <span className="text-4xl mb-3 opacity-30">🎮</span>
-                                <p className="text-sm font-medium text-gray-400">Próximamente</p>
-                                <p className="text-xs text-gray-300 mt-1">Nuevo juego en camino</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
             </main>
         </div>
     );
