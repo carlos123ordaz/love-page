@@ -87,18 +87,17 @@ const GAMES = [
     {
         id: 'word-search',
         name: 'Sopa de letras',
-        description:
-            'Encuentra palabras ocultas en una cuadrícula antes que los demás. ¡2-8 jugadores!',
         url: 'https://games-bay-rho.vercel.app/games/word-search',
-        emoji: '🔎',
         color: 'from-rose-400 to-pink-500',
+        description:
+            'Encuentra las palabras ocultas antes que tus rivales. ¡Compite en tiempo real con hasta 8 jugadores!',
+        emoji: '🔤',
         badge: 'Nuevo',
     },
     {
         id: 'ludo',
         name: 'Ludo',
-        description:
-            'El clásico juego de mesa. Lleva tus 4 fichas a casa antes que nadie. 2-4 jugadores.',
+        description: 'El clásico juego de mesa. Lleva tus 4 fichas a casa antes que nadie. 2-4 jugadores.',
         url: 'https://games-bay-rho.vercel.app/games/ludo',
         emoji: '🎲',
         color: 'from-yellow-400 to-orange-500',
