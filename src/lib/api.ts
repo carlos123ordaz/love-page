@@ -7,8 +7,8 @@ if (typeof window !== 'undefined') {
         auth = firebase.auth;
     });
 }
-//const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://love-app-production.up.railway.app/api';
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://love-app-production.up.railway.app/api';
+//const API_URL = 'http://localhost:5000/api';
 
 const apiClient = axios.create({
     baseURL: API_URL,
