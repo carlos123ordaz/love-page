@@ -43,6 +43,9 @@ export const metadata: Metadata = {
       'Crea páginas personalizadas con animaciones, stickers y el botón que escapa.',
     images: ['/og-image.png'],
   },
+  verification: {
+    google: 'mwNvWu95tNqWX41s2W-JVajup-JpiaR2wafataOmMdE',
+  },
   robots: {
     index: true,
     follow: true,
