@@ -64,6 +64,34 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        {/* JSON-LD Structured Data for Google */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'Love Pages',
+              url: 'https://lovepages.ink',
+              description:
+                'Crea páginas personalizadas para San Valentín, declaraciones y ocasiones especiales con animaciones, stickers y el botón que escapa.',
+              applicationCategory: 'EntertainmentApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+                description: 'Plan gratuito disponible',
+              },
+              author: {
+                '@type': 'Organization',
+                name: 'Love Pages',
+                url: 'https://lovepages.ink',
+              },
+              inLanguage: 'es',
+            }),
+          }}
+        />
         {/* AdSense — raw script para evitar data-nscript y crossorigin issues */}
         <script
           async

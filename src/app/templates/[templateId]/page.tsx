@@ -222,8 +222,7 @@ export default function TemplateDetailPage() {
 
     const handleCreatePage = async () => {
         if (!user) {
-            toast.error('Debes iniciar sesión');
-            router.push('/');
+            toast.error('Inicia sesión con Google para crear tu página');
             return;
         }
 

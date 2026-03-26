@@ -37,12 +37,6 @@ export default function DashboardPage() {
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/');
-        }
-    }, [user, authLoading, router]);
-
-    useEffect(() => {
         if (user) {
             loadPages();
         }
@@ -104,7 +98,39 @@ export default function DashboardPage() {
         );
     }
 
-    if (!user) return null;
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+                <Header />
+                <main className="container px-4 sm:px-6 lg:px-8 py-12 max-w-7xl mx-auto">
+                    <div className="text-center max-w-2xl mx-auto">
+                        <Heart className="w-16 h-16 text-pink-300 mx-auto mb-4" />
+                        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                            Crea páginas personalizadas para ocasiones especiales
+                        </h1>
+                        <p className="text-lg text-gray-600 mb-8">
+                            Diseña páginas únicas con animaciones, stickers y el botón que escapa.
+                            Comparte un link único y ve la respuesta en tiempo real.
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <Link href="/create">
+                                <Button variant="gradient" size="lg" className="gap-2">
+                                    <Plus className="w-5 h-5" />
+                                    Crear Página Gratis
+                                </Button>
+                            </Link>
+                            <Link href="/templates">
+                                <Button variant="outline" size="lg" className="gap-2 border-pink-200 text-pink-700 hover:bg-pink-50">
+                                    <LayoutTemplate className="w-5 h-5" />
+                                    Ver Plantillas
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     const totalViews = pages.reduce((sum, page) => sum + page.views, 0);
     const totalResponses = pages.reduce((sum, page) => sum + page.totalResponses, 0);

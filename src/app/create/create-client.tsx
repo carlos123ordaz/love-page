@@ -392,11 +392,8 @@ export default function CreatePageEnhanced() {
         };
     }, []);
 
-    useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/');
-        }
-    }, [user, authLoading, router]);
+    // Auth no requerido - usuarios pueden diseñar sin login
+    // Se pedirá login al momento de guardar si no están autenticados
 
     const updateForm = (updates: Partial<PageFormData>) => {
         setFormData((prev) => ({ ...prev, ...updates }));
@@ -531,6 +528,10 @@ export default function CreatePageEnhanced() {
 
     // ---- Submit ----
     const handleSubmit = async () => {
+        if (!user) {
+            toast.error('Inicia sesión con Google para guardar tu página');
+            return;
+        }
         if (!formData.title.trim()) {
             toast.error('El título es requerido');
             return;
@@ -596,7 +597,7 @@ export default function CreatePageEnhanced() {
         }
     };
 
-    // ---- Loading/Auth guards ----
+    // ---- Loading guard ----
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -604,7 +605,6 @@ export default function CreatePageEnhanced() {
             </div>
         );
     }
-    if (!user) return null;
 
     // ---- Steps config ----
     const steps: { key: Step; label: string; icon: React.ReactNode }[] = [

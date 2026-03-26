@@ -5,12 +5,13 @@ import { useAuthStore } from '@/store';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, X, LogOut, User, Crown } from 'lucide-react';
+import { Heart, Menu, X, LogOut, User, Crown, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { NotificationBell } from '@/components/NotificationBell';
+import { LoginButton } from '@/components/auth/login-page';
 
 export function Header() {
     const { user, firebaseUser } = useAuthStore();
@@ -35,7 +36,7 @@ export function Header() {
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
             <div className="container flex h-16 items-center justify-between">
                 {/* Logo */}
-                <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
+                <Link href="/" className="flex items-center gap-2 font-bold text-xl">
                     <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
                         <Heart className="w-5 h-5 text-white fill-white" />
                     </div>
@@ -46,12 +47,14 @@ export function Header() {
 
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-6">
-                    <Link
-                        href="/dashboard"
-                        className="text-sm font-medium transition-colors hover:text-pink-600"
-                    >
-                        Mis Páginas
-                    </Link>
+                    {user && (
+                        <Link
+                            href="/dashboard"
+                            className="text-sm font-medium transition-colors hover:text-pink-600"
+                        >
+                            Mis Páginas
+                        </Link>
+                    )}
                     <Link
                         href="/create"
                         className="text-sm font-medium transition-colors hover:text-pink-600"
@@ -80,7 +83,7 @@ export function Header() {
 
                 {/* User Menu */}
                 <div className="flex items-center gap-3">
-                    {user && (
+                    {user ? (
                         <div className="hidden md:flex items-center gap-3">
                             <NotificationBell />
                             {!user.isPro && (
@@ -118,6 +121,10 @@ export function Header() {
                                 <LogOut className="w-4 h-4" />
                             </Button>
                         </div>
+                    ) : (
+                        <div className="hidden md:flex items-center gap-2">
+                            <LoginButton />
+                        </div>
                     )}
 
                     {/* Mobile Menu Button */}
@@ -134,13 +141,15 @@ export function Header() {
             {mobileMenuOpen && (
                 <div className="md:hidden border-t bg-white">
                     <nav className="container py-4 space-y-3">
-                        <Link
-                            href="/dashboard"
-                            className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            Mis Páginas
-                        </Link>
+                        {user && (
+                            <Link
+                                href="/dashboard"
+                                className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                Mis Páginas
+                            </Link>
+                        )}
                         <Link
                             href="/create"
                             className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
@@ -169,14 +178,16 @@ export function Header() {
                         >
                             Contacto
                         </Link>
-                        <Link
-                            href="/notifications"
-                            className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            <NotificationBell />
-                        </Link>
                         {user && (
+                            <Link
+                                href="/notifications"
+                                className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                <NotificationBell />
+                            </Link>
+                        )}
+                        {user ? (
                             <>
                                 <div className="border-t pt-3">
                                     <div className="px-4 py-2 flex items-center gap-2">
@@ -219,6 +230,10 @@ export function Header() {
                                     Cerrar Sesión
                                 </Button>
                             </>
+                        ) : (
+                            <div className="border-t pt-3 px-4">
+                                <LoginButton />
+                            </div>
                         )}
                     </nav>
                 </div>

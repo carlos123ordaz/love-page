@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
-import { LoginButton } from '@/components/auth/login-page';
 import { Heart, Sparkles, Eye, Send, Crown, ChevronDown, Star, ArrowRight, Play, Check, X, MousePointer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 // ============================================================
 // MINI PREVIEW COMPONENT - Interactive demo card
@@ -339,7 +338,12 @@ function DemoBuilder() {
                     <p className="text-xs text-gray-500 text-center mb-3">
                         ¿Te gusta cómo se ve? Crea tu página real gratis 👇
                     </p>
-                    <LoginButton />
+                    <Link href="/create">
+                        <Button variant="gradient" size="lg" className="gap-2">
+                            <Heart className="w-5 h-5" />
+                            Crear Página Gratis
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -442,15 +446,8 @@ function FloatingHearts() {
 // MAIN LANDING PAGE
 // ============================================================
 export default function LandingPage() {
-    const { user, loading } = useAuthStore();
-    const router = useRouter();
+    const { user } = useAuthStore();
     const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
-
-    useEffect(() => {
-        if (!loading && user) {
-            router.push('/dashboard');
-        }
-    }, [user, loading, router]);
 
     // Intersection Observer for scroll animations
     useEffect(() => {
@@ -468,16 +465,6 @@ export default function LandingPage() {
         document.querySelectorAll('[data-animate]').forEach((el) => observer.observe(el));
         return () => observer.disconnect();
     }, []);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
-            </div>
-        );
-    }
-
-    if (user) return null;
 
     const isVisible = (id: string) => visibleSections.has(id);
 
@@ -522,14 +509,20 @@ export default function LandingPage() {
 
                     {/* CTA buttons */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 animate-fadeInUp animation-delay-400">
-                        <a
-                            href="#demo"
+                        <Link
+                            href="/create"
                             className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/30 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2"
                         >
+                            <Sparkles className="w-5 h-5" />
+                            Crear mi página gratis
+                        </Link>
+                        <a
+                            href="#demo"
+                            className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-pink-200 text-pink-700 font-bold rounded-2xl hover:bg-pink-50 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2"
+                        >
                             <Play className="w-5 h-5" />
-                            Probar gratis ahora
+                            Ver demo
                         </a>
-                        <LoginButton />
                     </div>
 
                     {/* Social proof row */}
@@ -702,7 +695,12 @@ export default function LandingPage() {
                             </p>
                         </div>
                         <div className="flex-shrink-0">
-                            <LoginButton />
+                            <Link href="/upgrade">
+                                <Button variant="gradient" size="lg" className="gap-2">
+                                    <Crown className="w-5 h-5" />
+                                    Obtener PRO
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -791,7 +789,12 @@ export default function LandingPage() {
                         Sin tarjeta de crédito.
                     </p>
 
-                    <LoginButton />
+                    <Link href={user ? '/dashboard' : '/create'}>
+                        <Button variant="gradient" size="lg" className="gap-2">
+                            <Heart className="w-5 h-5" />
+                            {user ? 'Ir a Mis Páginas' : 'Crear Página Gratis'}
+                        </Button>
+                    </Link>
 
                     <p className="mt-6 text-xs text-gray-400">
                         Al continuar, aceptas nuestros términos y condiciones
