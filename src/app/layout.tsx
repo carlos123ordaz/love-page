@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/providers/auth-provider';
+import { LanguageProvider } from '@/i18n';
 import './globals.css';
 import Script from 'next/script';
 
@@ -102,6 +103,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <LanguageProvider>
         <AuthProvider>
           {children}
           <Toaster
@@ -114,6 +116,7 @@ export default function RootLayout({
             }}
           />
         </AuthProvider>
+        </LanguageProvider>
 
         {/* Funding Choices (Offerwall) */}
         <Script id="google-fc" strategy="beforeInteractive">

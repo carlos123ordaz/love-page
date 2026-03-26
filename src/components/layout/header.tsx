@@ -12,23 +12,26 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { NotificationBell } from '@/components/NotificationBell';
 import { LoginButton } from '@/components/auth/login-page';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useTranslation } from '@/i18n';
 
 export function Header() {
     const { user, firebaseUser } = useAuthStore();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const router = useRouter();
+    const { t } = useTranslation();
 
     const handleLogout = async () => {
         try {
             if (!auth) {
-                toast.error('Error de autenticación');
+                toast.error(t.nav.authError);
                 return;
             }
             await signOut(auth);
-            toast.success('Sesión cerrada');
+            toast.success(t.nav.sessionClosed);
             router.push('/');
         } catch (error) {
-            toast.error('Error al cerrar sesión');
+            toast.error(t.nav.sessionCloseError);
         }
     };
 
@@ -52,37 +55,39 @@ export function Header() {
                             href="/dashboard"
                             className="text-sm font-medium transition-colors hover:text-pink-600"
                         >
-                            Mis Páginas
+                            {t.nav.myPages}
                         </Link>
                     )}
                     <Link
                         href="/create"
                         className="text-sm font-medium transition-colors hover:text-pink-600"
                     >
-                        Crear Nueva
+                        {t.nav.createNew}
                     </Link>
                     <Link
                         href="/templates"
                         className="text-sm font-medium transition-colors hover:text-pink-600"
                     >
-                        Plantillas
+                        {t.nav.templates}
                     </Link>
                     <Link
                         href="/games"
                         className="text-sm font-medium transition-colors hover:text-pink-600"
                     >
-                        Juegos
+                        {t.nav.games}
                     </Link>
                     <Link
                         href="/contact"
                         className="text-sm font-medium transition-colors hover:text-pink-600"
                     >
-                        Contacto
+                        {t.nav.contact}
                     </Link>
                 </nav>
 
                 {/* User Menu */}
                 <div className="flex items-center gap-3">
+                    <LanguageSwitcher compact />
+
                     {user ? (
                         <div className="hidden md:flex items-center gap-3">
                             <NotificationBell />
@@ -90,7 +95,7 @@ export function Header() {
                                 <Link href="/upgrade">
                                     <Button variant="gradient" size="sm" className="gap-1">
                                         <Crown className="w-4 h-4" />
-                                        Upgrade PRO
+                                        {t.nav.upgradePro}
                                     </Button>
                                 </Link>
                             )}
@@ -147,7 +152,7 @@ export function Header() {
                                 className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
-                                Mis Páginas
+                                {t.nav.myPages}
                             </Link>
                         )}
                         <Link
@@ -155,28 +160,28 @@ export function Header() {
                             className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
                             onClick={() => setMobileMenuOpen(false)}
                         >
-                            Crear Nueva
+                            {t.nav.createNew}
                         </Link>
                         <Link
                             href="/templates"
                             className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
                             onClick={() => setMobileMenuOpen(false)}
                         >
-                            Plantillas
+                            {t.nav.templates}
                         </Link>
                         <Link
                             href="/games"
                             className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
                             onClick={() => setMobileMenuOpen(false)}
                         >
-                            Juegos
+                            {t.nav.games}
                         </Link>
                         <Link
                             href="/contact"
                             className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100"
                             onClick={() => setMobileMenuOpen(false)}
                         >
-                            Contacto
+                            {t.nav.contact}
                         </Link>
                         {user && (
                             <Link
@@ -213,7 +218,7 @@ export function Header() {
                                     <Link href="/upgrade" onClick={() => setMobileMenuOpen(false)}>
                                         <Button variant="gradient" className="w-full">
                                             <Crown className="w-4 h-4 mr-2" />
-                                            Upgrade a PRO
+                                            {t.nav.upgradeAPro}
                                         </Button>
                                     </Link>
                                 )}
@@ -227,7 +232,7 @@ export function Header() {
                                     className="w-full justify-start"
                                 >
                                     <LogOut className="w-4 h-4 mr-2" />
-                                    Cerrar Sesión
+                                    {t.nav.closeSession}
                                 </Button>
                             </>
                         ) : (

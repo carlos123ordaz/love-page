@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/store';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
+import { useTranslation } from '@/i18n';
 import {
     Mail,
     MessageCircle,
@@ -18,35 +19,9 @@ import {
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
-const contactTypes = [
-    {
-        value: 'comment',
-        label: 'Comentario General',
-        icon: MessageCircle,
-        description: 'Comparte tu opinión o sugerencias',
-    },
-    {
-        value: 'custom_page',
-        label: 'Página Personalizada',
-        icon: Sparkles,
-        description: 'Solicita una página única y especial',
-    },
-    {
-        value: 'support',
-        label: 'Soporte Técnico',
-        icon: HelpCircle,
-        description: 'Ayuda con problemas técnicos',
-    },
-    {
-        value: 'other',
-        label: 'Otro',
-        icon: Mail,
-        description: 'Cualquier otra consulta',
-    },
-];
-
 export default function ContactPage() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [formData, setFormData] = useState({
@@ -56,6 +31,33 @@ export default function ContactPage() {
         subject: '',
         message: '',
     });
+
+    const contactTypes = useMemo(() => [
+        {
+            value: 'comment',
+            label: t.contact.typeGeneral,
+            icon: MessageCircle,
+            description: t.contact.typeGeneralDesc,
+        },
+        {
+            value: 'custom_page',
+            label: t.contact.typeCustomPage,
+            icon: Sparkles,
+            description: t.contact.typeCustomPageDesc,
+        },
+        {
+            value: 'support',
+            label: t.contact.typeSupport,
+            icon: HelpCircle,
+            description: t.contact.typeSupportDesc,
+        },
+        {
+            value: 'other',
+            label: t.contact.typeOther,
+            icon: Mail,
+            description: t.contact.typeOtherDesc,
+        },
+    ], [t]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({
@@ -68,12 +70,12 @@ export default function ContactPage() {
         e.preventDefault();
 
         if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-            toast.error('Por favor completa todos los campos');
+            toast.error(t.contact.fillAllFields);
             return;
         }
 
         if (formData.message.length > 2000) {
-            toast.error('El mensaje no puede exceder 2000 caracteres');
+            toast.error(t.contact.messageTooLong);
             return;
         }
 
@@ -82,7 +84,7 @@ export default function ContactPage() {
         try {
             await api.contact.create(formData);
             setSuccess(true);
-            toast.success('¡Mensaje enviado! Te responderemos pronto.');
+            toast.success(t.contact.sentToast);
 
             setFormData({
                 name: user?.displayName || '',
@@ -93,7 +95,7 @@ export default function ContactPage() {
             });
         } catch (error: any) {
             console.error('Error sending message:', error);
-            toast.error(error.response?.data?.message || 'Error al enviar el mensaje');
+            toast.error(error.response?.data?.message || t.common.error);
         } finally {
             setLoading(false);
         }
@@ -109,15 +111,15 @@ export default function ContactPage() {
                             <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
                         </div>
                         <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-                            ¡Mensaje Enviado!
+                            {t.contact.messageSent}
                         </h1>
                         <p className="text-base sm:text-xl text-gray-600 mb-6 sm:mb-8 px-2">
-                            Gracias por contactarnos. Te responderemos lo antes posible.
+                            {t.contact.thankYou}
                         </p>
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
                             <Link href="/dashboard" className="w-full sm:w-auto">
                                 <Button variant="gradient" size="lg" className="w-full sm:w-auto">
-                                    Ir al Dashboard
+                                    {t.contact.goToDashboard}
                                 </Button>
                             </Link>
                             <Button
@@ -126,7 +128,7 @@ export default function ContactPage() {
                                 size="lg"
                                 className="w-full sm:w-auto"
                             >
-                                Enviar Otro Mensaje
+                                {t.contact.sendAnother}
                             </Button>
                         </div>
                     </div>
@@ -147,10 +149,10 @@ export default function ContactPage() {
                             <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </div>
                         <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-3">
-                            Contáctanos
+                            {t.contact.title}
                         </h1>
                         <p className="text-sm sm:text-lg text-gray-600 px-2">
-                            ¿Tienes una idea? ¿Necesitas ayuda? Estamos aquí para ti
+                            {t.contact.subtitle}
                         </p>
                     </div>
 
@@ -197,9 +199,9 @@ export default function ContactPage() {
                     {/* Contact Form */}
                     <Card>
                         <CardHeader className="p-4 sm:p-6">
-                            <CardTitle className="text-base sm:text-lg">Envíanos un mensaje</CardTitle>
+                            <CardTitle className="text-base sm:text-lg">{t.contact.formTitle}</CardTitle>
                             <CardDescription className="text-xs sm:text-sm">
-                                Completa el formulario y te responderemos pronto
+                                {t.contact.formDesc}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
@@ -211,7 +213,7 @@ export default function ContactPage() {
                                             htmlFor="name"
                                             className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
                                         >
-                                            Nombre *
+                                            {t.contact.nameLabel}
                                         </label>
                                         <input
                                             type="text"
@@ -220,7 +222,7 @@ export default function ContactPage() {
                                             value={formData.name}
                                             onChange={handleChange}
                                             className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
-                                            placeholder="Tu nombre"
+                                            placeholder={t.contact.namePlaceholder}
                                             required
                                         />
                                     </div>
@@ -230,7 +232,7 @@ export default function ContactPage() {
                                             htmlFor="email"
                                             className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
                                         >
-                                            Email *
+                                            {t.contact.emailLabel}
                                         </label>
                                         <input
                                             type="email"
@@ -239,7 +241,7 @@ export default function ContactPage() {
                                             value={formData.email}
                                             onChange={handleChange}
                                             className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
-                                            placeholder="tu@email.com"
+                                            placeholder={t.contact.emailPlaceholder}
                                             required
                                         />
                                     </div>
@@ -251,7 +253,7 @@ export default function ContactPage() {
                                         htmlFor="subject"
                                         className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
                                     >
-                                        Asunto *
+                                        {t.contact.subjectLabel}
                                     </label>
                                     <input
                                         type="text"
@@ -260,7 +262,7 @@ export default function ContactPage() {
                                         value={formData.subject}
                                         onChange={handleChange}
                                         className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
-                                        placeholder="¿En qué podemos ayudarte?"
+                                        placeholder={t.contact.subjectPlaceholder}
                                         maxLength={200}
                                         required
                                     />
@@ -272,7 +274,7 @@ export default function ContactPage() {
                                         htmlFor="message"
                                         className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
                                     >
-                                        Mensaje *
+                                        {t.contact.messageLabel}
                                     </label>
                                     <textarea
                                         id="message"
@@ -281,7 +283,7 @@ export default function ContactPage() {
                                         onChange={handleChange}
                                         rows={5}
                                         className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none text-sm sm:text-base"
-                                        placeholder="Cuéntanos más detalles..."
+                                        placeholder={t.contact.messagePlaceholder}
                                         maxLength={2000}
                                         required
                                     />
@@ -297,13 +299,10 @@ export default function ContactPage() {
                                             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                                             <div className="text-xs sm:text-sm text-amber-800">
                                                 <p className="font-semibold mb-0.5 sm:mb-1">
-                                                    Páginas Personalizadas Premium
+                                                    {t.contact.customPageTitle}
                                                 </p>
                                                 <p className="leading-relaxed">
-                                                    Describe tu visión y crearemos una página única
-                                                    para esa ocasión especial. Incluye: diseño
-                                                    personalizado, animaciones exclusivas, y todo lo
-                                                    que necesites.
+                                                    {t.contact.customPageDesc}
                                                 </p>
                                             </div>
                                         </div>
@@ -319,7 +318,7 @@ export default function ContactPage() {
                                     loading={loading}
                                 >
                                     {!loading && <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />}
-                                    Enviar Mensaje
+                                    {t.contact.submitButton}
                                 </Button>
                             </form>
                         </CardContent>
@@ -328,7 +327,7 @@ export default function ContactPage() {
                     {/* Additional Info */}
                     <div className="mt-6 sm:mt-8 text-center pb-6 sm:pb-0">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
-                            ¿Prefieres un contacto directo?
+                            {t.contact.directContact}
                         </p>
                         <a
                             href="mailto:soporte@lovepages.app"

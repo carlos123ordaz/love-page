@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { CustomSlugInput } from '@/components/CustomSlugInput';
+import { useTranslation } from '@/i18n';
 
 import {
     Heart,
@@ -351,6 +352,7 @@ export default function CreatePageEnhanced() {
     const [showColorPicker, setShowColorPicker] = useState<'bg' | 'text' | 'accent' | null>(null);
     const [fontsLoaded, setFontsLoaded] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const { t } = useTranslation();
 
     const isPro = user?.isPro || false;
 
@@ -358,8 +360,8 @@ export default function CreatePageEnhanced() {
         title: '',
         recipientName: '',
         message: '',
-        yesButtonText: 'Sí',
-        noButtonText: 'No',
+        yesButtonText: t.landing.defaultYesText,
+        noButtonText: t.landing.defaultNoText,
         noButtonEscapes: false,
         pageType: 'free',
         theme: 'romantic',
@@ -608,11 +610,11 @@ export default function CreatePageEnhanced() {
 
     // ---- Steps config ----
     const steps: { key: Step; label: string; icon: React.ReactNode }[] = [
-        { key: 'content', label: 'Contenido', icon: <Type className="w-4 h-4" /> },
-        { key: 'design', label: 'Diseño', icon: <Palette className="w-4 h-4" /> },
-        { key: 'media', label: 'Imágenes', icon: <ImageIcon className="w-4 h-4" /> },
-        { key: 'effects', label: 'Efectos', icon: <Sparkles className="w-4 h-4" /> },
-        { key: 'preview', label: 'Publicar', icon: <Eye className="w-4 h-4" /> },
+        { key: 'content', label: t.create.stepContent, icon: <Type className="w-4 h-4" /> },
+        { key: 'design', label: t.create.stepDesign, icon: <Palette className="w-4 h-4" /> },
+        { key: 'media', label: t.create.stepMedia, icon: <ImageIcon className="w-4 h-4" /> },
+        { key: 'effects', label: t.create.stepEffects, icon: <Sparkles className="w-4 h-4" /> },
+        { key: 'preview', label: t.create.stepPublish, icon: <Eye className="w-4 h-4" /> },
     ];
     const stepIndex = steps.findIndex((s) => s.key === currentStep);
 
@@ -623,7 +625,7 @@ export default function CreatePageEnhanced() {
 
     const goNext = () => {
         if (!canGoNext()) {
-            toast.error('Completa los campos requeridos');
+            toast.error(t.create.requiredFields);
             return;
         }
         const nextIndex = stepIndex + 1;
@@ -652,12 +654,12 @@ export default function CreatePageEnhanced() {
                             </Button>
                         </Link>
                         <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900">Crear Nueva Página</h1>
+                            <h1 className="text-3xl font-bold text-gray-900">{t.create.title}</h1>
                             <p className="text-gray-600 mt-1">
-                                Personaliza cada detalle de tu página
+                                {t.create.subtitle}
                                 {isPro && (
                                     <span className="ml-2 inline-flex items-center gap-1 text-amber-600 font-medium">
-                                        <Crown className="w-4 h-4" /> PRO activo
+                                        <Crown className="w-4 h-4" /> {t.create.proActive}
                                     </span>
                                 )}
                             </p>
@@ -702,24 +704,24 @@ export default function CreatePageEnhanced() {
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <Type className="w-5 h-5 text-pink-600" />
-                                            Contenido
+                                            {t.create.contentTitle}
                                         </CardTitle>
                                         <CardDescription>
-                                            Escribe el mensaje para esa persona especial
+                                            {t.create.contentDesc}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <Input
-                                            label="Título *"
-                                            placeholder="¿Quieres ser mi San Valentín?"
+                                            label={t.create.titleLabel}
+                                            placeholder={t.create.titlePlaceholder}
                                             value={formData.title}
                                             onChange={(e) => updateForm({ title: e.target.value })}
                                             maxLength={200}
                                         />
 
                                         <Input
-                                            label="Nombre del destinatario *"
-                                            placeholder="María"
+                                            label={t.create.recipientLabel}
+                                            placeholder={t.create.recipientPlaceholder}
                                             value={formData.recipientName}
                                             onChange={(e) => updateForm({ recipientName: e.target.value })}
                                             maxLength={100}
@@ -737,10 +739,10 @@ export default function CreatePageEnhanced() {
                                         )}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                                Mensaje (opcional)
+                                                {t.create.messageLabel}
                                             </label>
                                             <textarea
-                                                placeholder="Cada día a tu lado es un regalo..."
+                                                placeholder={t.create.messagePlaceholder}
                                                 value={formData.message}
                                                 onChange={(e) => updateForm({ message: e.target.value })}
                                                 maxLength={1000}
@@ -753,15 +755,15 @@ export default function CreatePageEnhanced() {
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <Input
-                                                label='Texto botón "Sí"'
-                                                placeholder="¡Sí, quiero!"
+                                                label={t.create.yesButtonLabel}
+                                                placeholder={t.create.yesButtonPlaceholder}
                                                 value={formData.yesButtonText}
                                                 onChange={(e) => updateForm({ yesButtonText: e.target.value })}
                                                 maxLength={50}
                                             />
                                             <Input
-                                                label='Texto botón "No"'
-                                                placeholder="Déjame pensarlo"
+                                                label={t.create.noButtonLabel}
+                                                placeholder={t.create.noButtonPlaceholder}
                                                 value={formData.noButtonText}
                                                 onChange={(e) => updateForm({ noButtonText: e.target.value })}
                                                 maxLength={50}
@@ -777,7 +779,7 @@ export default function CreatePageEnhanced() {
                                                 className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
                                             />
                                             <label htmlFor="noButtonEscapes" className="text-sm text-gray-700">
-                                                El botón "No" escapa del cursor 😄
+                                                {t.create.noEscapes}
                                             </label>
                                         </div>
 
@@ -797,10 +799,10 @@ export default function CreatePageEnhanced() {
                                                     <label htmlFor="useAI" className="text-sm text-gray-700">
                                                         <span className="font-medium flex items-center gap-1">
                                                             <Wand2 className="w-4 h-4 text-amber-600" />
-                                                            Generar diseño completo con IA
+                                                            {t.create.useAI}
                                                         </span>
                                                         <span className="text-xs text-gray-500 block mt-0.5">
-                                                            Sube una imagen de referencia y la IA creará un diseño único
+                                                            {t.create.useAIDesc}
                                                         </span>
                                                     </label>
                                                 </div>
@@ -823,17 +825,17 @@ export default function CreatePageEnhanced() {
                                                                         className="max-h-48 mx-auto rounded-lg"
                                                                     />
                                                                     <p className="text-sm text-gray-600">
-                                                                        Click para cambiar imagen
+                                                                        {t.create.refImageChange}
                                                                     </p>
                                                                 </div>
                                                             ) : (
                                                                 <div className="space-y-2">
                                                                     <Wand2 className="w-10 h-10 text-amber-400 mx-auto" />
                                                                     <p className="text-sm font-medium text-gray-700">
-                                                                        Sube imagen de referencia para IA
+                                                                        {t.create.refImageUpload}
                                                                     </p>
                                                                     <p className="text-xs text-gray-400">
-                                                                        PNG, JPG, GIF o WEBP (máx. 5MB)
+                                                                        {t.create.refImageFormat}
                                                                     </p>
                                                                 </div>
                                                             )}
@@ -844,7 +846,7 @@ export default function CreatePageEnhanced() {
                                         )}
 
                                         <Button onClick={goNext} variant="gradient" className="w-full" disabled={!canGoNext()}>
-                                            Continuar <ArrowRight className="w-4 h-4 ml-2" />
+                                            {t.common.next} <ArrowRight className="w-4 h-4 ml-2" />
                                         </Button>
                                     </CardContent>
                                 </Card>
@@ -856,15 +858,15 @@ export default function CreatePageEnhanced() {
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <Palette className="w-5 h-5 text-pink-600" />
-                                            Diseño
+                                            {t.create.designTitle}
                                         </CardTitle>
-                                        <CardDescription>Elige tema, colores y tipografía</CardDescription>
+                                        <CardDescription>{t.create.designDesc}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         {/* Temas */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-3">
-                                                Tema
+                                                {t.create.themeLabel}
                                             </label>
                                             <div className="grid grid-cols-4 gap-2">
                                                 {THEMES.map((theme) => (
@@ -883,7 +885,7 @@ export default function CreatePageEnhanced() {
                                                         >
                                                             <div className={`h-12 rounded-lg mb-1.5 ${theme.preview}`} />
                                                             <p className="text-[11px] font-medium text-center leading-tight">
-                                                                {theme.emoji} {theme.name}
+                                                                {theme.emoji} {t.themes[theme.id as keyof typeof t.themes]}
                                                             </p>
                                                         </button>
                                                     </div>
@@ -894,11 +896,11 @@ export default function CreatePageEnhanced() {
                                         {/* Colores personalizados */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-3">
-                                                Colores
+                                                {t.create.colorsLabel}
                                             </label>
                                             <div className="grid grid-cols-3 gap-3">
                                                 {(['bg', 'text', 'accent'] as const).map((colorType) => {
-                                                    const labels = { bg: 'Fondo', text: 'Texto', accent: 'Acento' };
+                                                    const labels = { bg: t.create.colorBg, text: t.create.colorText, accent: t.create.colorAccent };
                                                     const colorKey =
                                                         colorType === 'bg'
                                                             ? 'backgroundColor'
@@ -951,7 +953,7 @@ export default function CreatePageEnhanced() {
                                         {/* Tipografía */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-3">
-                                                Tipografía del título
+                                                {t.create.titleFontLabel}
                                             </label>
                                             <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                                                 {GOOGLE_FONTS.map((font) => (
@@ -982,10 +984,10 @@ export default function CreatePageEnhanced() {
                                         {/* Navigation */}
                                         <div className="flex gap-3 pt-2">
                                             <Button onClick={goBack} variant="outline" className="flex-1">
-                                                Atrás
+                                                {t.common.back}
                                             </Button>
                                             <Button onClick={goNext} variant="gradient" className="flex-1">
-                                                Continuar <ArrowRight className="w-4 h-4 ml-2" />
+                                                {t.common.next} <ArrowRight className="w-4 h-4 ml-2" />
                                             </Button>
                                         </div>
                                     </CardContent>
@@ -998,17 +1000,17 @@ export default function CreatePageEnhanced() {
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <ImageIcon className="w-5 h-5 text-pink-600" />
-                                            Imágenes y Stickers
+                                            {t.create.mediaTitle}
                                         </CardTitle>
                                         <CardDescription>
-                                            Añade imágenes y decoraciones a tu página
+                                            {t.create.mediaDesc}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         {/* Imagen de fondo */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Imagen de fondo (opcional)
+                                                {t.create.bgImageLabel}
                                             </label>
                                             <div
                                                 {...bgDropzone.getRootProps()}
@@ -1025,15 +1027,15 @@ export default function CreatePageEnhanced() {
                                                             alt="Fondo"
                                                             className="max-h-32 mx-auto rounded-lg object-cover"
                                                         />
-                                                        <p className="text-xs text-gray-500">Click para cambiar</p>
+                                                        <p className="text-xs text-gray-500">{t.create.bgImageChange}</p>
                                                     </div>
                                                 ) : (
                                                     <div className="space-y-2">
                                                         <Upload className="w-8 h-8 text-gray-400 mx-auto" />
                                                         <p className="text-sm text-gray-600">
-                                                            Arrastra o selecciona una imagen de fondo
+                                                            {t.create.bgImageDrop}
                                                         </p>
-                                                        <p className="text-xs text-gray-400">PNG, JPG, GIF, WEBP (máx. 5MB)</p>
+                                                        <p className="text-xs text-gray-400">{t.create.bgImageFormat}</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -1045,7 +1047,7 @@ export default function CreatePageEnhanced() {
                                                     }}
                                                     className="mt-2 text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
                                                 >
-                                                    <Trash2 className="w-3 h-3" /> Quitar fondo
+                                                    <Trash2 className="w-3 h-3" /> {t.create.bgImageRemove}
                                                 </button>
                                             )}
                                         </div>
@@ -1054,14 +1056,14 @@ export default function CreatePageEnhanced() {
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
                                                 <label className="text-sm font-medium text-gray-700">
-                                                    Imágenes decorativas
+                                                    {t.create.decorativeLabel}
                                                     <span className="text-xs text-gray-500 ml-1">
                                                         ({formData.decorativeImages.length}/{isPro ? 5 : 1})
                                                     </span>
                                                 </label>
                                                 {!isPro && (
                                                     <span className="text-xs text-amber-600 flex items-center gap-1">
-                                                        <Crown className="w-3 h-3" /> PRO: hasta 5
+                                                        <Crown className="w-3 h-3" /> {t.create.decorativeProHint}
                                                     </span>
                                                 )}
                                             </div>
@@ -1093,7 +1095,7 @@ export default function CreatePageEnhanced() {
                                             >
                                                 <input {...decorativeDropzone.getInputProps()} />
                                                 <Plus className="w-6 h-6 text-gray-400 mx-auto" />
-                                                <p className="text-xs text-gray-500 mt-1">Agregar imagen</p>
+                                                <p className="text-xs text-gray-500 mt-1">{t.create.decorativeAdd}</p>
                                             </div>
                                         </div>
 
@@ -1101,14 +1103,14 @@ export default function CreatePageEnhanced() {
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
                                                 <label className="text-sm font-medium text-gray-700">
-                                                    Stickers
+                                                    {t.create.stickersLabel}
                                                     <span className="text-xs text-gray-500 ml-1">
                                                         ({formData.selectedStickers.length}/{isPro ? 10 : 3})
                                                     </span>
                                                 </label>
                                                 {!isPro && (
                                                     <span className="text-xs text-amber-600 flex items-center gap-1">
-                                                        <Crown className="w-3 h-3" /> PRO: más stickers
+                                                        <Crown className="w-3 h-3" /> {t.create.stickersProHint}
                                                     </span>
                                                 )}
                                             </div>
@@ -1133,10 +1135,10 @@ export default function CreatePageEnhanced() {
 
                                         <div className="flex gap-3 pt-2">
                                             <Button onClick={goBack} variant="outline" className="flex-1">
-                                                Atrás
+                                                {t.common.back}
                                             </Button>
                                             <Button onClick={goNext} variant="gradient" className="flex-1">
-                                                Continuar <ArrowRight className="w-4 h-4 ml-2" />
+                                                {t.common.next} <ArrowRight className="w-4 h-4 ml-2" />
                                             </Button>
                                         </div>
                                     </CardContent>
@@ -1149,17 +1151,17 @@ export default function CreatePageEnhanced() {
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <Sparkles className="w-5 h-5 text-pink-600" />
-                                            Efectos y Animaciones
+                                            {t.create.effectsTitle}
                                         </CardTitle>
                                         <CardDescription>
-                                            Dale vida a tu página con animaciones y música
+                                            {t.create.effectsDesc}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         {/* Animaciones */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-3">
-                                                Animación de fondo
+                                                {t.create.animationLabel}
                                             </label>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {ANIMATIONS.map((anim) => (
@@ -1183,7 +1185,7 @@ export default function CreatePageEnhanced() {
                                                                 } ${!anim.free && !isPro ? 'opacity-60' : ''}`}
                                                         >
                                                             <span className="text-lg mr-2">{anim.emoji}</span>
-                                                            <span className="text-sm">{anim.name}</span>
+                                                            <span className="text-sm">{t.animations[anim.id as keyof typeof t.animations]}</span>
                                                         </button>
                                                     </div>
                                                 ))}
@@ -1195,7 +1197,7 @@ export default function CreatePageEnhanced() {
                                             <div className="flex items-center justify-between mb-3">
                                                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                                                     <Music className="w-4 h-4" />
-                                                    Música de fondo
+                                                    {t.create.musicLabel}
                                                 </label>
                                                 {!isPro && <ProBadge />}
                                             </div>
@@ -1215,7 +1217,7 @@ export default function CreatePageEnhanced() {
                                                                 : 'border-gray-200 hover:border-pink-300'
                                                                 } ${!music.free && !isPro ? 'opacity-60' : ''}`}
                                                         >
-                                                            <span>{music.name}</span>
+                                                            <span>{t.music[music.id as keyof typeof t.music]}</span>
                                                             {formData.backgroundMusic === music.id && (
                                                                 <CheckCircle2 className="w-4 h-4 text-pink-600" />
                                                             )}
@@ -1233,11 +1235,10 @@ export default function CreatePageEnhanced() {
                                                     <Crown className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                                                     <div>
                                                         <p className="text-sm font-medium text-amber-900">
-                                                            Tu página incluirá "Hecho con Love Pages"
+                                                            {t.create.watermarkNote}
                                                         </p>
                                                         <p className="text-xs text-amber-700 mt-0.5">
-                                                            Pasa a PRO para quitar la marca de agua y desbloquear
-                                                            todas las funciones
+                                                            {t.create.watermarkUpgrade}
                                                         </p>
                                                         <Button
                                                             onClick={goToUpgrade}
@@ -1246,7 +1247,7 @@ export default function CreatePageEnhanced() {
                                                             className="mt-2"
                                                         >
                                                             <Crown className="w-3.5 h-3.5 mr-1" />
-                                                            Upgrade a PRO
+                                                            {t.nav.upgradePro}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -1255,10 +1256,10 @@ export default function CreatePageEnhanced() {
 
                                         <div className="flex gap-3 pt-2">
                                             <Button onClick={goBack} variant="outline" className="flex-1">
-                                                Atrás
+                                                {t.common.back}
                                             </Button>
                                             <Button onClick={goNext} variant="gradient" className="flex-1">
-                                                Vista previa <Eye className="w-4 h-4 ml-2" />
+                                                {t.create.livePreview} <Eye className="w-4 h-4 ml-2" />
                                             </Button>
                                         </div>
                                     </CardContent>

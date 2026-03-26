@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store';
 import { Heart, Sparkles, Eye, Send, Crown, ChevronDown, Star, ArrowRight, Play, Check, X, MousePointer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useTranslation } from '@/i18n';
 
 // ============================================================
 // MINI PREVIEW COMPONENT - Interactive demo card
@@ -30,6 +31,7 @@ function MiniPagePreview({
     stickers: string[];
     animation: string;
 }) {
+    const { t } = useTranslation();
     const [answered, setAnswered] = useState(false);
     const [answer, setAnswer] = useState<'yes' | 'no' | null>(null);
     const [noPos, setNoPos] = useState<{ x: number; y: number } | null>(null);
@@ -159,17 +161,17 @@ function MiniPagePreview({
                 ) : (
                     <div className="mt-auto bg-white/15 backdrop-blur rounded-xl p-4">
                         <p className="text-2xl mb-1">{answer === 'yes' ? '💕' : '😊'}</p>
-                        <p className="text-sm font-bold">{answer === 'yes' ? '¡Gracias!' : 'Entendido'}</p>
+                        <p className="text-sm font-bold">{answer === 'yes' ? t.landing.thanks : t.landing.understood}</p>
                         <button
                             onClick={reset}
                             className="mt-2 text-[10px] underline opacity-60 hover:opacity-100"
                         >
-                            Reiniciar demo
+                            {t.landing.restartDemo}
                         </button>
                     </div>
                 )}
 
-                <p className="absolute bottom-1.5 text-[8px] opacity-30">Hecho con Love Pages 💕</p>
+                <p className="absolute bottom-1.5 text-[8px] opacity-30">{t.landing.madeWith}</p>
             </div>
         </div>
     );
@@ -179,17 +181,27 @@ function MiniPagePreview({
 // DEMO BUILDER - Try before signing up
 // ============================================================
 const DEMO_THEMES = [
-    { id: 'romantic', name: 'Romántico', emoji: '💕', bg: '#ff69b4', text: '#ffffff', accent: '#ff1493', preview: 'from-pink-400 to-rose-500' },
-    { id: 'sunset', name: 'Atardecer', emoji: '🌅', bg: '#ff6b35', text: '#ffffff', accent: '#f7c59f', preview: 'from-orange-400 to-pink-500' },
-    { id: 'ocean', name: 'Océano', emoji: '🌊', bg: '#0077b6', text: '#ffffff', accent: '#90e0ef', preview: 'from-cyan-400 to-blue-600' },
-    { id: 'elegant', name: 'Elegante', emoji: '✨', bg: '#2c3e50', text: '#ecf0f1', accent: '#c9a84c', preview: 'from-slate-600 to-purple-700' },
-    { id: 'garden', name: 'Jardín', emoji: '🌸', bg: '#ffc8dd', text: '#5c374c', accent: '#ffafcc', preview: 'from-pink-200 to-purple-300' },
-    { id: 'dark', name: 'Oscuro', emoji: '🖤', bg: '#1a1a2e', text: '#e0e0e0', accent: '#e94560', preview: 'from-gray-900 to-indigo-950' },
+    { id: 'romantic', emoji: '💕', bg: '#ff69b4', text: '#ffffff', accent: '#ff1493', preview: 'from-pink-400 to-rose-500' },
+    { id: 'sunset', emoji: '🌅', bg: '#ff6b35', text: '#ffffff', accent: '#f7c59f', preview: 'from-orange-400 to-pink-500' },
+    { id: 'ocean', emoji: '🌊', bg: '#0077b6', text: '#ffffff', accent: '#90e0ef', preview: 'from-cyan-400 to-blue-600' },
+    { id: 'elegant', emoji: '✨', bg: '#2c3e50', text: '#ecf0f1', accent: '#c9a84c', preview: 'from-slate-600 to-purple-700' },
+    { id: 'garden', emoji: '🌸', bg: '#ffc8dd', text: '#5c374c', accent: '#ffafcc', preview: 'from-pink-200 to-purple-300' },
+    { id: 'dark', emoji: '🖤', bg: '#1a1a2e', text: '#e0e0e0', accent: '#e94560', preview: 'from-gray-900 to-indigo-950' },
 ];
 
 const DEMO_STICKERS = ['❤️', '💖', '💘', '💋', '🌹', '💍', '💑', '💌'];
 
+const THEME_NAME_KEYS: Record<string, keyof typeof import('@/i18n/translations/es').default['landing']> = {
+    romantic: 'themeRomantic',
+    sunset: 'themeSunset',
+    ocean: 'themeOcean',
+    elegant: 'themeElegant',
+    garden: 'themeGarden',
+    dark: 'themeDark',
+};
+
 function DemoBuilder() {
+    const { t } = useTranslation();
     const [title, setTitle] = useState('¿Quieres ser mi San Valentín?');
     const [recipient, setRecipient] = useState('María');
     const [message, setMessage] = useState('Cada día a tu lado es un regalo... 💕');
@@ -200,78 +212,88 @@ function DemoBuilder() {
     const [selectedStickers, setSelectedStickers] = useState<string[]>(['❤️', '💖']);
     const [animation, setAnimation] = useState('hearts-falling');
 
+    const getThemeName = (themeId: string) => {
+        const key = THEME_NAME_KEYS[themeId];
+        return key ? t.landing[key] : themeId;
+    };
+
     const toggleSticker = (emoji: string) => {
         setSelectedStickers((prev) =>
             prev.includes(emoji) ? prev.filter((s) => s !== emoji) : prev.length < 3 ? [...prev, emoji] : prev
         );
     };
 
+    const selectedThemeWithName = useMemo(() => ({
+        ...selectedTheme,
+        name: getThemeName(selectedTheme.id),
+    }), [selectedTheme, t]);
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             {/* Editor */}
             <div className="space-y-5 order-2 lg:order-1">
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Título de tu página</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoPageTitle}</label>
                     <input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         maxLength={100}
                         className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
-                        placeholder="¿Quieres ser mi San Valentín?"
+                        placeholder={t.landing.demoPageTitlePlaceholder}
                     />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Para</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoFor}</label>
                         <input
                             type="text"
                             value={recipient}
                             onChange={(e) => setRecipient(e.target.value)}
                             maxLength={50}
                             className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
-                            placeholder="Nombre"
+                            placeholder={t.landing.demoNamePlaceholder}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Animación</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoAnimation}</label>
                         <select
                             value={animation}
                             onChange={(e) => setAnimation(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
                         >
-                            <option value="none">Sin animación</option>
-                            <option value="hearts-falling">💕 Corazones</option>
-                            <option value="confetti">🎊 Confetti</option>
+                            <option value="none">{t.landing.demoNoAnimation}</option>
+                            <option value="hearts-falling">{t.landing.demoHearts}</option>
+                            <option value="confetti">{t.landing.demoConfetti}</option>
                         </select>
                     </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mensaje</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoMessage}</label>
                     <textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         maxLength={200}
                         rows={2}
                         className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm resize-none bg-white/80"
-                        placeholder="Tu mensaje especial..."
+                        placeholder={t.landing.demoMessagePlaceholder}
                     />
                 </div>
 
                 {/* Theme selector */}
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tema</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t.landing.demoTheme}</label>
                     <div className="grid grid-cols-6 gap-2">
-                        {DEMO_THEMES.map((t) => (
+                        {DEMO_THEMES.map((theme) => (
                             <button
-                                key={t.id}
-                                onClick={() => setSelectedTheme(t)}
-                                className={`aspect-square rounded-xl bg-gradient-to-br ${t.preview} transition-all flex items-center justify-center text-lg ${selectedTheme.id === t.id ? 'ring-3 ring-pink-500 ring-offset-2 scale-110' : 'hover:scale-105 opacity-75 hover:opacity-100'}`}
-                                title={t.name}
+                                key={theme.id}
+                                onClick={() => setSelectedTheme(theme)}
+                                className={`aspect-square rounded-xl bg-gradient-to-br ${theme.preview} transition-all flex items-center justify-center text-lg ${selectedTheme.id === theme.id ? 'ring-3 ring-pink-500 ring-offset-2 scale-110' : 'hover:scale-105 opacity-75 hover:opacity-100'}`}
+                                title={getThemeName(theme.id)}
                             >
-                                {t.emoji}
+                                {theme.emoji}
                             </button>
                         ))}
                     </div>
@@ -280,7 +302,7 @@ function DemoBuilder() {
                 {/* Stickers */}
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Stickers <span className="text-xs text-gray-400 font-normal">({selectedStickers.length}/3)</span>
+                        {t.landing.demoStickers} <span className="text-xs text-gray-400 font-normal">({selectedStickers.length}/3)</span>
                     </label>
                     <div className="flex gap-2 flex-wrap">
                         {DEMO_STICKERS.map((emoji) => (
@@ -298,7 +320,7 @@ function DemoBuilder() {
                 {/* Button texts */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Botón "Sí"</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoYesButton}</label>
                         <input
                             type="text"
                             value={yesText}
@@ -308,7 +330,7 @@ function DemoBuilder() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Botón "No"</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoNoButton}</label>
                         <input
                             type="text"
                             value={noText}
@@ -328,7 +350,7 @@ function DemoBuilder() {
                         className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
                     />
                     <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
-                        El botón "No" escapa del cursor 😄
+                        {t.landing.demoNoEscapes}
                     </span>
                     {noEscapes && <MousePointer className="w-3.5 h-3.5 text-pink-400 ml-auto" />}
                 </label>
@@ -336,12 +358,12 @@ function DemoBuilder() {
                 {/* CTA */}
                 <div className="pt-2 text-center">
                     <p className="text-xs text-gray-500 text-center mb-3">
-                        ¿Te gusta cómo se ve? Crea tu página real gratis 👇
+                        {t.landing.demoLikeIt}
                     </p>
                     <Link href="/create">
                         <Button variant="gradient" size="lg" className="gap-2">
                             <Heart className="w-5 h-5" />
-                            Crear Página Gratis
+                            {t.landing.createPageFree}
                         </Button>
                     </Link>
                 </div>
@@ -352,14 +374,14 @@ function DemoBuilder() {
                 <div className="text-center mb-3">
                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
                         <Eye className="w-3 h-3" />
-                        Vista previa en vivo
+                        {t.landing.demoLivePreview}
                     </span>
                 </div>
                 <MiniPagePreview
                     title={title}
                     recipient={recipient}
                     message={message}
-                    theme={selectedTheme}
+                    theme={selectedThemeWithName}
                     yesText={yesText}
                     noText={noText}
                     noEscapes={noEscapes}
@@ -374,35 +396,35 @@ function DemoBuilder() {
 // ============================================================
 // TESTIMONIAL DATA
 // ============================================================
-const TESTIMONIALS = [
-    { name: 'Carlos M.', text: 'Le envié la página a mi novia y dijo que sí! El botón que escapa fue lo mejor 😂💕', emoji: '💑' },
-    { name: 'Ana P.', text: 'Súper fácil de usar y quedó hermosa. La usé para San Valentín.', emoji: '🌹' },
-    { name: 'Diego R.', text: 'El diseño con IA de la versión PRO es increíble. Totalmente vale la pena.', emoji: '✨' },
-    { name: 'Lucía S.', text: 'Creé una para pedirle matrimonio a mi novio. ¡Dijo que sí! 💍', emoji: '💍' },
+const TESTIMONIALS_DATA = [
+    { name: 'Carlos M.', key: 'testimonial1' as const, emoji: '💑' },
+    { name: 'Ana P.', key: 'testimonial2' as const, emoji: '🌹' },
+    { name: 'Diego R.', key: 'testimonial3' as const, emoji: '✨' },
+    { name: 'Lucía S.', key: 'testimonial4' as const, emoji: '💍' },
 ];
 
 // ============================================================
 // SHOWCASE PAGES - pre-made examples
 // ============================================================
-const SHOWCASE_PAGES = [
+const SHOWCASE_PAGES_BASE = [
     {
-        title: '¿Quieres ser mi San Valentín?',
+        titleKey: 'showcasePage1Title' as const,
         recipient: 'María',
-        message: 'Cada momento contigo es especial...',
+        messageKey: 'showcasePage1Message' as const,
         theme: DEMO_THEMES[0],
         stickers: ['❤️', '💖'],
     },
     {
-        title: '¿Salimos a cenar?',
+        titleKey: 'showcasePage2Title' as const,
         recipient: 'Alejandro',
-        message: 'Tengo algo especial planeado 🌹',
+        messageKey: 'showcasePage2Message' as const,
         theme: DEMO_THEMES[1],
         stickers: ['🌹', '💋'],
     },
     {
-        title: '¿Me perdonas?',
+        titleKey: 'showcasePage3Title' as const,
         recipient: 'Andrea',
-        message: 'Prometo que no volverá a pasar...',
+        messageKey: 'showcasePage3Message' as const,
         theme: DEMO_THEMES[2],
         stickers: ['💌', '💑'],
     },
@@ -447,6 +469,7 @@ function FloatingHearts() {
 // ============================================================
 export default function LandingPage() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
 
     // Intersection Observer for scroll animations
@@ -468,6 +491,17 @@ export default function LandingPage() {
 
     const isVisible = (id: string) => visibleSections.has(id);
 
+    const showcasePages = useMemo(() =>
+        SHOWCASE_PAGES_BASE.map((page) => ({
+            title: t.landing[page.titleKey],
+            recipient: page.recipient,
+            message: t.landing[page.messageKey],
+            theme: { ...page.theme, name: t.landing[THEME_NAME_KEYS[page.theme.id] as keyof typeof t.landing] as string },
+            stickers: page.stickers,
+        })),
+        [t]
+    );
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-rose-50 via-pink-50 to-white overflow-x-hidden">
             <FloatingHearts />
@@ -483,7 +517,7 @@ export default function LandingPage() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500" />
                         </span>
-                        <span className="text-sm text-gray-700 font-medium">+2,000 páginas creadas este mes</span>
+                        <span className="text-sm text-gray-700 font-medium">{t.landing.badge}</span>
                     </div>
 
                     {/* Hero icon */}
@@ -495,16 +529,15 @@ export default function LandingPage() {
 
                     {/* Headline */}
                     <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 mb-4 sm:mb-6 leading-[1.1] tracking-tight animate-fadeInUp">
-                        Dile lo que sientes
+                        {t.landing.heroTitle1}
                         <br />
                         <span className="bg-gradient-to-r from-pink-600 via-rose-500 to-red-500 bg-clip-text text-transparent">
-                            de forma única
+                            {t.landing.heroTitle2}
                         </span>
                     </h1>
 
                     <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed animate-fadeInUp animation-delay-200">
-                        Crea páginas personalizadas con animaciones, stickers y el botón que escapa.
-                        Comparte un link único y ve su respuesta en tiempo real.
+                        {t.landing.heroDescription}
                     </p>
 
                     {/* CTA buttons */}
@@ -514,14 +547,14 @@ export default function LandingPage() {
                             className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/30 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2"
                         >
                             <Sparkles className="w-5 h-5" />
-                            Crear mi página gratis
+                            {t.landing.ctaCreate}
                         </Link>
                         <a
                             href="#demo"
                             className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-pink-200 text-pink-700 font-bold rounded-2xl hover:bg-pink-50 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2"
                         >
                             <Play className="w-5 h-5" />
-                            Ver demo
+                            {t.landing.ctaDemo}
                         </a>
                     </div>
 
@@ -529,17 +562,17 @@ export default function LandingPage() {
                     <div className="flex items-center justify-center gap-6 text-sm text-gray-500 animate-fadeInUp animation-delay-600">
                         <span className="flex items-center gap-1.5">
                             <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
-                            Páginas ilimitadas
+                            {t.landing.unlimitedPages}
                         </span>
                         <span className="w-1 h-1 rounded-full bg-gray-300" />
                         <span className="flex items-center gap-1.5">
                             <Crown className="w-4 h-4 text-amber-500" />
-                            PRO por solo $1.39
+                            {t.landing.proPrice}
                         </span>
                         <span className="w-1 h-1 rounded-full bg-gray-300 hidden sm:block" />
                         <span className="hidden sm:flex items-center gap-1.5">
                             <Sparkles className="w-4 h-4 text-purple-500" />
-                            Diseño con IA
+                            {t.landing.aiDesign}
                         </span>
                     </div>
 
@@ -559,15 +592,15 @@ export default function LandingPage() {
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            Mira lo que puedes crear
+                            {t.landing.showcaseTitle}
                         </h2>
                         <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto">
-                            Desde declaraciones de amor hasta invitaciones. Cada página es única.
+                            {t.landing.showcaseDesc}
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-                        {SHOWCASE_PAGES.map((page, i) => (
+                        {showcasePages.map((page, i) => (
                             <div
                                 key={i}
                                 className="transition-all duration-500"
@@ -586,7 +619,7 @@ export default function LandingPage() {
                                 />
                                 {i === 0 && (
                                     <p className="text-center text-xs text-pink-500 mt-2 font-medium">
-                                        👆 ¡Intenta presionar "No"!
+                                        {t.landing.tryPressNo}
                                     </p>
                                 )}
                             </div>
@@ -604,9 +637,9 @@ export default function LandingPage() {
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            Así de fácil funciona
+                            {t.landing.howItWorksTitle}
                         </h2>
-                        <p className="text-gray-600 text-base sm:text-lg">En menos de 2 minutos tienes tu página lista</p>
+                        <p className="text-gray-600 text-base sm:text-lg">{t.landing.howItWorksDesc}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -614,20 +647,20 @@ export default function LandingPage() {
                             {
                                 step: '1',
                                 icon: '✍️',
-                                title: 'Personaliza tu página',
-                                desc: 'Escribe tu mensaje, elige tema, stickers, animaciones y el texto de los botones.',
+                                title: t.landing.step1Title,
+                                desc: t.landing.step1Desc,
                             },
                             {
                                 step: '2',
                                 icon: '🔗',
-                                title: 'Comparte el enlace',
-                                desc: 'Envía la URL única por WhatsApp, Instagram, o donde prefieras.',
+                                title: t.landing.step2Title,
+                                desc: t.landing.step2Desc,
                             },
                             {
                                 step: '3',
                                 icon: '💌',
-                                title: 'Ve la respuesta',
-                                desc: 'Cuando respondan, recibirás la notificación con su respuesta en tiempo real.',
+                                title: t.landing.step3Title,
+                                desc: t.landing.step3Desc,
                             },
                         ].map((item, i) => (
                             <div key={i} className="text-center group">
@@ -654,18 +687,18 @@ export default function LandingPage() {
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            Todo lo que necesitas
+                            {t.landing.featuresTitle}
                         </h2>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                         {[
-                            { emoji: '🎨', title: '8+ Temas', desc: 'Romántico, océano, elegante y más' },
-                            { emoji: '✨', title: 'Animaciones', desc: 'Corazones, confetti, nieve...' },
-                            { emoji: '😄', title: 'Botón que escapa', desc: '¡El "No" huye del cursor!' },
-                            { emoji: '🎭', title: '16 Stickers', desc: 'Corazones, rosas, anillos...' },
-                            { emoji: '🔤', title: 'Tipografías', desc: '16 fuentes para personalizar' },
-                            { emoji: '📊', title: 'Estadísticas', desc: 'Vistas y respuestas en vivo' },
+                            { emoji: '🎨', title: t.landing.feature1Title, desc: t.landing.feature1Desc },
+                            { emoji: '✨', title: t.landing.feature2Title, desc: t.landing.feature2Desc },
+                            { emoji: '😄', title: t.landing.feature3Title, desc: t.landing.feature3Desc },
+                            { emoji: '🎭', title: t.landing.feature4Title, desc: t.landing.feature4Desc },
+                            { emoji: '🔤', title: t.landing.feature5Title, desc: t.landing.feature5Desc },
+                            { emoji: '📊', title: t.landing.feature6Title, desc: t.landing.feature6Desc },
                         ].map((f, i) => (
                             <div
                                 key={i}
@@ -687,18 +720,18 @@ export default function LandingPage() {
                         </div>
                         <div className="flex-1 text-center sm:text-left">
                             <h3 className="text-xl font-bold text-gray-900 mb-1">
-                                ¿Quieres algo aún más especial?
+                                {t.landing.proUpsellTitle}
                             </h3>
-                            <p className="text-sm text-gray-600">
-                                Con PRO desbloqueas diseño con IA, URL personalizada con su nombre, música de fondo,
-                                animaciones premium y páginas ilimitadas. Todo por solo <strong>$1.39 USD</strong> — pago único.
-                            </p>
+                            <p
+                                className="text-sm text-gray-600"
+                                dangerouslySetInnerHTML={{ __html: t.landing.proUpsellDesc }}
+                            />
                         </div>
                         <div className="flex-shrink-0">
                             <Link href="/upgrade">
                                 <Button variant="gradient" size="lg" className="gap-2">
                                     <Crown className="w-5 h-5" />
-                                    Obtener PRO
+                                    {t.landing.getPro}
                                 </Button>
                             </Link>
                         </div>
@@ -716,13 +749,13 @@ export default function LandingPage() {
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 font-semibold text-sm px-4 py-1.5 rounded-full mb-4">
                             <Play className="w-4 h-4" />
-                            Demo interactiva
+                            {t.landing.demoInteractive}
                         </div>
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            Prueba cómo se verá tu página
+                            {t.landing.demoTitle}
                         </h2>
                         <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto">
-                            Personaliza el contenido abajo y ve los cambios en tiempo real. ¡No necesitas cuenta!
+                            {t.landing.demoDesc}
                         </p>
                     </div>
 
@@ -739,22 +772,22 @@ export default function LandingPage() {
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            Lo que dicen nuestros usuarios
+                            {t.landing.testimonialsTitle}
                         </h2>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                        {TESTIMONIALS.map((t, i) => (
+                        {TESTIMONIALS_DATA.map((testimonial, i) => (
                             <div
                                 key={i}
                                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-pink-100 shadow-sm hover:shadow-md transition-all"
                             >
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full flex items-center justify-center text-lg">
-                                        {t.emoji}
+                                        {testimonial.emoji}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 text-sm">{t.name}</p>
+                                        <p className="font-bold text-gray-900 text-sm">{testimonial.name}</p>
                                         <div className="flex gap-0.5">
                                             {[...Array(5)].map((_, j) => (
                                                 <Star key={j} className="w-3 h-3 text-amber-400 fill-amber-400" />
@@ -762,7 +795,7 @@ export default function LandingPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-sm text-gray-600 leading-relaxed">"{t.text}"</p>
+                                <p className="text-sm text-gray-600 leading-relaxed">"{t.landing[testimonial.key]}"</p>
                             </div>
                         ))}
                     </div>
@@ -777,22 +810,21 @@ export default function LandingPage() {
                     </div>
 
                     <h2 className="text-3xl sm:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
-                        ¿Listo para decirle
+                        {t.landing.finalCtaTitle1}
                         <br />
                         <span className="bg-gradient-to-r from-pink-600 to-rose-500 bg-clip-text text-transparent">
-                            lo que sientes?
+                            {t.landing.finalCtaTitle2}
                         </span>
                     </h2>
 
                     <p className="text-gray-600 text-base sm:text-lg mb-8 max-w-lg mx-auto">
-                        Crea tu primera página gratis en menos de 2 minutos.
-                        Sin tarjeta de crédito.
+                        {t.landing.finalCtaDesc}
                     </p>
 
                     <Link href={user ? '/dashboard' : '/create'}>
                         <Button variant="gradient" size="lg" className="gap-2">
                             <Heart className="w-5 h-5" />
-                            {user ? 'Ir a Mis Páginas' : 'Crear Página Gratis'}
+                            {user ? t.landing.goToMyPages : t.landing.createPageFree}
                         </Button>
                     </Link>
 

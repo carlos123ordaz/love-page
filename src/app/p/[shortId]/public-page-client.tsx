@@ -7,6 +7,7 @@ import { Heart, Volume2, VolumeX } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ProPageRenderer } from '@/components/ProPageRenderer';
 import { createPortal } from 'react-dom';
+import { useTranslation } from '@/i18n';
 
 // ============================================================
 // STICKER MAP (mismo que en create-page-enhanced)
@@ -305,6 +306,7 @@ export default function PublicPageView() {
     const [answered, setAnswered] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState<'yes' | 'no' | null>(null);
     const noButtonRef = useRef<HTMLButtonElement>(null);
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadPage();
@@ -332,7 +334,7 @@ export default function PublicPageView() {
             const { data } = await api.pages.getByShortId(shortId);
             setPage(data.data);
         } catch (error) {
-            toast.error('Página no encontrada');
+            toast.error(t.publicPage.pageNotFound);
         } finally {
             setLoading(false);
         }
@@ -347,18 +349,18 @@ export default function PublicPageView() {
             setSelectedAnswer(answer);
 
             if (answer === 'yes') {
-                toast.success('¡Qué alegría! 💕', {
+                toast.success(t.publicPage.joyResponse, {
                     duration: 4000,
                     icon: '💖',
                 });
             } else {
-                toast('Respuesta registrada', {
+                toast(t.publicPage.responseRegistered, {
                     duration: 3000,
                     icon: '😊',
                 });
             }
         } catch (error) {
-            toast.error('Error al enviar respuesta');
+            toast.error(t.publicPage.responseError);
         }
     };
     const [noButtonPos, setNoButtonPos] = useState<{ x: number; y: number } | null>(null);
@@ -417,8 +419,8 @@ export default function PublicPageView() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-rose-100">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Página no encontrada</h1>
-                    <p className="text-gray-600">Esta página no existe o ha sido eliminada</p>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.publicPage.pageNotFound}</h1>
+                    <p className="text-gray-600">{t.publicPage.pageNotFoundDesc}</p>
                 </div>
             </div>
         );
@@ -435,9 +437,9 @@ export default function PublicPageView() {
                                 {selectedAnswer === 'yes' ? '💕' : '😊'}
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                                {selectedAnswer === 'yes' ? '¡Gracias!' : 'Entendido'}
+                                {selectedAnswer === 'yes' ? t.publicPage.thanks : t.publicPage.understood}
                             </h2>
-                            <p className="text-gray-600">Tu respuesta ha sido registrada</p>
+                            <p className="text-gray-600">{t.publicPage.responseRecorded}</p>
                         </div>
                     </div>
                 )}
@@ -612,13 +614,13 @@ export default function PublicPageView() {
                             className="text-2xl font-semibold mb-2"
                             style={{ fontFamily: `'${titleFont}', cursive` }}
                         >
-                            {selectedAnswer === 'yes' ? '¡Gracias! 💕' : 'Entendido 😊'}
+                            {selectedAnswer === 'yes' ? `${t.publicPage.thanks} 💕` : `${t.publicPage.understood} 😊`}
                         </div>
                         <p
                             className="text-sm opacity-90"
                             style={{ fontFamily: `'${bodyFont}', sans-serif` }}
                         >
-                            Tu respuesta ha sido registrada
+                            {t.publicPage.responseRecorded}
                         </p>
                     </div>
                 )}
@@ -629,7 +631,7 @@ export default function PublicPageView() {
                         className="mt-12 text-xs opacity-30"
                         style={{ fontFamily: `'${bodyFont}', sans-serif` }}
                     >
-                        Hecho con Love Pages 💕
+                        {t.publicPage.madeWith}
                     </p>
                 )}
             </div>
