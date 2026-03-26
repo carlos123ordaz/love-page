@@ -734,6 +734,6 @@ const en: Translations = {
     en: 'English',
     switchLanguage: 'Language',
   },
-} as const;
+};
 
 export default en;

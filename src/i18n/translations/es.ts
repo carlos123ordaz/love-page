@@ -732,7 +732,7 @@ const es = {
     en: 'English',
     switchLanguage: 'Idioma',
   },
-} as const;
+};
 
 export default es;
 export type Translations = typeof es;
