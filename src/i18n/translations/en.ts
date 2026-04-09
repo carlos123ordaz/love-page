@@ -662,6 +662,11 @@ const en: Translations = {
     // Buttons
     copyLink: 'Copy link',
     viewPage: 'View page',
+
+    // QR toasts
+    qrDownloaded: 'QR downloaded!',
+    qrCopied: 'QR copied to clipboard!',
+    qrCopyError: 'Could not copy. Download it instead.',
   },
 
   // ============================================================

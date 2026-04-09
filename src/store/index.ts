@@ -47,6 +47,7 @@ interface Page {
     noCount: number;
     createdAt: string;
     isActive: boolean;
+    expiresAt: string | null;
 }
 
 interface PageStore {

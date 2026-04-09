@@ -23,6 +23,7 @@ import {
     LayoutTemplate,
     Gamepad2,
     ExternalLink,
+    Clock,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -336,6 +337,17 @@ export default function DashboardPage() {
                                         <div className="text-[11px] sm:text-xs text-gray-500">
                                             {getTimeAgo(page.createdAt)}
                                         </div>
+
+                                        {/* Expiration notice for free pages */}
+                                        {page.expiresAt && (
+                                            <div className={`flex items-center gap-1 text-[11px] sm:text-xs font-medium ${new Date(page.expiresAt) < new Date() ? 'text-red-500' : 'text-amber-600'}`}>
+                                                <Clock className="w-3 h-3 flex-shrink-0" />
+                                                {new Date(page.expiresAt) < new Date()
+                                                    ? 'Página expirada'
+                                                    : `Expira ${getTimeAgo(page.expiresAt)}`
+                                                }
+                                            </div>
+                                        )}
 
                                         {/* Acciones */}
                                         <div className="flex items-center gap-1.5 sm:gap-2 pt-1">

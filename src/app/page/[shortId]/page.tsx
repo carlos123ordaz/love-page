@@ -6,7 +6,7 @@ export async function generateMetadata({
     params: { shortId: string };
 }): Promise<Metadata> {
     return {
-        title: 'Detalle de Página',
+        title: 'Page Detail',
         alternates: {
             canonical: `/page/${params.shortId}`,
         },

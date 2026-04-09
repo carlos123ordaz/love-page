@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
-import { Crown, Check, Sparkles, Zap, Heart, CreditCard, LinkIcon, Wand2, Music, Palette } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Heart, CreditCard, LinkIcon, Wand2, Music, Palette, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const MercadoPagoLogo = () => (
@@ -215,6 +215,21 @@ export default function UpgradePage() {
                                         </p>
                                     </div>
                                 </div>
+
+                                <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                            <Clock className="w-5 h-5 text-amber-500" />
+                                            Páginas sin vencimiento
+                                        </h3>
+                                        <p className="text-sm text-gray-600">
+                                            Las páginas PRO nunca expiran. Las del plan gratuito se eliminan a los <strong>7 días</strong>.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Payment Method Selection */}
@@ -293,6 +308,9 @@ export default function UpgradePage() {
                                 <div className="flex items-center gap-2 text-gray-400">
                                     ✗ Incluye marca de agua
                                 </div>
+                                <div className="flex items-center gap-2 text-red-500 font-medium">
+                                    ✗ Páginas expiran en 7 días
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -339,6 +357,10 @@ export default function UpgradePage() {
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
                                     Plantillas premium
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                    <Check className="w-4 h-4 text-green-600" />
+                                    Páginas sin vencimiento
                                 </div>
                             </CardContent>
                         </Card>

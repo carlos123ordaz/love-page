@@ -660,6 +660,11 @@ const es = {
     // Buttons
     copyLink: 'Copiar enlace',
     viewPage: 'Ver página',
+
+    // QR toasts
+    qrDownloaded: '¡QR descargado!',
+    qrCopied: '¡QR copiado al portapapeles!',
+    qrCopyError: 'No se pudo copiar. Descárgalo en su lugar.',
   },
 
   // ============================================================

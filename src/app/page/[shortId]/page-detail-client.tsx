@@ -28,12 +28,14 @@ import toast from 'react-hot-toast';
 import { copyToClipboard } from '@/lib/utils';
 import Link from 'next/link';
 import QRCodeLib from 'qrcode';
+import { useTranslation } from '@/i18n';
 
 export default function PageDetailView() {
     const params = useParams();
     const router = useRouter();
     const shortId = params.shortId as string;
     const { user, loading: authLoading } = useAuthStore();
+    const { t } = useTranslation();
     const [pageData, setPageData] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
     const [responses, setResponses] = useState<any[]>([]);
@@ -61,7 +63,7 @@ export default function PageDetailView() {
             const { data: pagesData } = await api.pages.getMyPages();
             const page = pagesData.data.find((p: any) => p.shortId === shortId);
             if (!page) {
-                toast.error('Página no encontrada');
+                toast.error(t.pageDetail.pageNotFound);
                 router.push('/dashboard');
                 return;
             }
@@ -72,7 +74,7 @@ export default function PageDetailView() {
             setResponses(data.data.responses || []);
         } catch (error) {
             console.error('Error loading page details:', error);
-            toast.error('Error al cargar detalles');
+            toast.error(t.pageDetail.loadError);
             router.push('/dashboard');
         } finally {
             setLoading(false);
@@ -83,7 +85,7 @@ export default function PageDetailView() {
         const identifier = pageData?.customSlug || pageData?.shortId || shortId;
         const url = pageData?.url || `${window.location.origin}/p/${identifier}`;
         copyToClipboard(url);
-        toast.success('¡Enlace copiado!');
+        toast.success(t.pageDetail.linkCopied);
     };
 
     const handleOpenPublic = () => {
@@ -130,7 +132,7 @@ export default function PageDetailView() {
                 img.onload = () => {
                     try {
                         const canvas = brandedCanvasRef.current;
-                        if (!canvas) { reject(new Error('Canvas no disponible')); return; }
+                        if (!canvas) { reject(new Error('Canvas not available')); return; }
 
                         const qrSize = 360;
                         const padding = 44;
@@ -140,7 +142,7 @@ export default function PageDetailView() {
                         canvas.height = qrSize + padding * 2 + bottomExtra;
 
                         const ctx = canvas.getContext('2d');
-                        if (!ctx) { reject(new Error('Context no disponible')); return; }
+                        if (!ctx) { reject(new Error('Context not available')); return; }
 
                         // White background
                         ctx.fillStyle = '#ffffff';
@@ -184,12 +186,12 @@ export default function PageDetailView() {
             });
         } catch (error) {
             console.error('Error generating QR:', error);
-            toast.error('Error al generar código QR');
+            toast.error(t.pageDetail.loadError);
             setShowQrModal(false);
         } finally {
             setGeneratingQr(false);
         }
-    }, [user, pageData, shortId]);
+    }, [user, pageData, shortId, t]);
 
     const downloadQr = () => {
         if (!qrDataUrl) return;
@@ -197,7 +199,7 @@ export default function PageDetailView() {
         link.download = `lovepages-qr-${pageData?.shortId || 'code'}.png`;
         link.href = qrDataUrl;
         link.click();
-        toast.success('¡QR descargado!');
+        toast.success(t.pageDetail.qrDownloaded);
     };
 
     const copyQrToClipboard = async () => {
@@ -210,10 +212,10 @@ export default function PageDetailView() {
                 await navigator.clipboard.write([
                     new ClipboardItem({ 'image/png': blob }),
                 ]);
-                toast.success('¡QR copiado al portapapeles!');
+                toast.success(t.pageDetail.qrCopied);
             }
         } catch {
-            toast.error('No se pudo copiar. Descárgalo en su lugar.');
+            toast.error(t.pageDetail.qrCopyError);
         }
     };
 
@@ -229,8 +231,11 @@ export default function PageDetailView() {
 
     if (authLoading || loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+                <Header />
+                <main className="container py-8 max-w-4xl mx-auto px-4 flex items-center justify-center" style={{ minHeight: 'calc(100vh - 64px)' }}>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+                </main>
             </div>
         );
     }
@@ -272,18 +277,18 @@ export default function PageDetailView() {
                                 </span>
                             )}
                         </h1>
-                        <p className="text-gray-600">Para: {pageData.recipientName}</p>
+                        <p className="text-gray-600">{t.dashboard.forRecipient.replace('{name}', pageData.recipientName)}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                         <Button variant="outline" size="sm" onClick={handleCopyUrl}>
                             <Copy className="w-4 h-4 mr-1" />
-                            <span className="hidden sm:inline">Copiar enlace</span>
-                            <span className="sm:hidden">Copiar</span>
+                            <span className="hidden sm:inline">{t.pageDetail.copyLink}</span>
+                            <span className="sm:hidden">{t.common.copy}</span>
                         </Button>
                         <Button variant="outline" size="sm" onClick={handleOpenPublic}>
                             <ExternalLink className="w-4 h-4 mr-1" />
-                            <span className="hidden sm:inline">Ver página</span>
-                            <span className="sm:hidden">Ver</span>
+                            <span className="hidden sm:inline">{t.pageDetail.viewPage}</span>
+                            <span className="sm:hidden">{t.common.view}</span>
                         </Button>
                     </div>
                 </div>
@@ -301,7 +306,7 @@ export default function PageDetailView() {
                                 </div>
                                 <div className="min-w-0">
                                     <h3 className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
-                                        Código QR
+                                        {t.pageDetail.qrCode}
                                         {!user.isPro && (
                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
                                                 <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
@@ -310,10 +315,7 @@ export default function PageDetailView() {
                                         )}
                                     </h3>
                                     <p className="text-sm text-gray-500 truncate">
-                                        {user.isPro
-                                            ? 'Genera y descarga un QR para compartir tu página'
-                                            : 'Comparte tu página con un código QR imprimible'
-                                        }
+                                        {user.isPro ? t.pageDetail.qrDesc : t.pageDetail.qrShareDesc}
                                     </p>
                                 </div>
                             </div>
@@ -326,13 +328,13 @@ export default function PageDetailView() {
                                 {user.isPro ? (
                                     <>
                                         <QrCode className="w-4 h-4" />
-                                        <span className="hidden sm:inline">Generar QR</span>
+                                        <span className="hidden sm:inline">{t.pageDetail.generateQR}</span>
                                         <span className="sm:hidden">QR</span>
                                     </>
                                 ) : (
                                     <>
                                         <Lock className="w-4 h-4" />
-                                        <span className="hidden sm:inline">Desbloquear</span>
+                                        <span className="hidden sm:inline">{t.pageDetail.unlock}</span>
                                         <span className="sm:hidden">PRO</span>
                                     </>
                                 )}
@@ -359,7 +361,7 @@ export default function PageDetailView() {
                                         <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                                                 <QrCode className="w-5 h-5 text-pink-600" />
-                                                Código QR
+                                                {t.pageDetail.qrCode}
                                             </h3>
                                             <button
                                                 onClick={() => { setShowQrModal(false); setQrDataUrl(null); }}
@@ -372,19 +374,19 @@ export default function PageDetailView() {
                                         {generatingQr ? (
                                             <div className="py-16">
                                                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-600 mx-auto mb-3"></div>
-                                                <p className="text-sm text-gray-500">Generando código QR...</p>
+                                                <p className="text-sm text-gray-500">{t.pageDetail.generatingQR}</p>
                                             </div>
                                         ) : qrDataUrl ? (
                                             <div className="space-y-4">
                                                 <div className="bg-gray-50 rounded-xl p-3 inline-block">
                                                     <img
                                                         src={qrDataUrl}
-                                                        alt="Código QR de la página"
+                                                        alt={t.pageDetail.qrCode}
                                                         className="w-full max-w-[280px] mx-auto rounded-lg"
                                                     />
                                                 </div>
                                                 <p className="text-xs text-gray-500 px-4">
-                                                    Escanea este código para abrir &quot;{pageData.title}&quot;
+                                                    {t.pageDetail.scanToOpen} &quot;{pageData.title}&quot;
                                                 </p>
                                             </div>
                                         ) : null}
@@ -398,7 +400,7 @@ export default function PageDetailView() {
                                                 className="flex-1 gap-2"
                                             >
                                                 <Download className="w-4 h-4" />
-                                                Descargar
+                                                {t.pageDetail.download}
                                             </Button>
                                             <Button
                                                 onClick={copyQrToClipboard}
@@ -406,7 +408,7 @@ export default function PageDetailView() {
                                                 className="flex-1 gap-2"
                                             >
                                                 <Copy className="w-4 h-4" />
-                                                Copiar
+                                                {t.common.copy}
                                             </Button>
                                         </div>
                                     )}
@@ -418,8 +420,8 @@ export default function PageDetailView() {
                                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                                             <QrCode className="w-8 h-8" />
                                         </div>
-                                        <h3 className="text-xl font-bold mb-1">Código QR</h3>
-                                        <p className="text-white/80 text-sm">Función exclusiva PRO</p>
+                                        <h3 className="text-xl font-bold mb-1">{t.pageDetail.qrCode}</h3>
+                                        <p className="text-white/80 text-sm">{t.pageDetail.proExclusive}</p>
                                     </div>
                                     <div className="p-6 space-y-4">
                                         <div className="relative bg-gray-100 rounded-xl p-6 flex items-center justify-center">
@@ -440,14 +442,14 @@ export default function PageDetailView() {
                                         </div>
 
                                         <p className="text-sm text-gray-600 text-center">
-                                            Con PRO puedes generar un código QR de tu página para imprimirlo en cartas, regalos o invitaciones 💌
+                                            {t.pageDetail.qrProDesc}
                                         </p>
 
                                         <div className="space-y-2">
                                             <Link href="/upgrade" className="block">
                                                 <Button className="w-full gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white">
                                                     <Crown className="w-4 h-4" />
-                                                    Obtener PRO — $1.75 USD
+                                                    {t.pageDetail.getProPrice}
                                                 </Button>
                                             </Link>
                                             <Button
@@ -455,7 +457,7 @@ export default function PageDetailView() {
                                                 className="w-full text-gray-500"
                                                 onClick={() => setShowQrModal(false)}
                                             >
-                                                Ahora no
+                                                {t.pageDetail.notNow}
                                             </Button>
                                         </div>
                                     </div>
@@ -470,29 +472,29 @@ export default function PageDetailView() {
                     <Card>
                         <CardContent className="pt-6 text-center">
                             <Eye className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-                            <div className="text-2xl font-bold">{stats?.views || 0}</div>
-                            <p className="text-sm text-gray-500">Vistas</p>
+                            <div className="text-2xl font-bold">{stats?.uniqueViews || 0}</div>
+                            <p className="text-sm text-gray-500">{t.pageDetail.views}</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="pt-6 text-center">
                             <MessageCircle className="w-6 h-6 text-purple-500 mx-auto mb-2" />
                             <div className="text-2xl font-bold">{stats?.totalResponses || 0}</div>
-                            <p className="text-sm text-gray-500">Respuestas</p>
+                            <p className="text-sm text-gray-500">{t.pageDetail.responses}</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="pt-6 text-center">
                             <ThumbsUp className="w-6 h-6 text-green-500 mx-auto mb-2" />
                             <div className="text-2xl font-bold text-green-600">{stats?.yesCount || 0}</div>
-                            <p className="text-sm text-gray-500">Sí ({yesPercentage}%)</p>
+                            <p className="text-sm text-gray-500">{t.pageDetail.yesLabel} ({yesPercentage}%)</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="pt-6 text-center">
                             <ThumbsDown className="w-6 h-6 text-red-500 mx-auto mb-2" />
                             <div className="text-2xl font-bold text-red-600">{stats?.noCount || 0}</div>
-                            <p className="text-sm text-gray-500">No ({noPercentage}%)</p>
+                            <p className="text-sm text-gray-500">{t.pageDetail.noLabel} ({noPercentage}%)</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -503,10 +505,10 @@ export default function PageDetailView() {
                         <CardContent className="pt-6">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-sm font-medium text-green-600">
-                                    Sí: {stats.yesCount}
+                                    {t.pageDetail.yesLabel}: {stats.yesCount}
                                 </span>
                                 <span className="text-sm font-medium text-red-600">
-                                    No: {stats.noCount}
+                                    {t.pageDetail.noLabel}: {stats.noCount}
                                 </span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
@@ -522,23 +524,23 @@ export default function PageDetailView() {
                 {/* Page Info */}
                 <Card className="mb-8">
                     <CardHeader>
-                        <CardTitle className="text-lg">Información de la página</CardTitle>
+                        <CardTitle className="text-lg">{t.pageDetail.pageInfo}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {pageData.message && (
                             <div>
-                                <span className="text-sm font-medium text-gray-500">Mensaje:</span>
+                                <span className="text-sm font-medium text-gray-500">{t.pageDetail.messageLabel}</span>
                                 <p className="text-gray-900">{pageData.message}</p>
                             </div>
                         )}
                         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                            <span>Botón Sí: <strong>{pageData.yesButtonText}</strong></span>
-                            <span>Botón No: <strong>{pageData.noButtonText}</strong></span>
-                            <span>Botón escapa: <strong>{pageData.noButtonEscapes ? 'Sí' : 'No'}</strong></span>
-                            <span>Estado: <strong className={pageData.isActive ? 'text-green-600' : 'text-red-600'}>{pageData.isActive ? 'Activa' : 'Inactiva'}</strong></span>
+                            <span>{t.pageDetail.yesButton} <strong>{pageData.yesButtonText}</strong></span>
+                            <span>{t.pageDetail.noButton} <strong>{pageData.noButtonText}</strong></span>
+                            <span>{t.pageDetail.escapeButton} <strong>{pageData.noButtonEscapes ? t.common.yes : t.common.no}</strong></span>
+                            <span>{t.pageDetail.status} <strong className={pageData.isActive ? 'text-green-600' : 'text-red-600'}>{pageData.isActive ? t.pageDetail.active : t.pageDetail.inactive}</strong></span>
                         </div>
                         <div className="text-xs text-gray-400">
-                            Creada: {formatDate(pageData.createdAt)}
+                            {t.pageDetail.createdAt} {formatDate(pageData.createdAt)}
                         </div>
                     </CardContent>
                 </Card>
@@ -548,15 +550,15 @@ export default function PageDetailView() {
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                             <MessageCircle className="w-5 h-5" />
-                            Respuestas ({responses.length})
+                            {t.pageDetail.responsesTitle} ({responses.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         {responses.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">
                                 <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                <p className="font-medium">Aún no hay respuestas</p>
-                                <p className="text-sm mt-1">Comparte el enlace para recibir respuestas</p>
+                                <p className="font-medium">{t.pageDetail.noResponses}</p>
+                                <p className="text-sm mt-1">{t.pageDetail.shareToGetResponses}</p>
                             </div>
                         ) : (
                             <div className="space-y-3">
@@ -584,7 +586,7 @@ export default function PageDetailView() {
                                                     ? 'text-green-700'
                                                     : 'text-red-700'
                                                     }`}>
-                                                    {response.answer === 'yes' ? '¡Sí! 💕' : 'No 😢'}
+                                                    {response.answer === 'yes' ? t.pageDetail.yesResponse : t.pageDetail.noResponse}
                                                 </span>
                                                 {response.location?.city && (
                                                     <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">

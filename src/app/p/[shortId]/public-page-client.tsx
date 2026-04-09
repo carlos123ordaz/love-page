@@ -303,12 +303,15 @@ export default function PublicPageView() {
     const shortId = params.shortId as string;
     const [page, setPage] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [pageExpired, setPageExpired] = useState(false);
     const [answered, setAnswered] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState<'yes' | 'no' | null>(null);
     const noButtonRef = useRef<HTMLButtonElement>(null);
     const { t } = useTranslation();
 
     useEffect(() => {
+        if (pageLoadedRef.current) return;
+        pageLoadedRef.current = true;
         loadPage();
     }, [shortId]);
 
@@ -333,8 +336,12 @@ export default function PublicPageView() {
         try {
             const { data } = await api.pages.getByShortId(shortId);
             setPage(data.data);
-        } catch (error) {
-            toast.error(t.publicPage.pageNotFound);
+        } catch (error: any) {
+            if (error.response?.status === 410 || error.response?.data?.code === 'PAGE_EXPIRED') {
+                setPageExpired(true);
+            } else {
+                toast.error(t.publicPage.pageNotFound);
+            }
         } finally {
             setLoading(false);
         }
@@ -363,6 +370,7 @@ export default function PublicPageView() {
             toast.error(t.publicPage.responseError);
         }
     };
+    const pageLoadedRef = useRef(false);
     const [noButtonPos, setNoButtonPos] = useState<{ x: number; y: number } | null>(null);
     const [noButtonInitialized, setNoButtonInitialized] = useState(false);
 
@@ -410,6 +418,27 @@ export default function PublicPageView() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-rose-100">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-600"></div>
+            </div>
+        );
+    }
+
+    // ---- Expired ----
+    if (pageExpired) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-rose-100">
+                <div className="text-center max-w-sm mx-auto px-6">
+                    <div className="text-6xl mb-4">⏰</div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Esta página ha expirado</h1>
+                    <p className="text-gray-600 mb-6">
+                        Las páginas del plan gratuito están disponibles por 7 días. Esta página ya no está activa.
+                    </p>
+                    <a
+                        href="/upgrade"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white font-semibold rounded-full shadow hover:from-amber-500 hover:to-yellow-600 transition-all"
+                    >
+                        Crear con plan PRO — sin vencimiento
+                    </a>
+                </div>
             </div>
         );
     }

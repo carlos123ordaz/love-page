@@ -35,6 +35,7 @@ import {
     Snowflake,
     Flame,
     CloudRain,
+    Clock,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -301,6 +302,7 @@ function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                 {/* Features */}
                 <div className="p-6 space-y-3">
                     {[
+                        'Páginas sin vencimiento (gratis expiran en 7 días)',
                         'Temas exclusivos (Neón, Aurora, Vintage...)',
                         'Tipografías premium',
                         'Hasta 5 imágenes decorativas',
@@ -309,7 +311,6 @@ function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                         'Música de fondo',
                         'Sin marca de agua',
                         'Diseño generado por IA',
-                        'Páginas ilimitadas',
                     ].map((feature, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
                             <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -693,6 +694,24 @@ export default function CreatePageEnhanced() {
                             ))}
                         </div>
                     </div>
+
+                    {/* Expiration notice for free users */}
+                    {!isPro && (
+                        <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                            <Clock className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 text-sm text-amber-800">
+                                <span className="font-semibold">Tu página expirará en 7 días.</span>{' '}
+                                Con el plan gratuito, las páginas se desactivan automáticamente después de 7 días.{' '}
+                                <button
+                                    onClick={goToUpgrade}
+                                    className="font-semibold underline hover:text-amber-900 transition-colors"
+                                >
+                                    Actualiza a PRO
+                                </button>{' '}
+                                para que tu página nunca expire.
+                            </div>
+                        </div>
+                    )}
 
                     {/* Main grid: Editor + Preview */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
