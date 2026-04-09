@@ -841,6 +841,13 @@ export default function LandingPage() {
                         <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
                         <span className="font-semibold text-gray-700">Love Pages</span>
                     </div>
+                    <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                        <Link href="/blog" className="hover:text-pink-600 transition-colors">Blog</Link>
+                        <Link href="/about" className="hover:text-pink-600 transition-colors">Acerca de</Link>
+                        <Link href="/privacy-policy" className="hover:text-pink-600 transition-colors">Privacidad</Link>
+                        <Link href="/terms" className="hover:text-pink-600 transition-colors">Términos</Link>
+                        <Link href="/contact" className="hover:text-pink-600 transition-colors">Contacto</Link>
+                    </nav>
                     <p>© {new Date().getFullYear()} Love Pages. Hecho con amor.</p>
                 </div>
             </footer>
