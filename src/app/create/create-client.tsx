@@ -238,6 +238,8 @@ interface PageFormData {
     animation: string;
     // Música
     backgroundMusic: string;
+    // Video embed (PRO)
+    videoUrl: string;
     // Extras
     showWatermark: boolean; // free = true siempre
     customSlug: string;
@@ -377,6 +379,7 @@ export default function CreatePageEnhanced() {
         selectedStickers: [],
         animation: 'hearts-falling',
         backgroundMusic: 'none',
+        videoUrl: '',
         showWatermark: !isPro,
         customSlug: '',
     });
@@ -572,6 +575,9 @@ export default function CreatePageEnhanced() {
             data.append('bodyFont', formData.bodyFont);
             data.append('animation', formData.animation);
             data.append('backgroundMusic', formData.backgroundMusic);
+            if (isPro && formData.videoUrl.trim()) {
+                data.append('videoUrl', formData.videoUrl.trim());
+            }
             data.append('selectedStickers', JSON.stringify(formData.selectedStickers));
             data.append('showWatermark', formData.showWatermark.toString());
 
@@ -1245,6 +1251,35 @@ export default function CreatePageEnhanced() {
                                                     </div>
                                                 ))}
                                             </div>
+                                        </div>
+
+                                        {/* Video embed PRO */}
+                                        <div>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                                    🎬 Video embed
+                                                </label>
+                                                {!isPro && <ProBadge />}
+                                            </div>
+                                            {isPro ? (
+                                                <div>
+                                                    <input
+                                                        type="url"
+                                                        placeholder="https://youtube.com/watch?v=... o https://tiktok.com/..."
+                                                        value={formData.videoUrl}
+                                                        onChange={(e) => updateForm({ videoUrl: e.target.value })}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+                                                    />
+                                                    <p className="text-xs text-gray-500 mt-1">YouTube o TikTok. Se mostrará como video embed en tu página.</p>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={goToUpgrade}
+                                                    className="w-full p-3 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-600 hover:bg-amber-50 transition-colors text-center"
+                                                >
+                                                    🔒 Agrega un video de YouTube o TikTok — solo PRO
+                                                </button>
+                                            )}
                                         </div>
 
                                         {/* Marca de agua */}

@@ -109,6 +109,13 @@ export const api = {
             apiClient.patch(`/notifications/${notificationId}/read`),
         markAllAsRead: () =>
             apiClient.patch('/notifications/read-all'),
+        // Web Push
+        getVapidPublicKey: () =>
+            apiClient.get('/notifications/push/vapid-public-key'),
+        subscribePush: (subscription: any) =>
+            apiClient.post('/notifications/push/subscribe', { subscription }),
+        unsubscribePush: (data: { endpoint: string }) =>
+            apiClient.delete('/notifications/push/unsubscribe', { data }),
     },
     templates: {
         // Listar plantillas activas (público)

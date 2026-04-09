@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { useTranslation } from '@/i18n';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import {
     Plus,
     Heart,
@@ -24,6 +25,8 @@ import {
     Gamepad2,
     ExternalLink,
     Clock,
+    Bell,
+    BellOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -38,6 +41,18 @@ export default function DashboardPage() {
     const [loadingPages, setLoadingPages] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const { t } = useTranslation();
+    const { permission, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+
+    const handlePushToggle = async () => {
+        if (permission === 'granted') {
+            await unsubscribe();
+            toast('Notificaciones desactivadas');
+        } else {
+            const ok = await subscribe();
+            if (ok) toast.success('¡Notificaciones activadas! Te avisaremos cuando alguien vea tu página 🔔');
+            else if (permission === 'denied') toast.error('Bloqueaste las notificaciones en tu navegador. Actívalas desde la configuración del sitio.');
+        }
+    };
 
     useEffect(() => {
         if (user) {
@@ -184,6 +199,20 @@ export default function DashboardPage() {
                                 {t.nav.games}
                             </Button>
                         </Link>
+
+                        {permission !== 'unsupported' && (
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={handlePushToggle}
+                                disabled={pushLoading || permission === 'denied'}
+                                title={permission === 'denied' ? 'Notificaciones bloqueadas en el navegador' : permission === 'granted' ? 'Desactivar notificaciones' : 'Activar notificaciones de visitas'}
+                                className={`gap-2 w-full sm:w-auto ${permission === 'granted' ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                            >
+                                {permission === 'granted' ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+                                {permission === 'granted' ? 'Notificaciones ON' : 'Activar alertas'}
+                            </Button>
+                        )}
                     </div>
                 </div>
 

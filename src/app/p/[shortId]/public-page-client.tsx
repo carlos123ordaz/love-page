@@ -1,6 +1,30 @@
 'use client';
 
 import { useEffect, useState, useRef, useMemo } from 'react';
+
+/** Convierte una URL de YouTube o TikTok a su URL de embed. Devuelve null si no es soportada. */
+function getEmbedUrl(url: string): string | null {
+    try {
+        const u = new URL(url);
+        // YouTube: youtube.com/watch?v=ID  |  youtu.be/ID  |  youtube.com/shorts/ID
+        if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
+            let videoId = u.searchParams.get('v');
+            if (!videoId) {
+                const parts = u.pathname.split('/').filter(Boolean);
+                videoId = parts[parts.indexOf('shorts') + 1] || parts[parts.length - 1];
+            }
+            return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : null;
+        }
+        // TikTok: tiktok.com/@user/video/ID
+        if (u.hostname.includes('tiktok.com')) {
+            const match = u.pathname.match(/\/video\/(\d+)/);
+            return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : null;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Heart, Volume2, VolumeX } from 'lucide-react';
@@ -296,6 +320,29 @@ function DecorativeImages({ urls }: { urls: string[] }) {
 }
 
 // ============================================================
+// COMPONENTE: Video embed
+// ============================================================
+function VideoEmbed({ url }: { url: string }) {
+    const embedUrl = getEmbedUrl(url);
+    if (!embedUrl) return null;
+
+    return (
+        <div className="w-full max-w-lg mx-auto my-6 rounded-xl overflow-hidden shadow-lg">
+            <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                    src={embedUrl}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                    title="Video embed"
+                />
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function PublicPageView() {
@@ -570,6 +617,9 @@ export default function PublicPageView() {
 
                 {/* Imágenes decorativas */}
                 <DecorativeImages urls={page.decorativeImageUrls || []} />
+
+                {/* Video embed */}
+                {page.videoUrl && <VideoEmbed url={page.videoUrl} />}
 
                 {/* Botones */}
                 {!answered ? (
