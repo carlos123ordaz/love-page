@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
-import { Crown, Check, Sparkles, Zap, Heart, CreditCard, LinkIcon, Wand2, Music, Palette, Clock } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, CreditCard, LinkIcon, Wand2, Music, Palette, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const MercadoPagoLogo = () => (
@@ -33,7 +33,7 @@ export default function UpgradePage() {
     const { user, loading: authLoading } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('mercadopago');
-    const freeLimitReached = !!user && !user?.isPro && user.canCreatePage === false;
+    const freeLimitReached = !!user && !user.isPro && user.canCreatePage === false;
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -85,7 +85,6 @@ export default function UpgradePage() {
 
             <main className="container py-12">
                 <div className="max-w-4xl mx-auto">
-                    {/* Header */}
                     <div className="text-center mb-12">
                         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full mb-6">
                             <Crown className="w-10 h-10 text-white" />
@@ -98,12 +97,11 @@ export default function UpgradePage() {
                         </p>
                         {freeLimitReached && (
                             <p className="mt-4 inline-flex items-center rounded-full bg-amber-100 px-4 py-2 text-sm font-medium text-amber-900">
-                                Ya usaste tu 1 pÃ¡gina gratis. Con PRO puedes crear pÃ¡ginas ilimitadas.
+                                Ya usaste tu 1 página gratis. Con PRO puedes crear páginas ilimitadas.
                             </p>
                         )}
                     </div>
 
-                    {/* Pricing Card */}
                     <Card className="border-4 border-amber-400 shadow-2xl mb-8 overflow-hidden">
                         <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-3 px-6">
                             <div className="flex items-center justify-between">
@@ -127,7 +125,6 @@ export default function UpgradePage() {
                         </CardHeader>
 
                         <CardContent className="space-y-6">
-                            {/* Features */}
                             <div className="space-y-4">
                                 <div className="flex items-start gap-3">
                                     <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
@@ -238,7 +235,6 @@ export default function UpgradePage() {
                                 </div>
                             </div>
 
-                            {/* Payment Method Selection */}
                             <div className="pt-6 border-t">
                                 <h3 className="text-sm font-medium text-gray-700 mb-3">
                                     Selecciona tu método de pago:
@@ -261,7 +257,6 @@ export default function UpgradePage() {
                                 </div>
                             </div>
 
-                            {/* Payment Button */}
                             <div className="pt-3 space-y-3">
                                 <Button
                                     onClick={handlePayment}
@@ -278,7 +273,6 @@ export default function UpgradePage() {
                         </CardContent>
                     </Card>
 
-                    {/* Comparison */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card>
                             <CardHeader>
@@ -306,19 +300,19 @@ export default function UpgradePage() {
                                     3 stickers, 1 imagen decorativa
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✗ Sin diseño con IA
+                                    ✕ Sin diseño con IA
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✗ Sin URL personalizada
+                                    ✕ Sin URL personalizada
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✗ Sin música de fondo
+                                    ✕ Sin música de fondo
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✗ Incluye marca de agua
+                                    ✕ Incluye marca de agua
                                 </div>
                                 <div className="flex items-center gap-2 text-red-500 font-medium">
-                                    ✗ Páginas expiran en 7 días
+                                    ✕ Páginas expiran en 7 días
                                 </div>
                             </CardContent>
                         </Card>

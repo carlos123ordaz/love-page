@@ -746,7 +746,7 @@ export default function CreatePageEnhanced() {
                             </div>
                             <button
                                 type="button"
-                                aria-label="Cerrar aviso de expiraciÃ³n"
+                                aria-label="Cerrar aviso de expiración"
                                 onClick={dismissExpirationNotice}
                                 className="rounded-md p-1 text-amber-500 transition-colors hover:bg-amber-100 hover:text-amber-700"
                             >
