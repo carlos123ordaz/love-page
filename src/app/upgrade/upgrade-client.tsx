@@ -33,6 +33,7 @@ export default function UpgradePage() {
     const { user, loading: authLoading } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('mercadopago');
+    const freeLimitReached = !!user && !user?.isPro && user.canCreatePage === false;
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -95,6 +96,11 @@ export default function UpgradePage() {
                         <p className="text-xl text-gray-600">
                             Lleva tus páginas al siguiente nivel con herramientas premium
                         </p>
+                        {freeLimitReached && (
+                            <p className="mt-4 inline-flex items-center rounded-full bg-amber-100 px-4 py-2 text-sm font-medium text-amber-900">
+                                Ya usaste tu 1 pÃ¡gina gratis. Con PRO puedes crear pÃ¡ginas ilimitadas.
+                            </p>
+                        )}
                     </div>
 
                     {/* Pricing Card */}
@@ -282,7 +288,10 @@ export default function UpgradePage() {
                             <CardContent className="space-y-3">
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    Páginas ilimitadas
+                                    1 página gratis
+                                </div>
+                                <div className="flex items-center gap-2 text-red-500 font-medium">
+                                    ✕ No puedes crear una segunda página sin actualizar a PRO
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
