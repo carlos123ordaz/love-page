@@ -108,6 +108,7 @@ export default function TemplateDetailPage() {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const isPro = user?.isPro || false;
+    const freeLimitReached = !!user && !isPro && user.canCreatePage === false;
 
     useEffect(() => {
         loadTemplate();
@@ -225,6 +226,11 @@ export default function TemplateDetailPage() {
             toast.error('Inicia sesión con Google para crear tu página');
             return;
         }
+        if (freeLimitReached) {
+            toast.error('El plan gratuito permite crear solo 1 pagina. Actualiza a PRO para paginas ilimitadas.');
+            router.push('/upgrade');
+            return;
+        }
 
         if (template?.isPro && !isPro) {
             toast.error('Esta plantilla requiere el plan PRO');
@@ -309,6 +315,12 @@ export default function TemplateDetailPage() {
             <Header />
 
             <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
+                {freeLimitReached && (
+                    <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        El plan gratuito permite crear solo 1 pagina. Actualiza a PRO para paginas ilimitadas.
+                    </div>
+                )}
+
                 {/* Top bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                     <Link href="/templates">

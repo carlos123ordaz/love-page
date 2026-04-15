@@ -121,6 +121,7 @@ const es = {
     finalCtaDesc: 'Crea tu primera página gratis en menos de 2 minutos. Sin tarjeta de crédito.',
     goToMyPages: 'Ir a Mis Páginas',
     createPageFree: 'Crear Página Gratis',
+    freeLimitReached: 'Ya usaste tu 1 página gratis. Pasa a PRO para crear páginas ilimitadas.',
 
     // Demo builder
     demoPageTitle: 'Título de tu página',
@@ -309,6 +310,7 @@ const es = {
     titleRequired: 'El título es requerido',
     recipientRequired: 'El nombre del destinatario es requerido',
     needProPlan: 'Necesitas el plan PRO',
+    freeLimitReached: 'Ya usaste tu 1 página gratis. Pasa a PRO para crear páginas ilimitadas.',
     pageCreated: '¡Página creada exitosamente!',
     createError: 'Error al crear la página',
     imageTooLarge: 'La imagen no debe superar 5MB',
@@ -472,7 +474,7 @@ const es = {
     // Comparison
     freePlan: 'Plan Gratuito',
     currentPlan: 'Lo que tienes actualmente',
-    freeFeature1: 'Páginas ilimitadas',
+    freeFeature1: '1 página gratis',
     freeFeature2: '8 temas básicos',
     freeFeature3: '4 animaciones básicas',
     freeFeature4: '3 stickers, 1 imagen decorativa',

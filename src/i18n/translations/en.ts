@@ -123,6 +123,7 @@ const en: Translations = {
     finalCtaDesc: 'Create your first page for free in less than 2 minutes. No credit card required.',
     goToMyPages: 'Go to My Pages',
     createPageFree: 'Create Free Page',
+    freeLimitReached: 'You already used your 1 free page. Upgrade to PRO for unlimited pages.',
 
     // Demo builder
     demoPageTitle: 'Your page title',
@@ -311,6 +312,7 @@ const en: Translations = {
     titleRequired: 'Title is required',
     recipientRequired: 'Recipient name is required',
     needProPlan: 'You need the PRO plan',
+    freeLimitReached: 'You already used your 1 free page. Upgrade to PRO for unlimited pages.',
     pageCreated: 'Page created successfully!',
     createError: 'Error creating page',
     imageTooLarge: 'Image must not exceed 5MB',
@@ -474,7 +476,7 @@ const en: Translations = {
     // Comparison
     freePlan: 'Free Plan',
     currentPlan: 'What you currently have',
-    freeFeature1: 'Unlimited pages',
+    freeFeature1: '1 free page',
     freeFeature2: '8 basic themes',
     freeFeature3: '4 basic animations',
     freeFeature4: '3 stickers, 1 decorative image',

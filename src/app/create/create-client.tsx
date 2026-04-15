@@ -66,6 +66,8 @@ const GOOGLE_FONTS = [
     { name: 'Indie Flower', category: 'cursive', free: false },
 ];
 
+const EXPIRATION_NOTICE_DISMISSED_KEY = 'love-pages:create:expiration-notice-dismissed';
+
 const THEMES = [
     {
         id: 'romantic',
@@ -348,6 +350,7 @@ export default function CreatePageEnhanced() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuthStore();
     const [currentStep, setCurrentStep] = useState<Step>('content');
+    const [showExpirationNotice, setShowExpirationNotice] = useState(false);
     const [loading, setLoading] = useState(false);
     const [bgImagePreview, setBgImagePreview] = useState<string | null>(null);
     const [decorativeImagePreviews, setDecorativeImagePreviews] = useState<string[]>([]);
@@ -358,6 +361,7 @@ export default function CreatePageEnhanced() {
     const { t } = useTranslation();
 
     const isPro = user?.isPro || false;
+    const freeLimitReached = !!user && !isPro && user.canCreatePage === false;
 
     const [formData, setFormData] = useState<PageFormData>({
         title: '',
@@ -398,6 +402,11 @@ export default function CreatePageEnhanced() {
         };
     }, []);
 
+    useEffect(() => {
+        const isDismissed = localStorage.getItem(EXPIRATION_NOTICE_DISMISSED_KEY) === 'true';
+        setShowExpirationNotice(!isDismissed);
+    }, []);
+
     // Auth no requerido - usuarios pueden diseñar sin login
     // Se pedirá login al momento de guardar si no están autenticados
 
@@ -407,6 +416,11 @@ export default function CreatePageEnhanced() {
 
     const goToUpgrade = () => {
         setShowUpgradeModal(true);
+    };
+
+    const dismissExpirationNotice = () => {
+        localStorage.setItem(EXPIRATION_NOTICE_DISMISSED_KEY, 'true');
+        setShowExpirationNotice(false);
     };
 
     const selectTheme = (theme: (typeof THEMES)[0]) => {
@@ -536,6 +550,11 @@ export default function CreatePageEnhanced() {
     const handleSubmit = async () => {
         if (!user) {
             toast.error('Inicia sesión con Google para guardar tu página');
+            return;
+        }
+        if (freeLimitReached) {
+            toast.error(t.create.freeLimitReached);
+            router.push('/upgrade');
             return;
         }
         if (!formData.title.trim()) {
@@ -673,6 +692,14 @@ export default function CreatePageEnhanced() {
                         </div>
                     </div>
 
+                    {freeLimitReached && (
+                        <Card className="mb-6 border-amber-200 bg-amber-50">
+                            <CardContent className="py-4 text-sm text-amber-900">
+                                {t.create.freeLimitReached}
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Step indicator */}
                     <div className="flex items-center justify-center mb-8">
                         <div className="flex items-center gap-1 sm:gap-2">
@@ -702,13 +729,14 @@ export default function CreatePageEnhanced() {
                     </div>
 
                     {/* Expiration notice for free users */}
-                    {!isPro && (
+                    {!isPro && showExpirationNotice && (
                         <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
                             <Clock className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                             <div className="flex-1 text-sm text-amber-800">
                                 <span className="font-semibold">Tu página expirará en 7 días.</span>{' '}
                                 Con el plan gratuito, las páginas se desactivan automáticamente después de 7 días.{' '}
                                 <button
+                                    type="button"
                                     onClick={goToUpgrade}
                                     className="font-semibold underline hover:text-amber-900 transition-colors"
                                 >
@@ -716,6 +744,14 @@ export default function CreatePageEnhanced() {
                                 </button>{' '}
                                 para que tu página nunca expire.
                             </div>
+                            <button
+                                type="button"
+                                aria-label="Cerrar aviso de expiraciÃ³n"
+                                onClick={dismissExpirationNotice}
+                                className="rounded-md p-1 text-amber-500 transition-colors hover:bg-amber-100 hover:text-amber-700"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
                     )}
 

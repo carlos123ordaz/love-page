@@ -151,6 +151,8 @@ export default function DashboardPage() {
 
     const totalViews = pages.reduce((sum, page) => sum + page.views, 0);
     const totalResponses = pages.reduce((sum, page) => sum + page.totalResponses, 0);
+    const freeLimitReached = !user.isPro && user.canCreatePage === false;
+    const createHref = freeLimitReached ? '/upgrade' : '/create';
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
@@ -175,14 +177,19 @@ export default function DashboardPage() {
                                 </span>
                             )}
                         </p>
+                        {freeLimitReached && (
+                            <p className="text-sm text-amber-700 mt-2">
+                                {t.create.freeLimitReached}
+                            </p>
+                        )}
                     </div>
 
                     {/* Botones de acción */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                        <Link href="/create" className="w-full sm:w-auto">
+                        <Link href={createHref} className="w-full sm:w-auto">
                             <Button variant="gradient" size="lg" className="gap-2 w-full sm:w-auto">
-                                <Plus className="w-5 h-5" />
-                                {t.dashboard.createPage}
+                                {freeLimitReached ? <Crown className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                                {freeLimitReached ? t.nav.upgradeAPro : t.dashboard.createPage}
                             </Button>
                         </Link>
 
