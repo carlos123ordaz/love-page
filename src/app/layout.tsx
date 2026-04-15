@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Dancing_Script } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { LanguageProvider } from '@/i18n';
@@ -7,6 +7,12 @@ import './globals.css';
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
+const dancingScript = Dancing_Script({
+  weight: '700',
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-dancing',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://lovepages.ink'),
@@ -68,6 +74,14 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        {/* Preconnect to critical third-party origins */}
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fundingchoicesmessages.google.com" />
+        <link rel="dns-prefetch" href="https://apis.google.com" />
+        <link rel="dns-prefetch" href="https://lovepage-304fb.firebaseapp.com" />
+
         {/* JSON-LD Structured Data for Google */}
         <script
           type="application/ld+json"
@@ -96,13 +110,8 @@ export default function RootLayout({
             }),
           }}
         />
-        {/* AdSense — raw script para evitar data-nscript y crossorigin issues */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1738334012076528"
-        />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${dancingScript.variable}`}>
         <LanguageProvider>
         <AuthProvider>
           {children}
@@ -118,17 +127,24 @@ export default function RootLayout({
         </AuthProvider>
         </LanguageProvider>
 
-        {/* Funding Choices (Offerwall) */}
-        <Script id="google-fc" strategy="beforeInteractive">
+        {/* AdSense — deferred to not block initial render */}
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1738334012076528"
+          strategy="lazyOnload"
+          crossOrigin="anonymous"
+        />
+
+        {/* Funding Choices (Offerwall) — deferred */}
+        <Script id="google-fc" strategy="afterInteractive">
           {`window.googlefc=window.googlefc||{callbackQueue:[],showRevocationMessage:function(){}};`}
         </Script>
 
-        {/* Google Analytics */}
+        {/* Google Analytics — deferred */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-ZE75X1X5E2"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useAuthStore } from '@/store';
 import { Heart, Sparkles, Eye, Send, Crown, ChevronDown, Star, ArrowRight, Play, Check, X, MousePointer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ function MiniPagePreview({
             const emojis = animation === 'hearts-falling'
                 ? ['❤️', '💕', '💖', '💗']
                 : ['🎊', '✨', '🎉', '⭐'];
-            const newParticles = Array.from({ length: 12 }, (_, i) => ({
+            const newParticles = Array.from({ length: 8 }, (_, i) => ({
                 id: i,
                 x: Math.random() * 100,
                 y: Math.random() * 100,
@@ -114,7 +115,7 @@ function MiniPagePreview({
                     style={{ animation: 'demoHeartBeat 1.5s ease-in-out infinite', color: theme.text }}
                 />
 
-                <h3 className="text-xl font-bold mb-2 leading-tight" style={{ fontFamily: "'Dancing Script', cursive" }}>
+                <h3 className="text-xl font-bold mb-2 leading-tight" style={{ fontFamily: "var(--font-dancing), cursive" }}>
                     {title}
                 </h3>
 
@@ -257,8 +258,9 @@ function DemoBuilder() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoAnimation}</label>
+                        <label htmlFor="demo-animation" className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoAnimation}</label>
                         <select
+                            id="demo-animation"
                             value={animation}
                             onChange={(e) => setAnimation(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
@@ -320,8 +322,9 @@ function DemoBuilder() {
                 {/* Button texts */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoYesButton}</label>
+                        <label htmlFor="demo-yes-btn" className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoYesButton}</label>
                         <input
+                            id="demo-yes-btn"
                             type="text"
                             value={yesText}
                             onChange={(e) => setYesText(e.target.value)}
@@ -330,8 +333,9 @@ function DemoBuilder() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoNoButton}</label>
+                        <label htmlFor="demo-no-btn" className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoNoButton}</label>
                         <input
+                            id="demo-no-btn"
                             type="text"
                             value={noText}
                             onChange={(e) => setNoText(e.target.value)}
@@ -434,7 +438,17 @@ const SHOWCASE_PAGES_BASE = [
 // FLOATING HEARTS BACKGROUND
 // ============================================================
 function FloatingHearts() {
-    const hearts = Array.from({ length: 20 }, (_, i) => ({
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        // Delay rendering decorative hearts until after LCP
+        const timer = setTimeout(() => setMounted(true), 2000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (!mounted) return null;
+
+    const hearts = Array.from({ length: 12 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         size: Math.random() * 16 + 8,
@@ -444,7 +458,7 @@ function FloatingHearts() {
     }));
 
     return (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
             {hearts.map((h) => (
                 <div
                     key={h.id}
@@ -854,8 +868,6 @@ export default function LandingPage() {
 
             {/* ===== GLOBAL ANIMATIONS CSS ===== */}
             <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-
                 @keyframes floatUp {
                     0% { transform: translateY(0) rotate(0deg); opacity: 0; }
                     10% { opacity: 1; }
