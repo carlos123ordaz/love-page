@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
+import { useTranslation } from '@/i18n';
 import { Crown, Check, Sparkles, Zap, CreditCard, LinkIcon, Wand2, Music, Palette, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -33,6 +34,7 @@ export default function UpgradePage() {
     const { user, loading: authLoading } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('mercadopago');
+    const { t } = useTranslation();
     const freeLimitReached = !!user && !user.isPro && user.canCreatePage === false;
 
     useEffect(() => {
@@ -90,14 +92,14 @@ export default function UpgradePage() {
                             <Crown className="w-10 h-10 text-white" />
                         </div>
                         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                            Desbloquea Features PRO
+                            {t.upgrade.title}
                         </h1>
                         <p className="text-xl text-gray-600">
-                            Lleva tus páginas al siguiente nivel con herramientas premium
+                            {t.upgrade.subtitle}
                         </p>
                         {freeLimitReached && (
                             <p className="mt-4 inline-flex items-center rounded-full bg-amber-100 px-4 py-2 text-sm font-medium text-amber-900">
-                                Ya usaste tu 1 página gratis. Con PRO puedes crear páginas ilimitadas.
+                                {t.upgrade.freeLimitBanner}
                             </p>
                         )}
                     </div>
@@ -105,22 +107,22 @@ export default function UpgradePage() {
                     <Card className="border-4 border-amber-400 shadow-2xl mb-8 overflow-hidden">
                         <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-3 px-6">
                             <div className="flex items-center justify-between">
-                                <span className="font-semibold">¡Oferta Especial!</span>
-                                <span className="text-sm">Pago único</span>
+                                <span className="font-semibold">{t.upgrade.specialOffer}</span>
+                                <span className="text-sm">{t.upgrade.oneTimePayment}</span>
                             </div>
                         </div>
 
                         <CardHeader className="text-center pb-4">
                             <div className="inline-flex items-center gap-2 mb-4">
                                 <Crown className="w-8 h-8 text-amber-500" />
-                                <CardTitle className="text-3xl">Features PRO</CardTitle>
+                                <CardTitle className="text-3xl">{t.upgrade.featuresProTitle}</CardTitle>
                             </div>
                             <div className="mb-4">
                                 <span className="text-5xl font-bold text-gray-900">$1.75</span>
                                 <span className="text-gray-600 text-xl"> USD</span>
                             </div>
                             <CardDescription className="text-lg">
-                                Pago único • Acceso permanente
+                                {t.upgrade.permanentAccess}
                             </CardDescription>
                         </CardHeader>
 
@@ -133,11 +135,9 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <Palette className="w-5 h-5 text-amber-500" />
-                                            Temas y Animaciones Premium
+                                            {t.upgrade.feature1Title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
-                                            Neón, Aurora, Vintage, confetti, fuegos artificiales, nieve y más
-                                        </p>
+                                        <p className="text-sm text-gray-600">{t.upgrade.feature1Desc}</p>
                                     </div>
                                 </div>
 
@@ -148,11 +148,9 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <Wand2 className="w-5 h-5 text-amber-500" />
-                                            Diseño con IA
+                                            {t.upgrade.feature2Title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
-                                            Sube una imagen y la IA creará un diseño personalizado único
-                                        </p>
+                                        <p className="text-sm text-gray-600">{t.upgrade.feature2Desc}</p>
                                     </div>
                                 </div>
 
@@ -163,11 +161,9 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <LinkIcon className="w-5 h-5 text-amber-500" />
-                                            URL personalizada con su nombre 💕
+                                            {t.upgrade.feature3Title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
-                                            En lugar de un link aleatorio, será algo como:
-                                        </p>
+                                        <p className="text-sm text-gray-600">{t.upgrade.feature3Desc}</p>
                                         <p className="text-sm font-mono bg-gray-100 px-2 py-1 rounded mt-1 text-pink-600 font-bold">
                                             lovepages.ink/para-maria
                                         </p>
@@ -181,11 +177,9 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <Music className="w-5 h-5 text-amber-500" />
-                                            Música de fondo
+                                            {t.upgrade.feature4Title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
-                                            Piano romántico, guitarra acústica, caja musical y más
-                                        </p>
+                                        <p className="text-sm text-gray-600">{t.upgrade.feature4Desc}</p>
                                     </div>
                                 </div>
 
@@ -196,11 +190,9 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <Sparkles className="w-5 h-5 text-amber-500" />
-                                            Plantillas premium + Sin marca de agua
+                                            {t.upgrade.feature5Title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
-                                            Accede a plantillas diseñadas profesionalmente y elimina el "Hecho con Love Pages"
-                                        </p>
+                                        <p className="text-sm text-gray-600">{t.upgrade.feature5Desc}</p>
                                     </div>
                                 </div>
 
@@ -211,11 +203,9 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <Zap className="w-5 h-5 text-amber-500" />
-                                            Más stickers e imágenes
+                                            {t.upgrade.feature6Title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
-                                            Hasta 10 stickers y 5 imágenes decorativas por página
-                                        </p>
+                                        <p className="text-sm text-gray-600">{t.upgrade.feature6Desc}</p>
                                     </div>
                                 </div>
 
@@ -226,18 +216,16 @@ export default function UpgradePage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                             <Clock className="w-5 h-5 text-amber-500" />
-                                            Páginas sin vencimiento
+                                            {t.upgrade.feature7Title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">
-                                            Las páginas PRO nunca expiran. Las del plan gratuito se eliminan a los <strong>7 días</strong>.
-                                        </p>
+                                        <p className="text-sm text-gray-600">{t.upgrade.feature7Desc}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="pt-6 border-t">
                                 <h3 className="text-sm font-medium text-gray-700 mb-3">
-                                    Selecciona tu método de pago:
+                                    {t.upgrade.selectPayment}
                                 </h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
@@ -245,14 +233,14 @@ export default function UpgradePage() {
                                         className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'mercadopago' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'}`}
                                     >
                                         <MercadoPagoLogo />
-                                        <p className="text-xs text-gray-500 mt-2">Tarjetas, efectivo y más</p>
+                                        <p className="text-xs text-gray-500 mt-2">{t.upgrade.mercadoPagoDesc}</p>
                                     </button>
                                     <button
                                         onClick={() => setSelectedProvider('paypal')}
                                         className={`p-4 border-2 rounded-lg transition-all ${selectedProvider === 'paypal' ? 'border-[#0070ba] bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'}`}
                                     >
                                         <PayPalLogo />
-                                        <p className="text-xs text-gray-500 mt-2">PayPal, tarjetas</p>
+                                        <p className="text-xs text-gray-500 mt-2">{t.upgrade.paypalDesc}</p>
                                     </button>
                                 </div>
                             </div>
@@ -264,10 +252,10 @@ export default function UpgradePage() {
                                     className="w-full h-14 text-lg bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white shadow-lg"
                                 >
                                     <Crown className="w-5 h-5 mr-2" />
-                                    Desbloquear PRO por $1.75 USD
+                                    {t.upgrade.unlockProPrice}
                                 </Button>
                                 <p className="text-center text-sm text-gray-500">
-                                    Pago seguro procesado por {selectedProvider === 'mercadopago' ? 'Mercado Pago' : 'PayPal'}
+                                    {t.upgrade.securePayment} {selectedProvider === 'mercadopago' ? 'Mercado Pago' : 'PayPal'}
                                 </p>
                             </div>
                         </CardContent>
@@ -276,94 +264,94 @@ export default function UpgradePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-xl">Plan Gratuito</CardTitle>
-                                <CardDescription>Lo que tienes actualmente</CardDescription>
+                                <CardTitle className="text-xl">{t.upgrade.freePlan}</CardTitle>
+                                <CardDescription>{t.upgrade.currentPlan}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    1 página gratis
+                                    {t.upgrade.freeFeature1}
                                 </div>
                                 <div className="flex items-center gap-2 text-red-500 font-medium">
-                                    ✕ No puedes crear una segunda página sin actualizar a PRO
+                                    ✕ {t.upgrade.freeFeature2}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    8 temas básicos
+                                    {t.upgrade.freeFeature3}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    4 animaciones básicas
+                                    {t.upgrade.freeFeature4}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
                                     <Check className="w-4 h-4" />
-                                    3 stickers, 1 imagen decorativa
+                                    {t.upgrade.freeFeature5}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✕ Sin diseño con IA
+                                    ✕ {t.upgrade.freeFeature6}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✕ Sin URL personalizada
+                                    ✕ {t.upgrade.freeFeature7}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✕ Sin música de fondo
+                                    ✕ {t.upgrade.freeFeature8}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-400">
-                                    ✕ Incluye marca de agua
+                                    ✕ {t.upgrade.freeFeature9}
                                 </div>
                                 <div className="flex items-center gap-2 text-red-500 font-medium">
-                                    ✕ Páginas expiran en 7 días
+                                    ✕ {t.upgrade.freeFeature10}
                                 </div>
                             </CardContent>
                         </Card>
 
                         <Card className="border-2 border-amber-400 relative">
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-sm font-semibold rounded-full">
-                                Recomendado
+                                {t.upgrade.recommended}
                             </div>
                             <CardHeader>
                                 <CardTitle className="text-xl flex items-center gap-2">
                                     <Crown className="w-5 h-5 text-amber-500" />
-                                    Features PRO
+                                    {t.upgrade.featuresProTitle}
                                 </CardTitle>
-                                <CardDescription>Desbloquea todo el potencial</CardDescription>
+                                <CardDescription>{t.upgrade.unlockPotential}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Todo lo del plan gratuito
+                                    {t.upgrade.proIncludes}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Temas y animaciones premium
+                                    {t.upgrade.proFeature1}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Diseño con IA
+                                    {t.upgrade.proFeature2}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    URL personalizada
+                                    {t.upgrade.proFeature3}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Música de fondo
+                                    {t.upgrade.proFeature4}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    10 stickers, 5 imágenes
+                                    {t.upgrade.proFeature5}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Sin marca de agua
+                                    {t.upgrade.proFeature6}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Plantillas premium
+                                    {t.upgrade.proFeature7}
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                     <Check className="w-4 h-4 text-green-600" />
-                                    Páginas sin vencimiento
+                                    {t.upgrade.proFeature8}
                                 </div>
                             </CardContent>
                         </Card>

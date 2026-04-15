@@ -1,4 +1,4 @@
-import type { Translations } from './es';
+﻿import type { Translations } from './es';
 
 const en: Translations = {
   // ============================================================
@@ -73,7 +73,7 @@ const en: Translations = {
     // Showcase
     showcaseTitle: 'See what you can create',
     showcaseDesc: 'From love declarations to invitations. Every page is unique.',
-    tryPressNo: '👆 Try pressing "No"!',
+    tryPressNo: 'ðŸ‘† Try pressing "No"!',
 
     // How it works
     howItWorksTitle: 'It\'s this easy',
@@ -102,7 +102,7 @@ const en: Translations = {
 
     // PRO upsell
     proUpsellTitle: 'Want something even more special?',
-    proUpsellDesc: 'With PRO you unlock AI design, personalized URL with their name, background music, premium animations and unlimited pages. All for just <strong>$1.39 USD</strong> — one-time payment.',
+    proUpsellDesc: 'With PRO you unlock AI design, personalized URL with their name, background music, premium animations and unlimited pages. All for just <strong>$1.39 USD</strong> â€” one-time payment.',
     getPro: 'Get PRO',
 
     // Demo
@@ -112,10 +112,10 @@ const en: Translations = {
 
     // Testimonials
     testimonialsTitle: 'What our users say',
-    testimonial1: 'I sent the page to my girlfriend and she said yes! The escape button was the best part 😂💕',
+    testimonial1: 'I sent the page to my girlfriend and she said yes! The escape button was the best part ðŸ˜‚ðŸ’•',
     testimonial2: 'Super easy to use and it looked beautiful. I used it for Valentine\'s Day.',
     testimonial3: 'The AI design in the PRO version is incredible. Totally worth it.',
-    testimonial4: 'I created one to propose to my boyfriend. He said yes! 💍',
+    testimonial4: 'I created one to propose to my boyfriend. He said yes! ðŸ’',
 
     // Final CTA
     finalCtaTitle1: 'Ready to tell them',
@@ -132,29 +132,29 @@ const en: Translations = {
     demoNamePlaceholder: 'Name',
     demoAnimation: 'Animation',
     demoNoAnimation: 'No animation',
-    demoHearts: '💕 Hearts',
-    demoConfetti: '🎊 Confetti',
+    demoHearts: 'ðŸ’• Hearts',
+    demoConfetti: 'ðŸŽŠ Confetti',
     demoMessage: 'Message',
     demoMessagePlaceholder: 'Your special message...',
     demoTheme: 'Theme',
     demoStickers: 'Stickers',
     demoYesButton: '"Yes" Button',
     demoNoButton: '"No" Button',
-    demoNoEscapes: 'The "No" button escapes the cursor 😄',
-    demoLikeIt: 'Like how it looks? Create your real page for free 👇',
+    demoNoEscapes: 'The "No" button escapes the cursor ðŸ˜„',
+    demoLikeIt: 'Like how it looks? Create your real page for free ðŸ‘‡',
     demoLivePreview: 'Live preview',
 
     // Mini preview
     thanks: 'Thank you!',
     understood: 'Understood',
     restartDemo: 'Restart demo',
-    madeWith: 'Made with Love Pages 💕',
+    madeWith: 'Made with Love Pages ðŸ’•',
 
     // Showcase pages
     showcasePage1Title: 'Will you be my Valentine?',
     showcasePage1Message: 'Every moment with you is special...',
     showcasePage2Title: 'Dinner tonight?',
-    showcasePage2Message: 'I have something special planned 🌹',
+    showcasePage2Message: 'I have something special planned ðŸŒ¹',
     showcasePage3Title: 'Will you forgive me?',
     showcasePage3Message: 'I promise it won\'t happen again...',
 
@@ -169,8 +169,8 @@ const en: Translations = {
     // Demo defaults
     defaultTitle: 'Will you be my Valentine?',
     defaultRecipient: 'Maria',
-    defaultMessage: 'Every day by your side is a gift... 💕',
-    defaultYesText: 'Yes, I do! 💖',
+    defaultMessage: 'Every day by your side is a gift... ðŸ’•',
+    defaultYesText: 'Yes, I do! ðŸ’–',
     defaultNoText: 'Let me think about it',
   },
 
@@ -178,7 +178,7 @@ const en: Translations = {
   // DASHBOARD
   // ============================================================
   dashboard: {
-    hello: 'Hello, {name}! 👋',
+    hello: 'Hello, {name}! ðŸ‘‹',
     proUser: 'PRO User - Premium features unlocked',
     pagesCreated: 'You\'ve created {count} page{plural}',
     createPage: 'Create Page',
@@ -244,7 +244,7 @@ const en: Translations = {
     yesButtonPlaceholder: 'Yes, I do!',
     noButtonLabel: '"No" button text',
     noButtonPlaceholder: 'Let me think about it',
-    noEscapes: 'The "No" button escapes the cursor 😄',
+    noEscapes: 'The "No" button escapes the cursor ðŸ˜„',
     useAI: 'Generate complete design with AI',
     useAIDesc: 'Upload a reference image and AI will create a unique design',
     requiredFields: 'Please fill in the required fields',
@@ -288,10 +288,10 @@ const en: Translations = {
     readyDesc: 'Review your page and publish it',
     customUrl: 'Custom URL',
     recipientWillSee: '{name} will see this first!',
-    wantNameInLink: 'Want their name in the link? 💕',
+    wantNameInLink: 'Want their name in the link? ðŸ’•',
     yourPageWillHave: 'Your page will have:',
     withProCouldBe: 'With PRO it could be:',
-    makeMoreSpecial: 'Make it more special – $1.75',
+    makeMoreSpecial: 'Make it more special â€“ $1.75',
     summaryTitle: 'Title',
     summaryFor: 'For',
     summaryMessage: 'Message',
@@ -300,11 +300,11 @@ const en: Translations = {
     summaryAnimation: 'Animation',
     summaryStickers: 'Stickers',
     summaryBgImage: 'Background image',
-    summaryIncluded: '✓ Included',
+    summaryIncluded: 'âœ“ Included',
     summaryDecorativeImages: 'Decorative images',
-    summaryImageCount: '✓ {count} image(s)',
+    summaryImageCount: 'âœ“ {count} image(s)',
     aiNote: 'AI will generate a unique design based on your reference image',
-    publishPage: '🚀 Publish Page',
+    publishPage: 'ðŸš€ Publish Page',
     livePreview: 'Preview',
     yourTitleHere: 'Your title here',
 
@@ -374,11 +374,11 @@ const en: Translations = {
 
   music: {
     none: 'No music',
-    'romantic-piano': '🎹 Romantic piano',
-    'acoustic-guitar': '🎸 Acoustic guitar',
-    'love-song': '🎵 Love song',
-    'music-box': '🎶 Music box',
-    orchestra: '🎻 Soft orchestra',
+    'romantic-piano': 'ðŸŽ¹ Romantic piano',
+    'acoustic-guitar': 'ðŸŽ¸ Acoustic guitar',
+    'love-song': 'ðŸŽµ Love song',
+    'music-box': 'ðŸŽ¶ Music box',
+    orchestra: 'ðŸŽ» Soft orchestra',
   },
 
   // ============================================================
@@ -412,7 +412,7 @@ const en: Translations = {
   // ============================================================
   games: {
     title: 'Games',
-    subtitle: 'Have fun with your friends and partner 🎉',
+    subtitle: 'Have fun with your friends and partner ðŸŽ‰',
     gameCount: '{count} game{plural}',
     gridView: 'Grid view',
     listView: 'List view',
@@ -453,6 +453,7 @@ const en: Translations = {
     oneTimePayment: 'One-time payment',
     featuresProTitle: 'PRO Features',
     permanentAccess: 'One-time payment • Permanent access',
+    freeLimitBanner: 'You already used your 1 free page. With PRO you can create unlimited pages.',
 
     feature1Title: 'Premium Themes & Animations',
     feature1Desc: 'Neon, Aurora, Vintage, confetti, fireworks, snow and more',
@@ -466,6 +467,8 @@ const en: Translations = {
     feature5Desc: 'Access professionally designed templates and remove the "Made with Love Pages"',
     feature6Title: 'More stickers & images',
     feature6Desc: 'Up to 10 stickers and 5 decorative images per page',
+    feature7Title: 'Pages without expiration',
+    feature7Desc: 'PRO pages never expire. Free plan pages are removed after 7 days.',
 
     selectPayment: 'Select your payment method:',
     mercadoPagoDesc: 'Cards, cash and more',
@@ -473,27 +476,29 @@ const en: Translations = {
     unlockProPrice: 'Unlock PRO for $1.75 USD',
     securePayment: 'Secure payment processed by',
 
-    // Comparison
     freePlan: 'Free Plan',
     currentPlan: 'What you currently have',
     freeFeature1: '1 free page',
-    freeFeature2: '8 basic themes',
-    freeFeature3: '4 basic animations',
-    freeFeature4: '3 stickers, 1 decorative image',
-    freeFeature5: 'No AI design',
-    freeFeature6: 'No custom URL',
-    freeFeature7: 'No background music',
-    freeFeature8: 'Includes watermark',
+    freeFeature2: 'You cannot create a second page without upgrading to PRO',
+    freeFeature3: '8 basic themes',
+    freeFeature4: '4 basic animations',
+    freeFeature5: '3 stickers, 1 decorative image',
+    freeFeature6: 'No AI design',
+    freeFeature7: 'No custom URL',
+    freeFeature8: 'No background music',
+    freeFeature9: 'Includes watermark',
+    freeFeature10: 'Pages expire after 7 days',
     recommended: 'Recommended',
-    proFeaturesTitle: 'PRO Features',
     unlockPotential: 'Unlock the full potential',
     proIncludes: 'Everything in the free plan',
     proFeature1: 'Premium themes and animations',
     proFeature2: 'AI design',
     proFeature3: 'Custom URL',
-    proFeature4: '10 stickers, 5 images',
-    proFeature5: 'Background music',
+    proFeature4: 'Background music',
+    proFeature5: '10 stickers, 5 images',
     proFeature6: 'No watermark',
+    proFeature7: 'Premium templates',
+    proFeature8: 'Pages without expiration',
   },
 
   // ============================================================
@@ -584,7 +589,7 @@ const en: Translations = {
   // PAYMENT
   // ============================================================
   payment: {
-    successTitle: 'Payment Successful! 🎉',
+    successTitle: 'Payment Successful! ðŸŽ‰',
     nowProMember: 'You are now a PRO member',
     benefitsActivated: 'Benefits Activated',
     benefit1: 'Unlimited pages available',
@@ -604,7 +609,7 @@ const en: Translations = {
   // PUBLIC PAGE
   // ============================================================
   publicPage: {
-    joyResponse: 'How wonderful! 💕',
+    joyResponse: 'How wonderful! ðŸ’•',
     responseRegistered: 'Response registered',
     responseError: 'Error sending response',
     pageNotFound: 'Page not found',
@@ -612,7 +617,7 @@ const en: Translations = {
     thanks: 'Thank you!',
     understood: 'Understood',
     responseRecorded: 'Your response has been recorded',
-    madeWith: 'Made with Love Pages 💕',
+    madeWith: 'Made with Love Pages ðŸ’•',
   },
 
   // ============================================================
@@ -639,8 +644,8 @@ const en: Translations = {
     noLabel: 'No',
 
     // QR Modal
-    qrProDesc: 'With PRO you can generate a QR code for your page to print on cards, gifts or invitations 💌',
-    getProPrice: 'Get PRO — $1.75 USD',
+    qrProDesc: 'With PRO you can generate a QR code for your page to print on cards, gifts or invitations ðŸ’Œ',
+    getProPrice: 'Get PRO â€” $1.75 USD',
     notNow: 'Not now',
 
     // Page info
@@ -658,8 +663,8 @@ const en: Translations = {
     responsesTitle: 'Responses',
     noResponses: 'No responses yet',
     shareToGetResponses: 'Share the link to receive responses',
-    yesResponse: 'Yes! 💕',
-    noResponse: 'No 😢',
+    yesResponse: 'Yes! ðŸ’•',
+    noResponse: 'No ðŸ˜¢',
 
     // Buttons
     copyLink: 'Copy link',
@@ -683,18 +688,18 @@ const en: Translations = {
     onlyLowercase: 'Only lowercase, numbers and hyphens',
     noStartEndHyphen: 'Cannot start or end with hyphen',
     noConsecutiveHyphens: 'Cannot have consecutive hyphens',
-    available: '✓ Available',
+    available: 'âœ“ Available',
     verifyError: 'Error verifying',
-    wantNameInLink: 'Want their name in the link? 😍',
+    wantNameInLink: 'Want their name in the link? ðŸ˜',
     firstImpression: 'It\'s the first thing they\'ll see when they receive your page. Make it more special and personal.',
     genericUrl: 'Generic URL:',
-    hardToRemember: 'Hard to remember 😕',
+    hardToRemember: 'Hard to remember ðŸ˜•',
     customUrlLabel: 'Custom URL:',
     memorableSpecial: 'Memorable and special!',
-    benefit1: '💕 More personal and romantic',
-    benefit2: '✨ Easy to remember and share',
-    benefit3: '🎯 Professional and unique',
-    benefit4: '💌 Makes a better impression',
+    benefit1: 'ðŸ’• More personal and romantic',
+    benefit2: 'âœ¨ Easy to remember and share',
+    benefit3: 'ðŸŽ¯ Professional and unique',
+    benefit4: 'ðŸ’Œ Makes a better impression',
     unlockCustomUrls: 'Unlock Custom URLs',
     includedInPro: 'Included in the PRO plan with all premium features',
     testimonial: 'When she saw the link had her name, she got excited before even opening it. The PRO was totally worth it!',
@@ -714,18 +719,18 @@ const en: Translations = {
     wantAnotherPage: 'Want another free page?',
     watchAdForPage: 'Watch a short ad and earn 1 extra page',
     watchAd: 'Watch ad',
-    earnExtraPage: 'Earn a free extra page! 🎁',
+    earnExtraPage: 'Earn a free extra page! ðŸŽ',
     usedFreePage: 'You\'ve used your free page. Watch a short ad and unlock 1 additional page instantly.',
     watchAd15s: 'Watch ad (~15 sec)',
     loadingAd: 'Loading ad...',
     rewardsAvailable: 'rewards available today',
     preferNoAds: 'Prefer no ads?',
-    goProUnlimited: 'Go PRO for $1.75 — Unlimited pages',
+    goProUnlimited: 'Go PRO for $1.75 â€” Unlimited pages',
     watchAdToEarn: 'Watch the ad to earn 1 page',
     waitSeconds: 'Wait {seconds} seconds to claim your reward',
     adCompleted: 'Ad completed!',
     claimReward: 'Claim 1 extra page',
-    wonExtraPage: '🎉 You earned 1 extra page!',
+    wonExtraPage: 'ðŸŽ‰ You earned 1 extra page!',
     rewardError: 'Error processing reward',
     confirmError: 'Error confirming reward',
     adNotCompleted: 'Ad not completed. No reward granted.',
@@ -737,10 +742,11 @@ const en: Translations = {
   // LANGUAGE
   // ============================================================
   language: {
-    es: 'Español',
+    es: 'EspaÃ±ol',
     en: 'English',
     switchLanguage: 'Language',
   },
 };
 
 export default en;
+
