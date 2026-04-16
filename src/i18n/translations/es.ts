@@ -212,6 +212,33 @@
     confirmDelete: '¿Estás seguro de eliminar esta página?',
     pageDeleted: 'Página eliminada',
     deleteError: 'Error al eliminar página',
+
+    // Header / hero (logged in)
+    hereYourPages: '{name}, aquí están tus páginas',
+    activeCount: '{count} activas',
+    managePages: 'Gestiona tus links, revisa su estado y comparte más rápido.',
+
+    // Push notifications
+    pushAlertsActive: 'Alertas activas',
+    pushAlertsTitle: 'Alertas de visitas',
+    pushAlertsActiveDesc: 'Te avisaremos cuando alguien abra tu página.',
+    pushAlertsBlockedDesc: 'El navegador bloqueó este permiso.',
+    pushAlertsInactiveDesc: 'Actívalas para seguir tus visitas en tiempo real.',
+    pushTitleBlocked: 'Notificaciones bloqueadas en el navegador',
+    pushTitleDeactivate: 'Desactivar notificaciones',
+    pushTitleActivate: 'Activar notificaciones de visitas',
+    pushToastDeactivated: 'Notificaciones desactivadas',
+    pushToastActivated: 'Notificaciones activadas. Te avisaremos cuando alguien vea tu página.',
+    pushToastDenied: 'Bloqueaste las notificaciones en tu navegador. Actívalas desde la configuración del sitio.',
+
+    // Page card
+    cardExpired: 'Expirada',
+    cardExpires: 'Expira {time}',
+    cardCreated: 'Creada {time}',
+    cardResult: 'Resultado',
+    cardResponseCount: '{count} respuesta',
+    cardResponseCountPlural: '{count} respuestas',
+    cardYesNoCount: '{yes} sí / {no} no',
   },
 
   // ============================================================

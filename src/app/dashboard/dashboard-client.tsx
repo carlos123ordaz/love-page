@@ -41,15 +41,15 @@ export default function DashboardPage() {
     const handlePushToggle = async () => {
         if (permission === 'granted') {
             await unsubscribe();
-            toast('Notificaciones desactivadas');
+            toast(t.dashboard.pushToastDeactivated);
             return;
         }
 
         const ok = await subscribe();
         if (ok) {
-            toast.success('Notificaciones activadas. Te avisaremos cuando alguien vea tu pagina.');
+            toast.success(t.dashboard.pushToastActivated);
         } else if (permission === 'denied') {
-            toast.error('Bloqueaste las notificaciones en tu navegador. Activalas desde la configuracion del sitio.');
+            toast.error(t.dashboard.pushToastDenied);
         }
     };
 
@@ -170,7 +170,7 @@ export default function DashboardPage() {
         {
             label: t.dashboard.pages,
             value: user.pagesCreated,
-            helper: `${visiblePages} activas`,
+            helper: t.dashboard.activeCount.replace('{count}', String(visiblePages)),
             icon: Heart,
             iconClassName: 'text-pink-600',
         },
@@ -206,7 +206,7 @@ export default function DashboardPage() {
                                             {t.dashboard.myPages}
                                         </div>
                                         <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                                            {user.displayName}, aqui estan tus paginas
+                                            {t.dashboard.hereYourPages.replace('{name}', user.displayName || '')}
                                         </h1>
 
                                         {freeLimitReached && (
@@ -267,7 +267,7 @@ export default function DashboardPage() {
                                         <button
                                             onClick={handlePushToggle}
                                             disabled={pushLoading || permission === 'denied'}
-                                            title={permission === 'denied' ? 'Notificaciones bloqueadas en el navegador' : permission === 'granted' ? 'Desactivar notificaciones' : 'Activar notificaciones de visitas'}
+                                            title={permission === 'denied' ? t.dashboard.pushTitleBlocked : permission === 'granted' ? t.dashboard.pushTitleDeactivate : t.dashboard.pushTitleActivate}
                                             className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-colors sm:w-[240px] ${permission === 'granted'
                                                     ? 'border-green-200 bg-green-50 text-green-800'
                                                     : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
@@ -275,14 +275,14 @@ export default function DashboardPage() {
                                         >
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold">
-                                                    {permission === 'granted' ? 'Alertas activas' : 'Alertas de visitas'}
+                                                    {permission === 'granted' ? t.dashboard.pushAlertsActive : t.dashboard.pushAlertsTitle}
                                                 </p>
                                                 <p className="text-xs text-current/75">
                                                     {permission === 'granted'
-                                                        ? 'Te avisaremos cuando alguien abra tu pagina.'
+                                                        ? t.dashboard.pushAlertsActiveDesc
                                                         : permission === 'denied'
-                                                            ? 'El navegador bloqueo este permiso.'
-                                                            : 'Activalas para seguir tus visitas en tiempo real.'}
+                                                            ? t.dashboard.pushAlertsBlockedDesc
+                                                            : t.dashboard.pushAlertsInactiveDesc}
                                                 </p>
                                             </div>
                                             {permission === 'granted' ? (
@@ -303,7 +303,7 @@ export default function DashboardPage() {
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">{t.dashboard.myPages}</h2>
                             <p className="mt-1 text-sm text-gray-600">
-                                Gestiona tus links, revisa su estado y comparte mas rapido.
+                                {t.dashboard.managePages}
                             </p>
                         </div>
                         {pages.length > 0 && (
@@ -352,8 +352,8 @@ export default function DashboardPage() {
                                 const isExpired = page.expiresAt ? new Date(page.expiresAt) < new Date() : false;
                                 const expirationText = page.expiresAt
                                     ? isExpired
-                                        ? 'Expirada'
-                                        : `Expira ${getTimeAgo(page.expiresAt)}`
+                                        ? t.dashboard.cardExpired
+                                        : t.dashboard.cardExpires.replace('{time}', getTimeAgo(page.expiresAt))
                                     : null;
 
                                 return (
@@ -425,9 +425,12 @@ export default function DashboardPage() {
                                             {page.totalResponses > 0 && (
                                                 <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3">
                                                     <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-                                                        <span className="font-medium text-emerald-900">Resultado</span>
+                                                        <span className="font-medium text-emerald-900">{t.dashboard.cardResult}</span>
                                                         <span className="text-xs text-emerald-800">
-                                                            {page.totalResponses} respuesta{page.totalResponses !== 1 ? 's' : ''}
+                                                            {(page.totalResponses === 1
+                                                                ? t.dashboard.cardResponseCount
+                                                                : t.dashboard.cardResponseCountPlural
+                                                            ).replace('{count}', String(page.totalResponses))}
                                                         </span>
                                                     </div>
                                                     <div className="mb-2 h-2 rounded-full bg-emerald-100">
@@ -439,13 +442,15 @@ export default function DashboardPage() {
                                                         />
                                                     </div>
                                                     <p className="text-sm text-emerald-900">
-                                                        {page.yesCount} si / {page.noCount} no
+                                                        {t.dashboard.cardYesNoCount
+                                                            .replace('{yes}', String(page.yesCount))
+                                                            .replace('{no}', String(page.noCount))}
                                                     </p>
                                                 </div>
                                             )}
 
                                             <div className="text-xs text-gray-500">
-                                                Creada {getTimeAgo(page.createdAt)}
+                                                {t.dashboard.cardCreated.replace('{time}', getTimeAgo(page.createdAt))}
                                             </div>
 
                                             <div className="flex flex-wrap items-center gap-2 pt-1 sm:flex-nowrap">

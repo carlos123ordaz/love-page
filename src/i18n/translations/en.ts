@@ -214,6 +214,33 @@ const en: Translations = {
     confirmDelete: 'Are you sure you want to delete this page?',
     pageDeleted: 'Page deleted',
     deleteError: 'Error deleting page',
+
+    // Header / hero (logged in)
+    hereYourPages: '{name}, here are your pages',
+    activeCount: '{count} active',
+    managePages: 'Manage your links, check their status and share faster.',
+
+    // Push notifications
+    pushAlertsActive: 'Alerts on',
+    pushAlertsTitle: 'Visit alerts',
+    pushAlertsActiveDesc: 'We\'ll notify you when someone opens your page.',
+    pushAlertsBlockedDesc: 'The browser blocked this permission.',
+    pushAlertsInactiveDesc: 'Turn them on to track visits in real time.',
+    pushTitleBlocked: 'Notifications blocked in the browser',
+    pushTitleDeactivate: 'Disable notifications',
+    pushTitleActivate: 'Enable visit notifications',
+    pushToastDeactivated: 'Notifications disabled',
+    pushToastActivated: 'Notifications enabled. We\'ll notify you when someone views your page.',
+    pushToastDenied: 'You blocked notifications in your browser. Enable them from the site settings.',
+
+    // Page card
+    cardExpired: 'Expired',
+    cardExpires: 'Expires {time}',
+    cardCreated: 'Created {time}',
+    cardResult: 'Result',
+    cardResponseCount: '{count} response',
+    cardResponseCountPlural: '{count} responses',
+    cardYesNoCount: '{yes} yes / {no} no',
   },
 
   // ============================================================
