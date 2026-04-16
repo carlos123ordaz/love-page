@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { api } from '@/lib/api';
 import { CustomSlugInput } from '@/components/CustomSlugInput';
 import { useTranslation } from '@/i18n';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import {
     Heart,
@@ -41,6 +42,81 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { HexColorPicker } from 'react-colorful';
 import { useDropzone } from 'react-dropzone';
+
+// ============================================================
+// HOOK: useMediaQuery
+// ============================================================
+function useMediaQuery(query: string) {
+    const [matches, setMatches] = useState(false);
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        setMatches(media.matches);
+        const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
+        media.addEventListener('change', listener);
+        return () => media.removeEventListener('change', listener);
+    }, [query]);
+    return matches;
+}
+
+// ============================================================
+// COMPONENTE: BottomSheet (para preview y color picker en mobile)
+// ============================================================
+function BottomSheet({
+    isOpen,
+    onClose,
+    children,
+    title,
+    height = '85vh',
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    children: React.ReactNode;
+    title?: string;
+    height?: string;
+}) {
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                        onClick={onClose}
+                    />
+                    <motion.div
+                        initial={{ y: '100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '100%' }}
+                        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 overflow-hidden flex flex-col"
+                        style={{ maxHeight: height }}
+                    >
+                        {/* Handle bar */}
+                        <div className="flex-shrink-0 pt-3 pb-2 px-4">
+                            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto" />
+                        </div>
+                        {title && (
+                            <div className="flex-shrink-0 flex items-center justify-between px-4 pb-3 border-b">
+                                <h3 className="font-semibold text-gray-900">{title}</h3>
+                                <button
+                                    onClick={onClose}
+                                    className="p-1.5 rounded-full hover:bg-gray-100 active:scale-95 transition-all"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+                        )}
+                        <div className="flex-1 overflow-y-auto overscroll-contain">
+                            {children}
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    );
+}
 
 // ============================================================
 // CONFIGURACIÓN DE OPCIONES
@@ -358,6 +434,9 @@ export default function CreatePageEnhanced() {
     const [showColorPicker, setShowColorPicker] = useState<'bg' | 'text' | 'accent' | null>(null);
     const [fontsLoaded, setFontsLoaded] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [showMobilePreview, setShowMobilePreview] = useState(false);
+    const [showMobileColorPicker, setShowMobileColorPicker] = useState<'bg' | 'text' | 'accent' | null>(null);
+    const isMobile = useMediaQuery('(max-width: 1023px)');
     const { t } = useTranslation();
 
     const isPro = user?.isPro || false;
@@ -666,14 +745,158 @@ export default function CreatePageEnhanced() {
     // ============================================================
     // RENDER
     // ============================================================
+    // ---- Preview component (reutilizable) ----
+    const PreviewContent = () => (
+        <div
+            className="aspect-[9/16] rounded-xl overflow-hidden relative flex flex-col items-center justify-center text-center transition-all"
+            style={{
+                backgroundColor: formData.backgroundColor,
+                color: formData.textColor,
+            }}
+        >
+            {/* Background image */}
+            {bgImagePreview && (
+                <div
+                    className="absolute inset-0 bg-cover bg-center opacity-30"
+                    style={{ backgroundImage: `url(${bgImagePreview})` }}
+                />
+            )}
+
+            {/* Content */}
+            <div className="relative z-10 p-6 flex flex-col items-center justify-center h-full">
+                {/* Stickers arriba */}
+                {formData.selectedStickers.length > 0 && (
+                    <div className="flex gap-2 mb-4 text-3xl">
+                        {formData.selectedStickers.map((id) => (
+                            <span key={id} className="animate-bounce">
+                                {STICKERS.find((s) => s.id === id)?.emoji}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                <Heart className="w-14 h-14 mb-4 animate-pulse" />
+
+                <h2
+                    className="text-2xl font-bold mb-3 leading-tight"
+                    style={{ fontFamily: `'${formData.titleFont}', cursive` }}
+                >
+                    {formData.title || 'Tu título aquí'}
+                </h2>
+
+                <p
+                    className="text-lg mb-1"
+                    style={{ fontFamily: `'${formData.bodyFont}', sans-serif` }}
+                >
+                    {formData.recipientName || 'Nombre'}
+                </p>
+
+                {formData.message && (
+                    <p
+                        className="text-sm opacity-85 mb-4 max-w-[80%]"
+                        style={{ fontFamily: `'${formData.bodyFont}', sans-serif` }}
+                    >
+                        {formData.message}
+                    </p>
+                )}
+
+                {/* Decorative images */}
+                {decorativeImagePreviews.length > 0 && (
+                    <div className="flex gap-2 my-3">
+                        {decorativeImagePreviews.map((preview, i) => (
+                            <img
+                                key={i}
+                                src={preview}
+                                alt=""
+                                className="w-16 h-16 object-cover rounded-lg border-2 border-white/30"
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* Buttons */}
+                <div className="flex gap-3 mt-auto">
+                    <button
+                        className="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all"
+                        style={{
+                            backgroundColor: formData.accentColor,
+                            color: formData.textColor,
+                        }}
+                    >
+                        {formData.yesButtonText || 'Sí'}
+                    </button>
+                    <button
+                        className="px-5 py-2.5 bg-white/20 backdrop-blur rounded-lg font-semibold text-sm"
+                        style={{ color: formData.textColor }}
+                    >
+                        {formData.noButtonText || 'No'}
+                    </button>
+                </div>
+
+                {/* Watermark */}
+                {!isPro && (
+                    <p className="absolute bottom-2 text-[9px] opacity-40">
+                        Hecho con Love Pages
+                    </p>
+                )}
+
+                {/* Animation indicator */}
+                {formData.animation !== 'none' && (
+                    <div className="absolute top-2 right-2 text-xs bg-black/20 backdrop-blur px-2 py-1 rounded-full">
+                        {ANIMATIONS.find((a) => a.id === formData.animation)?.emoji}{' '}
+                        {ANIMATIONS.find((a) => a.id === formData.animation)?.name}
+                    </div>
+                )}
+
+                {/* Music indicator */}
+                {formData.backgroundMusic !== 'none' && (
+                    <div className="absolute top-2 left-2 text-xs bg-black/20 backdrop-blur px-2 py-1 rounded-full flex items-center gap-1">
+                        <Volume2 className="w-3 h-3" />
+                        🎵
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 pb-20 lg:pb-8">
             <Header />
 
-            <main className="container py-8">
+            <main className="container py-4 lg:py-8 px-4 lg:px-8">
                 <div className="max-w-6xl mx-auto">
-                    {/* Page header */}
-                    <div className="flex items-center gap-4 mb-8">
+                    {/* ====== MOBILE HEADER (compact) ====== */}
+                    <div className="lg:hidden mb-4">
+                        <div className="flex items-center gap-3 mb-3">
+                            <Link href="/dashboard">
+                                <button className="p-2 rounded-full hover:bg-white/60 active:scale-95 transition-all">
+                                    <ArrowLeft className="w-5 h-5 text-gray-700" />
+                                </button>
+                            </Link>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 truncate">
+                                    Paso {stepIndex + 1} de {steps.length}: {steps[stepIndex].label}
+                                    {isPro && (
+                                        <span className="ml-2 inline-flex items-center gap-0.5 text-amber-600">
+                                            <Crown className="w-3 h-3" />
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <motion.div
+                                className="h-full bg-gradient-to-r from-pink-500 to-rose-500 rounded-full"
+                                initial={false}
+                                animate={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* ====== DESKTOP HEADER ====== */}
+                    <div className="hidden lg:flex items-center gap-4 mb-8">
                         <Link href="/dashboard">
                             <Button variant="ghost" size="icon">
                                 <ArrowLeft className="w-5 h-5" />
@@ -693,34 +916,33 @@ export default function CreatePageEnhanced() {
                     </div>
 
                     {freeLimitReached && (
-                        <Card className="mb-6 border-amber-200 bg-amber-50">
-                            <CardContent className="py-4 text-sm text-amber-900">
+                        <Card className="mb-4 lg:mb-6 border-amber-200 bg-amber-50">
+                            <CardContent className="py-3 lg:py-4 text-sm text-amber-900">
                                 {t.create.freeLimitReached}
                             </CardContent>
                         </Card>
                     )}
 
-                    {/* Step indicator */}
-                    <div className="flex items-center justify-center mb-8">
-                        <div className="flex items-center gap-1 sm:gap-2">
+                    {/* ====== DESKTOP Step indicator ====== */}
+                    <div className="hidden lg:flex items-center justify-center mb-8">
+                        <div className="flex items-center gap-2">
                             {steps.map((step, index) => (
                                 <div key={step.key} className="flex items-center">
                                     <button
                                         onClick={() => {
                                             if (index <= stepIndex) setCurrentStep(step.key);
                                         }}
-                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${index <= stepIndex
+                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${index <= stepIndex
                                             ? 'bg-pink-600 text-white cursor-pointer'
                                             : 'bg-gray-200 text-gray-500 cursor-default'
                                             }`}
                                     >
                                         {step.icon}
-                                        <span className="hidden sm:inline">{step.label}</span>
+                                        <span>{step.label}</span>
                                     </button>
                                     {index < steps.length - 1 && (
                                         <div
-                                            className={`w-6 sm:w-10 h-0.5 mx-1 transition-all ${index < stepIndex ? 'bg-pink-600' : 'bg-gray-200'
-                                                }`}
+                                            className={`w-10 h-0.5 mx-1 transition-all ${index < stepIndex ? 'bg-pink-600' : 'bg-gray-200'}`}
                                         />
                                     )}
                                 </div>
@@ -730,19 +952,18 @@ export default function CreatePageEnhanced() {
 
                     {/* Expiration notice for free users */}
                     {!isPro && showExpirationNotice && (
-                        <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                            <Clock className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 text-sm text-amber-800">
+                        <div className="mb-4 lg:mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-3 lg:px-4 py-2.5 lg:py-3">
+                            <Clock className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5 hidden sm:block" />
+                            <div className="flex-1 text-xs sm:text-sm text-amber-800">
                                 <span className="font-semibold">Tu página expirará en 7 días.</span>{' '}
-                                Con el plan gratuito, las páginas se desactivan automáticamente después de 7 días.{' '}
+                                <span className="hidden sm:inline">Con el plan gratuito, las páginas se desactivan automáticamente después de 7 días.</span>{' '}
                                 <button
                                     type="button"
                                     onClick={goToUpgrade}
                                     className="font-semibold underline hover:text-amber-900 transition-colors"
                                 >
                                     Actualiza a PRO
-                                </button>{' '}
-                                para que tu página nunca expire.
+                                </button>
                             </div>
                             <button
                                 type="button"
@@ -756,13 +977,13 @@ export default function CreatePageEnhanced() {
                     )}
 
                     {/* Main grid: Editor + Preview */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
                         {/* LEFT: Editor */}
                         <div>
                             {/* ======== STEP 1: CONTENIDO ======== */}
                             {currentStep === 'content' && (
                                 <Card>
-                                    <CardHeader>
+                                    <CardHeader className="px-4 lg:px-6">
                                         <CardTitle className="flex items-center gap-2">
                                             <Type className="w-5 h-5 text-pink-600" />
                                             {t.create.contentTitle}
@@ -771,7 +992,7 @@ export default function CreatePageEnhanced() {
                                             {t.create.contentDesc}
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="space-y-4 px-4 lg:px-6">
                                         <Input
                                             label={t.create.titleLabel}
                                             placeholder={t.create.titlePlaceholder}
@@ -814,7 +1035,7 @@ export default function CreatePageEnhanced() {
                                             </p>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             <Input
                                                 label={t.create.yesButtonLabel}
                                                 placeholder={t.create.yesButtonPlaceholder}
@@ -831,18 +1052,18 @@ export default function CreatePageEnhanced() {
                                             />
                                         </div>
 
-                                        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                                        <label htmlFor="noButtonEscapes" className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg min-h-[44px] cursor-pointer active:scale-[0.98] transition-transform">
                                             <input
                                                 type="checkbox"
                                                 id="noButtonEscapes"
                                                 checked={formData.noButtonEscapes}
                                                 onChange={(e) => updateForm({ noButtonEscapes: e.target.checked })}
-                                                className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                                                className="w-5 h-5 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
                                             />
-                                            <label htmlFor="noButtonEscapes" className="text-sm text-gray-700">
+                                            <span className="text-sm text-gray-700">
                                                 {t.create.noEscapes}
-                                            </label>
-                                        </div>
+                                            </span>
+                                        </label>
 
                                         {/* Tipo PRO con IA */}
                                         {isPro && (
@@ -906,9 +1127,12 @@ export default function CreatePageEnhanced() {
                                             </div>
                                         )}
 
-                                        <Button onClick={goNext} variant="gradient" className="w-full" disabled={!canGoNext()}>
-                                            {t.common.next} <ArrowRight className="w-4 h-4 ml-2" />
-                                        </Button>
+                                        {/* Navigation buttons - desktop only (mobile uses bottom bar) */}
+                                        <div className="hidden lg:block">
+                                            <Button onClick={goNext} variant="gradient" className="w-full" disabled={!canGoNext()}>
+                                                {t.common.next} <ArrowRight className="w-4 h-4 ml-2" />
+                                            </Button>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             )}
@@ -916,20 +1140,20 @@ export default function CreatePageEnhanced() {
                             {/* ======== STEP 2: DISEÑO (tema, colores, tipografía) ======== */}
                             {currentStep === 'design' && (
                                 <Card>
-                                    <CardHeader>
+                                    <CardHeader className="px-4 lg:px-6">
                                         <CardTitle className="flex items-center gap-2">
                                             <Palette className="w-5 h-5 text-pink-600" />
                                             {t.create.designTitle}
                                         </CardTitle>
                                         <CardDescription>{t.create.designDesc}</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        {/* Temas */}
+                                    <CardContent className="space-y-6 px-4 lg:px-6">
+                                        {/* Temas - responsive grid */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-3">
                                                 {t.create.themeLabel}
                                             </label>
-                                            <div className="grid grid-cols-4 gap-2">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
                                                 {THEMES.map((theme) => (
                                                     <div key={theme.id} className="relative">
                                                         {!theme.free && !isPro && (
@@ -939,13 +1163,13 @@ export default function CreatePageEnhanced() {
                                                         )}
                                                         <button
                                                             onClick={() => selectTheme(theme)}
-                                                            className={`w-full p-2 border-2 rounded-xl transition-all ${formData.theme === theme.id
+                                                            className={`w-full p-2.5 border-2 rounded-xl transition-all active:scale-95 min-h-[44px] ${formData.theme === theme.id
                                                                 ? 'border-pink-600 ring-2 ring-pink-200'
                                                                 : 'border-gray-200 hover:border-pink-300'
                                                                 } ${!theme.free && !isPro ? 'opacity-70' : ''}`}
                                                         >
-                                                            <div className={`h-12 rounded-lg mb-1.5 ${theme.preview}`} />
-                                                            <p className="text-[11px] font-medium text-center leading-tight">
+                                                            <div className={`h-14 sm:h-12 rounded-lg mb-1.5 ${theme.preview}`} />
+                                                            <p className="text-xs sm:text-[11px] font-medium text-center leading-tight">
                                                                 {theme.emoji} {t.themes[theme.id as keyof typeof t.themes]}
                                                             </p>
                                                         </button>
@@ -974,21 +1198,26 @@ export default function CreatePageEnhanced() {
                                                             <label className="block text-xs text-gray-600 mb-1.5">
                                                                 {labels[colorType]}
                                                             </label>
-                                                            <div className="relative">
-                                                                <button
-                                                                    onClick={() =>
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (isMobile) {
+                                                                        setShowMobileColorPicker(colorType);
+                                                                    } else {
                                                                         setShowColorPicker(
                                                                             showColorPicker === colorType ? null : colorType
-                                                                        )
+                                                                        );
                                                                     }
-                                                                    className="w-full h-9 rounded-lg border-2 border-gray-300 flex items-center gap-1.5 px-2 hover:border-pink-400 transition-all"
-                                                                    style={{ backgroundColor: formData[colorKey] }}
-                                                                >
-                                                                    <span className="text-[10px] font-mono text-white mix-blend-difference">
-                                                                        {formData[colorKey]}
-                                                                    </span>
-                                                                </button>
-                                                                {showColorPicker === colorType && (
+                                                                }}
+                                                                className="w-full h-11 rounded-lg border-2 border-gray-300 flex items-center justify-center gap-1.5 px-2 hover:border-pink-400 active:scale-95 transition-all"
+                                                                style={{ backgroundColor: formData[colorKey] }}
+                                                            >
+                                                                <span className="text-[10px] font-mono text-white mix-blend-difference">
+                                                                    {formData[colorKey]}
+                                                                </span>
+                                                            </button>
+                                                            {/* Desktop color picker (popup) */}
+                                                            {!isMobile && showColorPicker === colorType && (
+                                                                <div className="relative">
                                                                     <div className="absolute z-20 mt-2">
                                                                         <div
                                                                             className="fixed inset-0"
@@ -1003,20 +1232,20 @@ export default function CreatePageEnhanced() {
                                                                             />
                                                                         </div>
                                                                     </div>
-                                                                )}
-                                                            </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}
                                             </div>
                                         </div>
 
-                                        {/* Tipografía */}
+                                        {/* Tipografía - responsive grid */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-3">
                                                 {t.create.titleFontLabel}
                                             </label>
-                                            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 lg:max-h-48 overflow-y-auto pr-1 overscroll-contain">
                                                 {GOOGLE_FONTS.map((font) => (
                                                     <div key={font.name} className="relative">
                                                         {!font.free && !isPro && (
@@ -1026,14 +1255,14 @@ export default function CreatePageEnhanced() {
                                                         )}
                                                         <button
                                                             onClick={() => selectFont(font, 'titleFont')}
-                                                            className={`w-full p-2.5 border-2 rounded-lg text-left transition-all ${formData.titleFont === font.name
+                                                            className={`w-full p-3 sm:p-2.5 border-2 rounded-lg text-left transition-all active:scale-[0.97] min-h-[44px] ${formData.titleFont === font.name
                                                                 ? 'border-pink-600 bg-pink-50'
                                                                 : 'border-gray-200 hover:border-pink-300'
                                                                 } ${!font.free && !isPro ? 'opacity-60' : ''}`}
                                                             style={{ fontFamily: `'${font.name}', ${font.category}` }}
                                                         >
-                                                            <span className="text-base">Aa</span>
-                                                            <span className="block text-[10px] text-gray-500 font-sans mt-0.5">
+                                                            <span className="text-lg sm:text-base">Aa</span>
+                                                            <span className="block text-xs sm:text-[10px] text-gray-500 font-sans mt-0.5">
                                                                 {font.name}
                                                             </span>
                                                         </button>
@@ -1042,8 +1271,8 @@ export default function CreatePageEnhanced() {
                                             </div>
                                         </div>
 
-                                        {/* Navigation */}
-                                        <div className="flex gap-3 pt-2">
+                                        {/* Navigation - desktop only */}
+                                        <div className="hidden lg:flex gap-3 pt-2">
                                             <Button onClick={goBack} variant="outline" className="flex-1">
                                                 {t.common.back}
                                             </Button>
@@ -1055,10 +1284,47 @@ export default function CreatePageEnhanced() {
                                 </Card>
                             )}
 
+                            {/* Mobile color picker bottom sheet */}
+                            <BottomSheet
+                                isOpen={!!showMobileColorPicker}
+                                onClose={() => setShowMobileColorPicker(null)}
+                                title={
+                                    showMobileColorPicker === 'bg' ? t.create.colorBg :
+                                    showMobileColorPicker === 'text' ? t.create.colorText :
+                                    t.create.colorAccent
+                                }
+                                height="50vh"
+                            >
+                                <div className="p-4 flex flex-col items-center gap-4">
+                                    {showMobileColorPicker && (
+                                        <HexColorPicker
+                                            color={formData[
+                                                showMobileColorPicker === 'bg' ? 'backgroundColor' :
+                                                showMobileColorPicker === 'text' ? 'textColor' : 'accentColor'
+                                            ]}
+                                            onChange={(color) =>
+                                                updateForm({
+                                                    [showMobileColorPicker === 'bg' ? 'backgroundColor' :
+                                                     showMobileColorPicker === 'text' ? 'textColor' : 'accentColor']: color,
+                                                })
+                                            }
+                                            style={{ width: '100%', maxWidth: 280, height: 200 }}
+                                        />
+                                    )}
+                                    <Button
+                                        onClick={() => setShowMobileColorPicker(null)}
+                                        variant="gradient"
+                                        className="w-full max-w-[280px]"
+                                    >
+                                        Listo
+                                    </Button>
+                                </div>
+                            </BottomSheet>
+
                             {/* ======== STEP 3: IMÁGENES Y STICKERS ======== */}
                             {currentStep === 'media' && (
                                 <Card>
-                                    <CardHeader>
+                                    <CardHeader className="px-4 lg:px-6">
                                         <CardTitle className="flex items-center gap-2">
                                             <ImageIcon className="w-5 h-5 text-pink-600" />
                                             {t.create.mediaTitle}
@@ -1067,7 +1333,7 @@ export default function CreatePageEnhanced() {
                                             {t.create.mediaDesc}
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-6">
+                                    <CardContent className="space-y-6 px-4 lg:px-6">
                                         {/* Imagen de fondo */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1075,7 +1341,7 @@ export default function CreatePageEnhanced() {
                                             </label>
                                             <div
                                                 {...bgDropzone.getRootProps()}
-                                                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${bgDropzone.isDragActive
+                                                className={`border-2 border-dashed rounded-xl p-5 lg:p-6 text-center cursor-pointer transition-all active:scale-[0.99] ${bgDropzone.isDragActive
                                                     ? 'border-pink-500 bg-pink-50'
                                                     : 'border-gray-300 hover:border-pink-400'
                                                     }`}
@@ -1092,7 +1358,7 @@ export default function CreatePageEnhanced() {
                                                     </div>
                                                 ) : (
                                                     <div className="space-y-2">
-                                                        <Upload className="w-8 h-8 text-gray-400 mx-auto" />
+                                                        <Upload className="w-9 h-9 lg:w-8 lg:h-8 text-gray-400 mx-auto" />
                                                         <p className="text-sm text-gray-600">
                                                             {t.create.bgImageDrop}
                                                         </p>
@@ -1106,16 +1372,16 @@ export default function CreatePageEnhanced() {
                                                         updateForm({ backgroundImage: null });
                                                         setBgImagePreview(null);
                                                     }}
-                                                    className="mt-2 text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
+                                                    className="mt-2 text-sm text-red-500 hover:text-red-700 active:scale-95 flex items-center gap-1 min-h-[36px] transition-all"
                                                 >
-                                                    <Trash2 className="w-3 h-3" /> {t.create.bgImageRemove}
+                                                    <Trash2 className="w-3.5 h-3.5" /> {t.create.bgImageRemove}
                                                 </button>
                                             )}
                                         </div>
 
                                         {/* Imágenes decorativas */}
                                         <div>
-                                            <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
                                                 <label className="text-sm font-medium text-gray-700">
                                                     {t.create.decorativeLabel}
                                                     <span className="text-xs text-gray-500 ml-1">
@@ -1129,7 +1395,7 @@ export default function CreatePageEnhanced() {
                                                 )}
                                             </div>
 
-                                            {/* Preview de imágenes decorativas */}
+                                            {/* Preview de imágenes decorativas - botón X siempre visible en mobile */}
                                             {decorativeImagePreviews.length > 0 && (
                                                 <div className="flex gap-2 mb-3 flex-wrap">
                                                     {decorativeImagePreviews.map((preview, i) => (
@@ -1141,9 +1407,10 @@ export default function CreatePageEnhanced() {
                                                             />
                                                             <button
                                                                 onClick={() => removeDecorativeImage(i)}
-                                                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                aria-label="Eliminar imagen"
+                                                                className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                                                             >
-                                                                <X className="w-3 h-3" />
+                                                                <X className="w-3.5 h-3.5" />
                                                             </button>
                                                         </div>
                                                     ))}
@@ -1152,17 +1419,17 @@ export default function CreatePageEnhanced() {
 
                                             <div
                                                 {...decorativeDropzone.getRootProps()}
-                                                className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-pink-400 transition-all"
+                                                className="border-2 border-dashed rounded-lg p-5 lg:p-4 text-center cursor-pointer hover:border-pink-400 active:scale-[0.99] transition-all min-h-[80px] flex flex-col items-center justify-center"
                                             >
                                                 <input {...decorativeDropzone.getInputProps()} />
-                                                <Plus className="w-6 h-6 text-gray-400 mx-auto" />
+                                                <Plus className="w-7 h-7 lg:w-6 lg:h-6 text-gray-400" />
                                                 <p className="text-xs text-gray-500 mt-1">{t.create.decorativeAdd}</p>
                                             </div>
                                         </div>
 
-                                        {/* Stickers */}
+                                        {/* Stickers - grid responsivo */}
                                         <div>
-                                            <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
                                                 <label className="text-sm font-medium text-gray-700">
                                                     {t.create.stickersLabel}
                                                     <span className="text-xs text-gray-500 ml-1">
@@ -1175,14 +1442,14 @@ export default function CreatePageEnhanced() {
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="grid grid-cols-8 gap-2">
+                                            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
                                                 {STICKERS.map((sticker) => (
                                                     <button
                                                         key={sticker.id}
                                                         onClick={() => toggleSticker(sticker.id)}
-                                                        className={`relative aspect-square flex items-center justify-center text-2xl rounded-lg border-2 transition-all hover:scale-110 ${formData.selectedStickers.includes(sticker.id)
-                                                            ? 'border-pink-500 bg-pink-50 scale-110'
-                                                            : 'border-gray-200'
+                                                        className={`relative aspect-square flex items-center justify-center text-3xl lg:text-2xl rounded-lg border-2 transition-all active:scale-95 min-h-[44px] ${formData.selectedStickers.includes(sticker.id)
+                                                            ? 'border-pink-500 bg-pink-50 scale-105'
+                                                            : 'border-gray-200 hover:border-pink-300'
                                                             } ${!sticker.free && !isPro ? 'opacity-40' : ''}`}
                                                     >
                                                         {sticker.emoji}
@@ -1194,7 +1461,8 @@ export default function CreatePageEnhanced() {
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-3 pt-2">
+                                        {/* Navigation - desktop only */}
+                                        <div className="hidden lg:flex gap-3 pt-2">
                                             <Button onClick={goBack} variant="outline" className="flex-1">
                                                 {t.common.back}
                                             </Button>
@@ -1209,7 +1477,7 @@ export default function CreatePageEnhanced() {
                             {/* ======== STEP 4: EFECTOS (animaciones, música) ======== */}
                             {currentStep === 'effects' && (
                                 <Card>
-                                    <CardHeader>
+                                    <CardHeader className="px-4 lg:px-6">
                                         <CardTitle className="flex items-center gap-2">
                                             <Sparkles className="w-5 h-5 text-pink-600" />
                                             {t.create.effectsTitle}
@@ -1218,8 +1486,8 @@ export default function CreatePageEnhanced() {
                                             {t.create.effectsDesc}
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        {/* Animaciones */}
+                                    <CardContent className="space-y-6 px-4 lg:px-6">
+                                        {/* Animaciones - 2 cols mobile, 2 cols desktop */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-3">
                                                 {t.create.animationLabel}
@@ -1240,7 +1508,7 @@ export default function CreatePageEnhanced() {
                                                                 }
                                                                 updateForm({ animation: anim.id });
                                                             }}
-                                                            className={`w-full p-3 border-2 rounded-lg text-left transition-all ${formData.animation === anim.id
+                                                            className={`w-full p-3 border-2 rounded-lg text-left transition-all active:scale-95 min-h-[48px] ${formData.animation === anim.id
                                                                 ? 'border-pink-600 bg-pink-50'
                                                                 : 'border-gray-200 hover:border-pink-300'
                                                                 } ${!anim.free && !isPro ? 'opacity-60' : ''}`}
@@ -1273,7 +1541,7 @@ export default function CreatePageEnhanced() {
                                                                 }
                                                                 updateForm({ backgroundMusic: music.id });
                                                             }}
-                                                            className={`w-full p-3 border-2 rounded-lg text-left text-sm transition-all flex items-center justify-between ${formData.backgroundMusic === music.id
+                                                            className={`w-full p-3 border-2 rounded-lg text-left text-sm transition-all flex items-center justify-between active:scale-[0.98] min-h-[48px] ${formData.backgroundMusic === music.id
                                                                 ? 'border-pink-600 bg-pink-50'
                                                                 : 'border-gray-200 hover:border-pink-300'
                                                                 } ${!music.free && !isPro ? 'opacity-60' : ''}`}
@@ -1293,7 +1561,7 @@ export default function CreatePageEnhanced() {
                                         <div>
                                             <div className="flex items-center justify-between mb-3">
                                                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                                    🎬 Video embed
+                                                    Video embed
                                                 </label>
                                                 {!isPro && <ProBadge />}
                                             </div>
@@ -1304,16 +1572,16 @@ export default function CreatePageEnhanced() {
                                                         placeholder="https://youtube.com/watch?v=... o https://tiktok.com/..."
                                                         value={formData.videoUrl}
                                                         onChange={(e) => updateForm({ videoUrl: e.target.value })}
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+                                                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 min-h-[44px]"
                                                     />
                                                     <p className="text-xs text-gray-500 mt-1">YouTube o TikTok. Se mostrará como video embed en tu página.</p>
                                                 </div>
                                             ) : (
                                                 <button
                                                     onClick={goToUpgrade}
-                                                    className="w-full p-3 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-600 hover:bg-amber-50 transition-colors text-center"
+                                                    className="w-full p-3 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-600 hover:bg-amber-50 active:scale-[0.99] transition-all text-center min-h-[48px]"
                                                 >
-                                                    🔒 Agrega un video de YouTube o TikTok — solo PRO
+                                                    Agrega un video de YouTube o TikTok — solo PRO
                                                 </button>
                                             )}
                                         </div>
@@ -1344,7 +1612,8 @@ export default function CreatePageEnhanced() {
                                             </div>
                                         )}
 
-                                        <div className="flex gap-3 pt-2">
+                                        {/* Navigation - desktop only */}
+                                        <div className="hidden lg:flex gap-3 pt-2">
                                             <Button onClick={goBack} variant="outline" className="flex-1">
                                                 {t.common.back}
                                             </Button>
@@ -1359,14 +1628,21 @@ export default function CreatePageEnhanced() {
                             {/* ======== STEP 5: PREVIEW & PUBLISH ======== */}
                             {currentStep === 'preview' && (
                                 <Card>
-                                    <CardHeader>
+                                    <CardHeader className="px-4 lg:px-6">
                                         <CardTitle className="flex items-center gap-2">
                                             <CheckCircle2 className="w-5 h-5 text-green-600" />
                                             ¡Todo listo!
                                         </CardTitle>
                                         <CardDescription>Revisa tu página y publícala</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="space-y-4 px-4 lg:px-6">
+                                        {/* Mobile preview snapshot inline */}
+                                        <div className="lg:hidden">
+                                            <div className="max-w-[260px] mx-auto">
+                                                <PreviewContent />
+                                            </div>
+                                        </div>
+
                                         {isPro && formData.customSlug && (
                                             <div className="p-4 bg-gradient-to-r from-pink-50 to-rose-50 border-2 border-pink-300 rounded-xl">
                                                 <div className="flex items-center gap-2 mb-2">
@@ -1480,7 +1756,8 @@ export default function CreatePageEnhanced() {
                                             </div>
                                         )}
 
-                                        <div className="flex gap-3">
+                                        {/* Publish button - desktop only (mobile uses bottom bar) */}
+                                        <div className="hidden lg:flex gap-3">
                                             <Button onClick={goBack} variant="outline" className="flex-1">
                                                 Atrás
                                             </Button>
@@ -1490,7 +1767,7 @@ export default function CreatePageEnhanced() {
                                                 variant="gradient"
                                                 className="flex-1"
                                             >
-                                                🚀 Publicar Página
+                                                Publicar Página
                                             </Button>
                                         </div>
                                     </CardContent>
@@ -1498,8 +1775,8 @@ export default function CreatePageEnhanced() {
                             )}
                         </div>
 
-                        {/* RIGHT: Live Preview */}
-                        <div className="lg:sticky lg:top-24 h-fit">
+                        {/* RIGHT: Live Preview - DESKTOP ONLY */}
+                        <div className="hidden lg:block lg:sticky lg:top-24 h-fit">
                             <Card className="bg-white/80 backdrop-blur overflow-hidden">
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center gap-2">
@@ -1625,7 +1902,84 @@ export default function CreatePageEnhanced() {
                 </div>
             </main>
 
+            {/* ====== MOBILE: Floating Preview Button ====== */}
+            {currentStep !== 'preview' && (
+                <motion.button
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    onClick={() => setShowMobilePreview(true)}
+                    className="lg:hidden fixed right-4 bottom-20 z-30 w-14 h-14 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform"
+                    aria-label="Ver vista previa"
+                >
+                    <Eye className="w-6 h-6" />
+                </motion.button>
+            )}
 
+            {/* ====== MOBILE: Bottom navigation bar ====== */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-30 px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))]">
+                <div className="flex items-center gap-2 max-w-md mx-auto">
+                    {stepIndex > 0 ? (
+                        <Button
+                            onClick={goBack}
+                            variant="outline"
+                            size="lg"
+                            className="flex-1 min-h-[48px]"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-1.5" />
+                            {t.common.back}
+                        </Button>
+                    ) : (
+                        <Link href="/dashboard" className="flex-1">
+                            <Button variant="outline" size="lg" className="w-full min-h-[48px]">
+                                <X className="w-4 h-4 mr-1.5" />
+                                Cancelar
+                            </Button>
+                        </Link>
+                    )}
+
+                    {currentStep === 'preview' ? (
+                        <Button
+                            onClick={handleSubmit}
+                            loading={loading}
+                            variant="gradient"
+                            size="lg"
+                            className="flex-[1.5] min-h-[48px]"
+                        >
+                            <Sparkles className="w-4 h-4 mr-1.5" />
+                            Publicar
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={goNext}
+                            variant="gradient"
+                            size="lg"
+                            disabled={!canGoNext()}
+                            className="flex-[1.5] min-h-[48px]"
+                        >
+                            {t.common.next}
+                            <ArrowRight className="w-4 h-4 ml-1.5" />
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {/* ====== MOBILE: Preview bottom sheet ====== */}
+            <BottomSheet
+                isOpen={showMobilePreview}
+                onClose={() => setShowMobilePreview(false)}
+                title="Vista previa"
+                height="90vh"
+            >
+                <div className="p-4">
+                    <div className="max-w-[300px] mx-auto">
+                        <PreviewContent />
+                    </div>
+                    <p className="text-center text-xs text-gray-500 mt-4">
+                        Así se verá tu página
+                    </p>
+                </div>
+            </BottomSheet>
 
             {/* Modal de Upgrade PRO */}
             <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
