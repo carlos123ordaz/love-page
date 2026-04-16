@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuthStore, usePageStore } from '@/store';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ import {
     Link2,
     LayoutTemplate,
     Gamepad2,
-    ExternalLink,
     Clock,
     Bell,
     BellOff,
@@ -32,10 +30,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { getTimeAgo, copyToClipboard } from '@/lib/utils';
 
-
-
 export default function DashboardPage() {
-    const router = useRouter();
     const { user, loading: authLoading } = useAuthStore();
     const { pages, setPages, removePage, updatePage } = usePageStore();
     const [loadingPages, setLoadingPages] = useState(true);
@@ -47,10 +42,14 @@ export default function DashboardPage() {
         if (permission === 'granted') {
             await unsubscribe();
             toast('Notificaciones desactivadas');
-        } else {
-            const ok = await subscribe();
-            if (ok) toast.success('¡Notificaciones activadas! Te avisaremos cuando alguien vea tu página 🔔');
-            else if (permission === 'denied') toast.error('Bloqueaste las notificaciones en tu navegador. Actívalas desde la configuración del sitio.');
+            return;
+        }
+
+        const ok = await subscribe();
+        if (ok) {
+            toast.success('Notificaciones activadas. Te avisaremos cuando alguien vea tu pagina.');
+        } else if (permission === 'denied') {
+            toast.error('Bloqueaste las notificaciones en tu navegador. Activalas desde la configuracion del sitio.');
         }
     };
 
@@ -60,7 +59,6 @@ export default function DashboardPage() {
         }
     }, [user]);
 
-    // Cerrar menú al hacer click fuera
     useEffect(() => {
         const handleClickOutside = () => setOpenMenuId(null);
         if (openMenuId) {
@@ -153,133 +151,170 @@ export default function DashboardPage() {
     const totalResponses = pages.reduce((sum, page) => sum + page.totalResponses, 0);
     const freeLimitReached = !user.isPro && user.canCreatePage === false;
     const createHref = freeLimitReached ? '/upgrade' : '/create';
+    const visiblePages = pages.filter((page) => page.isActive).length;
+    const tools = [
+        {
+            href: '/templates',
+            label: t.dashboard.viewTemplates,
+            icon: LayoutTemplate,
+            className: 'border-pink-200 text-pink-700 hover:bg-pink-50',
+        },
+        {
+            href: '/games',
+            label: t.nav.games,
+            icon: Gamepad2,
+            className: 'border-rose-200 text-rose-700 hover:bg-rose-50',
+        },
+    ];
+    const summaryStats = [
+        {
+            label: t.dashboard.pages,
+            value: user.pagesCreated,
+            helper: `${visiblePages} activas`,
+            icon: Heart,
+            iconClassName: 'text-pink-600',
+        },
+        {
+            label: t.dashboard.views,
+            value: totalViews,
+            helper: t.common.total,
+            icon: Eye,
+            iconClassName: 'text-sky-600',
+        },
+        {
+            label: t.dashboard.responses,
+            value: totalResponses,
+            helper: t.common.total,
+            icon: MessageCircle,
+            iconClassName: 'text-emerald-600',
+        },
+    ];
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
             <Header />
 
             <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
-                {/* Header Section */}
-                <div className="flex flex-col gap-4 mb-6 sm:mb-8">
-                    <div className="min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 truncate">
-                            {t.dashboard.hello.replace('{name}', user.displayName)}
-                        </h1>
-                        <p className="text-sm sm:text-base text-gray-600">
-                            {user.isPro ? (
-                                <span className="flex items-center gap-2">
-                                    <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                                    {t.dashboard.proUser}
-                                </span>
-                            ) : (
-                                <span>
-                                    {t.dashboard.pagesCreated.replace('{count}', String(user.pagesCreated)).replace('{plural}', user.pagesCreated !== 1 ? 's' : '')}
-                                </span>
-                            )}
-                        </p>
-                        {freeLimitReached && (
-                            <p className="text-sm text-amber-700 mt-2">
-                                {t.create.freeLimitReached}
-                            </p>
-                        )}
-                    </div>
+                <section className="mb-6 sm:mb-8">
+                    <Card className="overflow-hidden border-pink-100 bg-white/85 shadow-sm backdrop-blur-sm">
+                        <CardContent className="p-4 sm:p-6">
+                            <div className="flex flex-col gap-5">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                                    <div className="min-w-0">
+                                        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-pink-700 ring-1 ring-pink-100">
+                                            <Heart className="h-3.5 w-3.5 text-pink-500" />
+                                            {t.dashboard.myPages}
+                                        </div>
+                                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                                            {user.displayName}, aqui estan tus paginas
+                                        </h1>
 
-                    {/* Botones de acción */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                        <Link href={createHref} className="w-full sm:w-auto">
-                            <Button variant="gradient" size="lg" className="gap-2 w-full sm:w-auto">
-                                {freeLimitReached ? <Crown className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                                {freeLimitReached ? t.nav.upgradeAPro : t.dashboard.createPage}
-                            </Button>
-                        </Link>
+                                        {freeLimitReached && (
+                                            <p className="mt-3 text-sm font-medium text-amber-700">
+                                                {t.create.freeLimitReached}
+                                            </p>
+                                        )}
+                                    </div>
 
-                        <Link href="/templates" className="w-full sm:w-auto">
-                            <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto border-pink-200 text-pink-700 hover:bg-pink-50">
-                                <LayoutTemplate className="w-5 h-5" />
-                                {t.dashboard.viewTemplates}
-                            </Button>
-                        </Link>
+                                    <div className="flex flex-col gap-2 sm:min-w-[220px]">
+                                        <Link href={createHref} className="w-full">
+                                            <Button variant="gradient" size="lg" className="h-12 w-full gap-2 rounded-xl">
+                                                {freeLimitReached ? <Crown className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                                                {freeLimitReached ? t.nav.upgradeAPro : t.dashboard.createPage}
+                                            </Button>
+                                        </Link>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {tools.map((tool) => {
+                                                const Icon = tool.icon;
+                                                return (
+                                                    <Link key={tool.href} href={tool.href} className="w-full">
+                                                        <Button variant="outline" className={`h-11 w-full gap-2 rounded-xl text-sm ${tool.className}`}>
+                                                            <Icon className="h-4 w-4" />
+                                                            <span className="truncate">{tool.label}</span>
+                                                        </Button>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <Link href="/games" className="w-full sm:w-auto">
-                            <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto border-purple-200 text-purple-700 hover:bg-purple-50">
-                                <Gamepad2 className="w-5 h-5" />
-                                {t.nav.games}
-                            </Button>
-                        </Link>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                                    <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
+                                        {summaryStats.map((stat) => {
+                                            const Icon = stat.icon;
+                                            return (
+                                                <div
+                                                    key={stat.label}
+                                                    className="min-w-[152px] snap-start rounded-2xl bg-white px-4 py-3 ring-1 ring-gray-100 shadow-sm sm:min-w-0"
+                                                >
+                                                    <div className="mb-2 flex items-center justify-between gap-3">
+                                                        <span className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">
+                                                            {stat.label}
+                                                        </span>
+                                                        <Icon className={`h-4 w-4 ${stat.iconClassName}`} />
+                                                    </div>
+                                                    <div className="text-2xl font-bold text-gray-900">
+                                                        {stat.value}
+                                                    </div>
+                                                    <p className="mt-1 text-xs text-gray-500">{stat.helper}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
 
-                        {permission !== 'unsupported' && (
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                onClick={handlePushToggle}
-                                disabled={pushLoading || permission === 'denied'}
-                                title={permission === 'denied' ? 'Notificaciones bloqueadas en el navegador' : permission === 'granted' ? 'Desactivar notificaciones' : 'Activar notificaciones de visitas'}
-                                className={`gap-2 w-full sm:w-auto ${permission === 'granted' ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                            >
-                                {permission === 'granted' ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-                                {permission === 'granted' ? 'Notificaciones ON' : 'Activar alertas'}
-                            </Button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Stats Cards */}
-                <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-                    <Card className="min-w-0">
-                        <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-1 sm:pb-2">
-                            <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 truncate pr-2">
-                                {t.dashboard.pages}
-                            </CardTitle>
-                            <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-600 flex-shrink-0" />
-                        </CardHeader>
-                        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-                            <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                                {user.pagesCreated}
+                                    {permission !== 'unsupported' && (
+                                        <button
+                                            onClick={handlePushToggle}
+                                            disabled={pushLoading || permission === 'denied'}
+                                            title={permission === 'denied' ? 'Notificaciones bloqueadas en el navegador' : permission === 'granted' ? 'Desactivar notificaciones' : 'Activar notificaciones de visitas'}
+                                            className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-colors sm:w-[240px] ${permission === 'granted'
+                                                    ? 'border-green-200 bg-green-50 text-green-800'
+                                                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                                                } ${permission === 'denied' ? 'cursor-not-allowed opacity-60' : ''}`}
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold">
+                                                    {permission === 'granted' ? 'Alertas activas' : 'Alertas de visitas'}
+                                                </p>
+                                                <p className="text-xs text-current/75">
+                                                    {permission === 'granted'
+                                                        ? 'Te avisaremos cuando alguien abra tu pagina.'
+                                                        : permission === 'denied'
+                                                            ? 'El navegador bloqueo este permiso.'
+                                                            : 'Activalas para seguir tus visitas en tiempo real.'}
+                                                </p>
+                                            </div>
+                                            {permission === 'granted' ? (
+                                                <Bell className="h-5 w-5 flex-shrink-0" />
+                                            ) : (
+                                                <BellOff className="h-5 w-5 flex-shrink-0" />
+                                            )}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                            <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:block">
-                                {t.dashboard.created}
-                            </p>
                         </CardContent>
                     </Card>
+                </section>
 
-                    <Card className="min-w-0">
-                        <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-1 sm:pb-2">
-                            <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 truncate pr-2">
-                                {t.dashboard.views}
-                            </CardTitle>
-                            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
-                        </CardHeader>
-                        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-                            <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                                {totalViews}
-                            </div>
-                            <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:block">
-                                {t.common.total}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="min-w-0">
-                        <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-1 sm:pb-2">
-                            <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 truncate pr-2">
-                                {t.dashboard.responses}
-                            </CardTitle>
-                            <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
-                        </CardHeader>
-                        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-                            <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                                {totalResponses}
-                            </div>
-                            <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:block">
-                                {t.common.total}
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Pages List */}
                 <div className="space-y-4">
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{t.dashboard.myPages}</h2>
+                    <div className="flex items-end justify-between gap-3">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">{t.dashboard.myPages}</h2>
+                            <p className="mt-1 text-sm text-gray-600">
+                                Gestiona tus links, revisa su estado y comparte mas rapido.
+                            </p>
+                        </div>
+                        {pages.length > 0 && (
+                            <Link href={createHref} className="hidden sm:block">
+                                <Button variant="outline" className="gap-2 border-pink-200 text-pink-700 hover:bg-pink-50">
+                                    <Plus className="h-4 w-4" />
+                                    {t.dashboard.createPage}
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
 
                     {loadingPages ? (
                         <div className="text-center py-12">
@@ -312,182 +347,187 @@ export default function DashboardPage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                            {pages.map((page) => (
-                                <Card key={page._id} className="hover:shadow-lg transition-all">
-                                    <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="min-w-0 flex-1">
-                                                <CardTitle className="text-base sm:text-lg mb-0.5 sm:mb-1 truncate">
-                                                    {page.title}
-                                                </CardTitle>
-                                                <CardDescription className="truncate text-sm">
-                                                    {t.dashboard.forRecipient.replace('{name}', page.recipientName)}
-                                                </CardDescription>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+                            {pages.map((page) => {
+                                const isExpired = page.expiresAt ? new Date(page.expiresAt) < new Date() : false;
+                                const expirationText = page.expiresAt
+                                    ? isExpired
+                                        ? 'Expirada'
+                                        : `Expira ${getTimeAgo(page.expiresAt)}`
+                                    : null;
+
+                                return (
+                                    <Card key={page._id} className="overflow-hidden border-white/60 bg-white/95 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                                        <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <CardTitle className="mb-1 line-clamp-2 text-lg leading-snug sm:text-xl">
+                                                        {page.title}
+                                                    </CardTitle>
+                                                    <CardDescription className="truncate text-sm">
+                                                        {t.dashboard.forRecipient.replace('{name}', page.recipientName)}
+                                                    </CardDescription>
+                                                </div>
                                                 {page.pageType === 'pro' && (
-                                                    <div className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-[10px] sm:text-xs font-semibold rounded-full flex items-center gap-0.5 sm:gap-1">
-                                                        <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                                    <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-2 py-1 text-[10px] font-semibold text-white sm:text-xs">
+                                                        <Sparkles className="h-3 w-3" />
                                                         PRO
                                                     </div>
                                                 )}
-                                                <div
-                                                    className={`w-2 h-2 rounded-full flex-shrink-0 ${page.isActive ? 'bg-green-500' : 'bg-gray-300'}`}
-                                                    title={page.isActive ? t.dashboard.active : t.dashboard.inactive}
-                                                />
                                             </div>
-                                        </div>
-                                    </CardHeader>
+                                        </CardHeader>
 
-                                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-3 sm:space-y-4">
-                                        {/* Stats row */}
-                                        <div className="flex items-center justify-between text-xs sm:text-sm">
-                                            <div className="flex items-center gap-1 text-gray-600">
-                                                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                <span>{t.dashboard.viewsCount.replace('{count}', String(page.views))}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1 text-gray-600">
-                                                <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                <span>{t.dashboard.responsesCount.replace('{count}', String(page.totalResponses))}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Barra de progreso */}
-                                        {page.totalResponses > 0 && (
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex-1 bg-gray-200 rounded-full h-1.5 sm:h-2">
-                                                    <div
-                                                        className="bg-green-500 h-1.5 sm:h-2 rounded-full transition-all"
-                                                        style={{
-                                                            width: `${(page.yesCount / page.totalResponses) * 100}%`,
-                                                        }}
-                                                    />
-                                                </div>
-                                                <span className="text-[10px] sm:text-xs text-gray-600 whitespace-nowrap">
-                                                    {page.yesCount} Sí / {page.noCount} No
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        <div className="text-[11px] sm:text-xs text-gray-500">
-                                            {getTimeAgo(page.createdAt)}
-                                        </div>
-
-                                        {/* Expiration notice for free pages */}
-                                        {page.expiresAt && (
-                                            <div className={`flex items-center gap-1 text-[11px] sm:text-xs font-medium ${new Date(page.expiresAt) < new Date() ? 'text-red-500' : 'text-amber-600'}`}>
-                                                <Clock className="w-3 h-3 flex-shrink-0" />
-                                                {new Date(page.expiresAt) < new Date()
-                                                    ? 'Página expirada'
-                                                    : `Expira ${getTimeAgo(page.expiresAt)}`
-                                                }
-                                            </div>
-                                        )}
-
-                                        {/* Acciones */}
-                                        <div className="flex items-center gap-1.5 sm:gap-2 pt-1">
-                                            <Button
-                                                onClick={() => handleCopyUrl(page.url)}
-                                                variant="outline"
-                                                size="sm"
-                                                className="flex-1 h-9 text-xs sm:text-sm"
-                                            >
-                                                <Link2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                                                <span className="sm:inline">{t.common.copy}</span>
-                                            </Button>
-
-                                            <Link href={`/page/${page.shortId}`} className="flex-shrink-0">
-                                                <Button variant="outline" size="sm" className="h-9 text-xs sm:text-sm">
-                                                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
-                                                    <span className="hidden sm:inline">{t.common.view}</span>
-                                                </Button>
-                                            </Link>
-
-                                            {/* Menú móvil */}
-                                            <div className="relative flex-shrink-0">
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setOpenMenuId(
-                                                            openMenuId === page._id ? null : page._id
-                                                        );
-                                                    }}
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-9 w-9 sm:hidden"
+                                        <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span
+                                                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${page.isActive
+                                                            ? 'bg-green-50 text-green-700 ring-green-200'
+                                                            : 'bg-gray-100 text-gray-600 ring-gray-200'
+                                                        }`}
                                                 >
-                                                    <MoreVertical className="w-4 h-4 text-gray-500" />
-                                                </Button>
-
-                                                {openMenuId === page._id && (
-                                                    <div className="absolute right-0 bottom-full mb-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[160px] sm:hidden">
-                                                        <button
-                                                            onClick={() => {
-                                                                handleToggleStatus(page._id, page.isActive);
-                                                                setOpenMenuId(null);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100"
-                                                        >
-                                                            {page.isActive ? (
-                                                                <>
-                                                                    <ToggleRight className="w-4 h-4 text-green-600" />
-                                                                    {t.dashboard.deactivate}
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <ToggleLeft className="w-4 h-4 text-gray-400" />
-                                                                    {t.dashboard.activate}
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                handleDelete(page._id);
-                                                                setOpenMenuId(null);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                            {t.common.delete}
-                                                        </button>
-                                                    </div>
+                                                    <span className={`h-2 w-2 rounded-full ${page.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                                    {page.isActive ? t.dashboard.active : t.dashboard.inactive}
+                                                </span>
+                                                {expirationText && (
+                                                    <span
+                                                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${isExpired
+                                                                ? 'bg-red-50 text-red-600 ring-red-200'
+                                                                : 'bg-amber-50 text-amber-700 ring-amber-200'
+                                                            }`}
+                                                    >
+                                                        <Clock className="h-3 w-3" />
+                                                        {expirationText}
+                                                    </span>
                                                 )}
                                             </div>
 
-                                            {/* Botones desktop */}
-                                            <Button
-                                                onClick={() => handleToggleStatus(page._id, page.isActive)}
-                                                variant="ghost"
-                                                size="icon"
-                                                className="hidden sm:flex h-9 w-9"
-                                            >
-                                                {page.isActive ? (
-                                                    <ToggleRight className="w-5 h-5 text-green-600" />
-                                                ) : (
-                                                    <ToggleLeft className="w-5 h-5 text-gray-400" />
-                                                )}
-                                            </Button>
+                                            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-rose-50/70 p-3">
+                                                <div>
+                                                    <div className="flex items-center gap-1 text-xs font-medium text-gray-500">
+                                                        <Eye className="h-3.5 w-3.5 text-sky-600" />
+                                                        {t.dashboard.views}
+                                                    </div>
+                                                    <div className="mt-1 text-lg font-semibold text-gray-900">
+                                                        {page.views}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-1 text-xs font-medium text-gray-500">
+                                                        <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+                                                        {t.dashboard.responses}
+                                                    </div>
+                                                    <div className="mt-1 text-lg font-semibold text-gray-900">
+                                                        {page.totalResponses}
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                            <Button
-                                                onClick={() => handleDelete(page._id)}
-                                                variant="ghost"
-                                                size="icon"
-                                                className="hidden sm:flex h-9 w-9 text-red-600 hover:text-red-700"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                            {page.totalResponses > 0 && (
+                                                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3">
+                                                    <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                                                        <span className="font-medium text-emerald-900">Resultado</span>
+                                                        <span className="text-xs text-emerald-800">
+                                                            {page.totalResponses} respuesta{page.totalResponses !== 1 ? 's' : ''}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mb-2 h-2 rounded-full bg-emerald-100">
+                                                        <div
+                                                            className="h-2 rounded-full bg-emerald-500 transition-all"
+                                                            style={{
+                                                                width: `${(page.yesCount / page.totalResponses) * 100}%`,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <p className="text-sm text-emerald-900">
+                                                        {page.yesCount} si / {page.noCount} no
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            <div className="text-xs text-gray-500">
+                                                Creada {getTimeAgo(page.createdAt)}
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center gap-2 pt-1 sm:flex-nowrap">
+                                                <Link href={`/page/${page.shortId}`} className="min-w-0 flex-1 sm:w-[120px] sm:flex-none">
+                                                    <Button
+                                                        variant="gradient"
+                                                        size="sm"
+                                                        className="h-10 w-full gap-2 rounded-xl text-sm"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                        {t.common.view}
+                                                    </Button>
+                                                </Link>
+
+                                                <Button
+                                                    onClick={() => handleCopyUrl(page.url)}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-10 rounded-xl border-pink-200 px-3 text-sm text-pink-700 hover:bg-pink-50 sm:flex-none"
+                                                >
+                                                    <Link2 className="mr-1 h-4 w-4" />
+                                                    {t.common.copy}
+                                                </Button>
+
+                                                <div className="relative flex-shrink-0">
+                                                    <Button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setOpenMenuId(openMenuId === page._id ? null : page._id);
+                                                        }}
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-10 w-10 rounded-xl border border-gray-200 bg-white"
+                                                    >
+                                                        <MoreVertical className="w-4 h-4 text-gray-500" />
+                                                    </Button>
+
+                                                    {openMenuId === page._id && (
+                                                        <div className="absolute right-0 bottom-full z-50 mb-2 min-w-[180px] rounded-2xl border border-gray-200 bg-white py-1 shadow-lg">
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleToggleStatus(page._id, page.isActive);
+                                                                    setOpenMenuId(null);
+                                                                }}
+                                                                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100"
+                                                            >
+                                                                {page.isActive ? (
+                                                                    <>
+                                                                        <ToggleRight className="w-4 h-4 text-green-600" />
+                                                                        {t.dashboard.deactivate}
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <ToggleLeft className="w-4 h-4 text-gray-400" />
+                                                                        {t.dashboard.activate}
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleDelete(page._id);
+                                                                    setOpenMenuId(null);
+                                                                }}
+                                                                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                                {t.common.delete}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
 
-                {/* FAB para crear página en móvil */}
                 {pages.length > 0 && (
-                    <Link href="/create" className="fixed bottom-6 right-6 sm:hidden z-40">
+                    <Link href={createHref} className="fixed bottom-5 right-5 z-40 sm:hidden">
                         <Button
                             variant="gradient"
                             size="icon"
