@@ -113,18 +113,35 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} ${dancingScript.variable}`}>
         <LanguageProvider>
-        <AuthProvider>
-          {children}
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              duration: 3000,
-              style: { background: '#fff', color: '#363636' },
-              success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
-              error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
-            }}
-          />
-        </AuthProvider>
+          <AuthProvider>
+            {children}
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">
+              <div className="w-full max-w-3xl rounded-[2rem] border border-white/20 bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 p-8 text-center text-white shadow-2xl md:p-12">
+                <span className="mb-4 inline-flex rounded-full border border-white/30 bg-white/15 px-4 py-1 text-sm font-semibold uppercase tracking-[0.3em]">
+                  Mantenimiento
+                </span>
+                <h1 className="text-4xl font-black leading-tight md:text-6xl">
+                  Esta pagina esta en mantenimiento
+                </h1>
+                <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white/90 md:text-xl">
+                  El backend estara apagado por unos dias mientras realizo ajustes.
+                  Algunas funciones pueden no responder o no estar disponibles temporalmente.
+                </p>
+                <p className="mt-4 text-sm text-white/80 md:text-base">
+                  Vuelve a intentarlo mas tarde.
+                </p>
+              </div>
+            </div>
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                duration: 3000,
+                style: { background: '#fff', color: '#363636' },
+                success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+                error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+              }}
+            />
+          </AuthProvider>
         </LanguageProvider>
 
         {/* AdSense — deferred to not block initial render */}
