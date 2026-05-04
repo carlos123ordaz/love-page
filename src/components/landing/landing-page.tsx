@@ -1,936 +1,350 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import { useAuthStore } from '@/store';
-import { Heart, Sparkles, Eye, Send, Crown, ChevronDown, Star, ArrowRight, Play, Check, X, MousePointer } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useTranslation } from '@/i18n';
 
-// ============================================================
-// MINI PREVIEW COMPONENT - Interactive demo card
-// ============================================================
-function MiniPagePreview({
-    title,
-    recipient,
-    message,
-    theme,
-    yesText,
-    noText,
-    noEscapes,
-    stickers,
-    animation,
-}: {
-    title: string;
-    recipient: string;
-    message: string;
-    theme: { bg: string; text: string; accent: string; name: string };
-    yesText: string;
-    noText: string;
-    noEscapes: boolean;
-    stickers: string[];
-    animation: string;
+// ── Stat badge ──────────────────────────────────────────────
+function Stat({ n, label, tone }: { n: string; label: string; tone: 'lila' | 'peach' | 'mint' }) {
+    const bgs = { lila: 'var(--lila)', peach: 'var(--melocoton)', mint: 'var(--mint)' };
+    return (
+        <div style={{ padding: '10px 16px', background: bgs[tone], border: '2px solid var(--ink)', borderRadius: 16, boxShadow: '3px 3px 0 var(--ink)' }}>
+            <div className="serif-display" style={{ fontSize: 'clamp(22px, 4vw, 28px)', lineHeight: 1, color: 'var(--ink)' }}>{n}</div>
+            <div style={{ marginTop: 4, fontSize: 11, fontWeight: 600, color: 'var(--ink)' }}>{label}</div>
+        </div>
+    );
+}
+
+// ── Pillar card ──────────────────────────────────────────────
+function Pillar({ n, emoji, tone, title, body }: { n: string; emoji: string; tone: 'lila' | 'peach' | 'mint'; title: string; body: string }) {
+    const bgs = { lila: 'var(--lila)', peach: 'var(--melocoton)', mint: 'var(--mint)' };
+    return (
+        <div style={{ padding: 28, background: 'white', border: '2px solid var(--ink)', borderRadius: 24, boxShadow: '5px 5px 0 var(--ink)', position: 'relative', marginTop: 16 }}>
+            <div style={{ position: 'absolute', top: -16, right: -8, width: 56, height: 56, borderRadius: '50%', background: bgs[tone], border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, boxShadow: '3px 3px 0 var(--ink)' }}>
+                {emoji}
+            </div>
+            <div className="mono-eyebrow">{n}</div>
+            <h3 className="serif-display" style={{ fontSize: 'clamp(20px, 3vw, 26px)', margin: '8px 0 12px', lineHeight: 1.05, color: 'var(--ink)' }}>{title}</h3>
+            <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.55, margin: 0 }}>{body}</p>
+        </div>
+    );
+}
+
+// ── Price card ──────────────────────────────────────────────
+function PriceCard({ plan, price, sub, pitch, features, highlight, ctaLabel, ctaHref }: {
+    plan: string; price: string; sub?: string; pitch: string;
+    features: string[]; highlight?: boolean; ctaLabel: string; ctaHref: string;
 }) {
-    const { t } = useTranslation();
+    return (
+        <div style={{
+            padding: 'clamp(20px, 4vw, 32px)',
+            border: '2px solid var(--ink)', borderRadius: 28,
+            background: highlight ? 'var(--ink)' : 'white',
+            color: highlight ? 'white' : 'var(--ink)',
+            position: 'relative',
+            boxShadow: '6px 6px 0 var(--ink)',
+        }}>
+            {highlight && (
+                <div className="sticker-badge" style={{ position: 'absolute', top: -16, right: 24, background: 'var(--butter)', color: 'var(--ink)' }}>
+                    <span>⭐</span><span>recomendado</span>
+                </div>
+            )}
+            <div className="mono-eyebrow" style={{ color: highlight ? 'var(--melocoton)' : 'var(--ink-soft)' }}>{plan}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 12 }}>
+                <span className="serif-display" style={{ fontSize: 'clamp(48px, 8vw, 64px)', color: highlight ? 'white' : 'var(--ink)' }}>{price}</span>
+                {sub && <span style={{ fontSize: 12, opacity: 0.7 }}>{sub}</span>}
+            </div>
+            <p style={{ fontSize: 15, margin: '8px 0 24px', opacity: highlight ? 0.85 : 1 }}>{pitch}</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {features.map((f) => (
+                    <li key={f} style={{ display: 'flex', gap: 12, alignItems: 'baseline', fontSize: 14 }}>
+                        <span style={{ color: highlight ? 'var(--melocoton)' : 'var(--accent-hex)', fontSize: 16 }}>♥</span>
+                        {f}
+                    </li>
+                ))}
+            </ul>
+            <Link href={ctaHref}>
+                <button style={{
+                    marginTop: 28, width: '100%', padding: '14px 24px', borderRadius: 999,
+                    border: '2px solid var(--ink)', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                    background: highlight ? 'var(--accent-hex)' : 'var(--ink)', color: 'white',
+                    boxShadow: highlight ? '3px 3px 0 var(--melocoton)' : '3px 3px 0 var(--accent-hex)',
+                }}>{ctaLabel}</button>
+            </Link>
+        </div>
+    );
+}
+
+// ── Demo phone mockup ────────────────────────────────────────
+function DemoPhone() {
     const [answered, setAnswered] = useState(false);
-    const [answer, setAnswer] = useState<'yes' | 'no' | null>(null);
     const [noPos, setNoPos] = useState<{ x: number; y: number } | null>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [particles, setParticles] = useState<{ id: number; x: number; y: number; emoji: string; delay: number }[]>([]);
 
-    useEffect(() => {
-        if (animation === 'hearts-falling' || animation === 'confetti') {
-            const emojis = animation === 'hearts-falling'
-                ? ['❤️', '💕', '💖', '💗']
-                : ['🎊', '✨', '🎉', '⭐'];
-            const newParticles = Array.from({ length: 8 }, (_, i) => ({
-                id: i,
-                x: Math.random() * 100,
-                y: Math.random() * 100,
-                emoji: emojis[Math.floor(Math.random() * emojis.length)],
-                delay: Math.random() * 3,
-            }));
-            setParticles(newParticles);
-        }
-    }, [animation]);
-
-    const handleNoHover = () => {
-        if (!noEscapes || answered) return;
-        const container = containerRef.current;
-        if (!container) return;
-        const rect = container.getBoundingClientRect();
-        setNoPos({
-            x: Math.random() * (rect.width - 100),
-            y: Math.random() * (rect.height - 50),
-        });
-    };
-
-    const handleAnswer = (a: 'yes' | 'no') => {
-        setAnswered(true);
-        setAnswer(a);
-    };
-
-    const reset = () => {
-        setAnswered(false);
-        setAnswer(null);
-        setNoPos(null);
+    const bumpNo = () => {
+        setNoPos({ x: Math.random() * 180, y: Math.random() * 80 });
     };
 
     return (
-        <div
-            ref={containerRef}
-            className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 max-w-[320px] mx-auto"
-            style={{ backgroundColor: theme.bg, color: theme.text }}
-        >
-            {/* Falling particles */}
-            {particles.map((p) => (
-                <span
-                    key={p.id}
-                    className="absolute text-sm pointer-events-none opacity-60"
-                    style={{
-                        left: `${p.x}%`,
-                        top: `-10%`,
-                        animation: `demoFall ${4 + p.delay}s linear ${p.delay}s infinite`,
-                    }}
-                >
-                    {p.emoji}
-                </span>
-            ))}
-
-            <div className="relative z-10 flex flex-col items-center justify-center h-full p-5 text-center">
-                {/* Stickers */}
-                {stickers.length > 0 && (
-                    <div className="flex gap-1.5 mb-3">
-                        {stickers.map((s, i) => (
-                            <span key={i} className="text-2xl" style={{ animation: `demoBounce 2s ease-in-out ${i * 0.15}s infinite` }}>
-                                {s}
-                            </span>
-                        ))}
+        /* scale down on narrow screens so the 320px phone fits */
+        <div style={{ width: 320, height: 640, background: 'var(--ink)', borderRadius: 44, padding: 10, boxShadow: '8px 8px 0 rgba(45,27,61,.2), var(--shadow-card)', border: '2px solid var(--ink)', flexShrink: 0 }}>
+            <div style={{ width: '100%', height: '100%', borderRadius: 36, overflow: 'hidden', position: 'relative', background: 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)' }}>
+                <div style={{ position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)', width: 90, height: 24, background: 'var(--ink)', borderRadius: 999 }} />
+                <div style={{ padding: '70px 24px 0', textAlign: 'center' }}>
+                    <div className="sticker-badge" style={{ fontSize: 9, padding: '4px 10px', marginBottom: 16, background: 'var(--lila-soft)' }}>
+                        <span>💌</span><span>una carta para ti</span>
                     </div>
-                )}
-
-                <Heart
-                    className="w-10 h-10 mb-3"
-                    style={{ animation: 'demoHeartBeat 1.5s ease-in-out infinite', color: theme.text }}
-                />
-
-                <h3 className="text-xl font-bold mb-2 leading-tight" style={{ fontFamily: "var(--font-dancing), cursive" }}>
-                    {title}
-                </h3>
-
-                <p className="text-base font-medium mb-1">{recipient}</p>
-
-                {message && (
-                    <p className="text-xs opacity-80 mb-4 max-w-[85%] leading-relaxed">{message}</p>
-                )}
-
-                {/* Buttons */}
-                {!answered ? (
-                    <div className="flex gap-3 mt-auto relative w-full justify-center">
-                        <button
-                            onClick={() => handleAnswer('yes')}
-                            className="px-5 py-2 text-sm font-bold rounded-lg transition-transform hover:scale-105 shadow-md"
-                            style={{ backgroundColor: theme.accent, color: theme.text }}
-                        >
-                            {yesText}
-                        </button>
-
-                        {!noPos ? (
-                            <button
-                                onMouseEnter={handleNoHover}
-                                onTouchStart={(e) => { e.preventDefault(); handleNoHover(); }}
-                                onClick={() => !noEscapes && handleAnswer('no')}
-                                className="px-5 py-2 text-sm font-bold rounded-lg bg-white/15 backdrop-blur transition-colors hover:bg-white/25"
-                                style={{ color: theme.text }}
-                            >
-                                {noText}
+                    <h3 className="serif-display" style={{ fontSize: 36, margin: 0, lineHeight: 0.95, color: 'var(--ink)' }}>
+                        ¿quieres ser <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>mi novia?</em>
+                    </h3>
+                    <div style={{ marginTop: 18, fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.5 }}>
+                        después de 247 cafés y 31 películas...
+                    </div>
+                    {!answered ? (
+                        <div style={{ marginTop: 24, position: 'relative', minHeight: 44 }}>
+                            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                                <button onClick={() => setAnswered(true)} style={{ background: 'var(--accent-hex)', color: 'white', border: '2px solid var(--ink)', padding: '8px 16px', borderRadius: 999, fontSize: 12, fontWeight: 600, boxShadow: '2px 2px 0 var(--ink)', cursor: 'pointer' }}>
+                                    sí 💖
+                                </button>
+                                {!noPos && (
+                                    <button onMouseEnter={bumpNo} style={{ background: 'white', border: '2px solid var(--ink)', padding: '8px 16px', borderRadius: 999, fontSize: 12, fontWeight: 600, boxShadow: '2px 2px 0 var(--ink)', cursor: 'pointer' }}>
+                                        no
+                                    </button>
+                                )}
+                            </div>
+                            {noPos && (
+                                <button onMouseEnter={bumpNo} style={{ position: 'absolute', left: noPos.x, top: noPos.y - 48, background: 'white', border: '2px solid var(--ink)', padding: '8px 16px', borderRadius: 999, fontSize: 12, fontWeight: 600, boxShadow: '2px 2px 0 var(--ink)', cursor: 'pointer', transition: 'all 300ms cubic-bezier(.2,.9,.3,1.1)' }}>
+                                    no
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ marginTop: 24, textAlign: 'center' }}>
+                            <h2 className="serif-display" style={{ fontSize: 56, color: 'var(--ink)', margin: 0 }}>
+                                <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>¡sí!</em> 💖
+                            </h2>
+                            <button onClick={() => { setAnswered(false); setNoPos(null); }} style={{ marginTop: 12, fontSize: 10, color: 'var(--ink-soft)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                                volver
                             </button>
-                        ) : null}
-
-                        {noPos && (
-                            <button
-                                onMouseEnter={handleNoHover}
-                                onTouchStart={(e) => { e.preventDefault(); handleNoHover(); }}
-                                className="absolute px-5 py-2 text-sm font-bold rounded-lg bg-white/15 backdrop-blur transition-all duration-200"
-                                style={{ left: noPos.x, top: noPos.y, color: theme.text }}
-                            >
-                                {noText}
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    <div className="mt-auto bg-white/15 backdrop-blur rounded-xl p-4">
-                        <p className="text-2xl mb-1">{answer === 'yes' ? '💕' : '😊'}</p>
-                        <p className="text-sm font-bold">{answer === 'yes' ? t.landing.thanks : t.landing.understood}</p>
-                        <button
-                            onClick={reset}
-                            className="mt-2 text-[10px] underline opacity-60 hover:opacity-100"
-                        >
-                            {t.landing.restartDemo}
-                        </button>
-                    </div>
-                )}
-
-                <p className="absolute bottom-1.5 text-[8px] opacity-30">{t.landing.madeWith}</p>
-            </div>
-        </div>
-    );
-}
-
-// ============================================================
-// DEMO BUILDER - Try before signing up
-// ============================================================
-const DEMO_THEMES = [
-    { id: 'romantic', emoji: '💕', bg: '#ff69b4', text: '#ffffff', accent: '#ff1493', preview: 'from-pink-400 to-rose-500' },
-    { id: 'sunset', emoji: '🌅', bg: '#ff6b35', text: '#ffffff', accent: '#f7c59f', preview: 'from-orange-400 to-pink-500' },
-    { id: 'ocean', emoji: '🌊', bg: '#0077b6', text: '#ffffff', accent: '#90e0ef', preview: 'from-cyan-400 to-blue-600' },
-    { id: 'elegant', emoji: '✨', bg: '#2c3e50', text: '#ecf0f1', accent: '#c9a84c', preview: 'from-slate-600 to-purple-700' },
-    { id: 'garden', emoji: '🌸', bg: '#ffc8dd', text: '#5c374c', accent: '#ffafcc', preview: 'from-pink-200 to-purple-300' },
-    { id: 'dark', emoji: '🖤', bg: '#1a1a2e', text: '#e0e0e0', accent: '#e94560', preview: 'from-gray-900 to-indigo-950' },
-];
-
-const DEMO_STICKERS = ['❤️', '💖', '💘', '💋', '🌹', '💍', '💑', '💌'];
-
-const THEME_NAME_KEYS: Record<string, keyof typeof import('@/i18n/translations/es').default['landing']> = {
-    romantic: 'themeRomantic',
-    sunset: 'themeSunset',
-    ocean: 'themeOcean',
-    elegant: 'themeElegant',
-    garden: 'themeGarden',
-    dark: 'themeDark',
-};
-
-function DemoBuilder() {
-    const { t } = useTranslation();
-    const [title, setTitle] = useState('¿Quieres ser mi San Valentín?');
-    const [recipient, setRecipient] = useState('María');
-    const [message, setMessage] = useState('Cada día a tu lado es un regalo... 💕');
-    const [selectedTheme, setSelectedTheme] = useState(DEMO_THEMES[0]);
-    const [yesText, setYesText] = useState('¡Sí, quiero! 💖');
-    const [noText, setNoText] = useState('Déjame pensarlo');
-    const [noEscapes, setNoEscapes] = useState(true);
-    const [selectedStickers, setSelectedStickers] = useState<string[]>(['❤️', '💖']);
-    const [animation, setAnimation] = useState('hearts-falling');
-
-    const getThemeName = (themeId: string) => {
-        const key = THEME_NAME_KEYS[themeId];
-        return key ? t.landing[key] : themeId;
-    };
-
-    const toggleSticker = (emoji: string) => {
-        setSelectedStickers((prev) =>
-            prev.includes(emoji) ? prev.filter((s) => s !== emoji) : prev.length < 3 ? [...prev, emoji] : prev
-        );
-    };
-
-    const selectedThemeWithName = useMemo(() => ({
-        ...selectedTheme,
-        name: getThemeName(selectedTheme.id),
-    }), [selectedTheme, t]);
-
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            {/* Editor */}
-            <div className="space-y-5 order-2 lg:order-1">
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoPageTitle}</label>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        maxLength={100}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
-                        placeholder={t.landing.demoPageTitlePlaceholder}
-                    />
+                        </div>
+                    )}
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoFor}</label>
-                        <input
-                            type="text"
-                            value={recipient}
-                            onChange={(e) => setRecipient(e.target.value)}
-                            maxLength={50}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
-                            placeholder={t.landing.demoNamePlaceholder}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="demo-animation" className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoAnimation}</label>
-                        <select
-                            id="demo-animation"
-                            value={animation}
-                            onChange={(e) => setAnimation(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
-                        >
-                            <option value="none">{t.landing.demoNoAnimation}</option>
-                            <option value="hearts-falling">{t.landing.demoHearts}</option>
-                            <option value="confetti">{t.landing.demoConfetti}</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoMessage}</label>
-                    <textarea
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        maxLength={200}
-                        rows={2}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm resize-none bg-white/80"
-                        placeholder={t.landing.demoMessagePlaceholder}
-                    />
-                </div>
-
-                {/* Theme selector */}
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t.landing.demoTheme}</label>
-                    <div className="grid grid-cols-6 gap-2">
-                        {DEMO_THEMES.map((theme) => (
-                            <button
-                                key={theme.id}
-                                onClick={() => setSelectedTheme(theme)}
-                                className={`aspect-square rounded-xl bg-gradient-to-br ${theme.preview} transition-all flex items-center justify-center text-lg ${selectedTheme.id === theme.id ? 'ring-3 ring-pink-500 ring-offset-2 scale-110' : 'hover:scale-105 opacity-75 hover:opacity-100'}`}
-                                title={getThemeName(theme.id)}
-                            >
-                                {theme.emoji}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Stickers */}
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        {t.landing.demoStickers} <span className="text-xs text-gray-400 font-normal">({selectedStickers.length}/3)</span>
-                    </label>
-                    <div className="flex gap-2 flex-wrap">
-                        {DEMO_STICKERS.map((emoji) => (
-                            <button
-                                key={emoji}
-                                onClick={() => toggleSticker(emoji)}
-                                className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-xl transition-all ${selectedStickers.includes(emoji) ? 'border-pink-500 bg-pink-50 scale-110' : 'border-gray-200 hover:border-pink-300 hover:scale-105'}`}
-                            >
-                                {emoji}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Button texts */}
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label htmlFor="demo-yes-btn" className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoYesButton}</label>
-                        <input
-                            id="demo-yes-btn"
-                            type="text"
-                            value={yesText}
-                            onChange={(e) => setYesText(e.target.value)}
-                            maxLength={30}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="demo-no-btn" className="block text-sm font-semibold text-gray-700 mb-1.5">{t.landing.demoNoButton}</label>
-                        <input
-                            id="demo-no-btn"
-                            type="text"
-                            value={noText}
-                            onChange={(e) => setNoText(e.target.value)}
-                            maxLength={30}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-white/80"
-                        />
-                    </div>
-                </div>
-
-                {/* No escapes toggle */}
-                <label className="flex items-center gap-3 p-3 bg-white/60 rounded-xl cursor-pointer group">
-                    <input
-                        type="checkbox"
-                        checked={noEscapes}
-                        onChange={(e) => setNoEscapes(e.target.checked)}
-                        className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
-                    />
-                    <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
-                        {t.landing.demoNoEscapes}
+                {['🌷', '💌', '💗', '✨'].map((e, i) => (
+                    <span key={i} style={{ position: 'absolute', top: `${18 + i * 18}%`, left: `${10 + (i * 23) % 80}%`, fontSize: 20, opacity: 0.7, transform: `rotate(${i * 17}deg)`, pointerEvents: 'none' }}>
+                        {e}
                     </span>
-                    {noEscapes && <MousePointer className="w-3.5 h-3.5 text-pink-400 ml-auto" />}
-                </label>
-
-                {/* CTA */}
-                <div className="pt-2 text-center">
-                    <p className="text-xs text-gray-500 text-center mb-3">
-                        {t.landing.demoLikeIt}
-                    </p>
-                    <Link href="/create">
-                        <Button variant="gradient" size="lg" className="gap-2">
-                            <Heart className="w-5 h-5" />
-                            {t.landing.createPageFree}
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-
-            {/* Live Preview */}
-            <div className="order-1 lg:order-2 lg:sticky lg:top-8">
-                <div className="text-center mb-3">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-pink-600 bg-pink-100 px-3 py-1 rounded-full">
-                        <Eye className="w-3 h-3" />
-                        {t.landing.demoLivePreview}
-                    </span>
-                </div>
-                <MiniPagePreview
-                    title={title}
-                    recipient={recipient}
-                    message={message}
-                    theme={selectedThemeWithName}
-                    yesText={yesText}
-                    noText={noText}
-                    noEscapes={noEscapes}
-                    stickers={selectedStickers}
-                    animation={animation}
-                />
+                ))}
             </div>
         </div>
     );
 }
 
-// ============================================================
-// TESTIMONIAL DATA
-// ============================================================
-const TESTIMONIALS_DATA = [
-    { name: 'Carlos M.', key: 'testimonial1' as const, emoji: '💑' },
-    { name: 'Ana P.', key: 'testimonial2' as const, emoji: '🌹' },
-    { name: 'Diego R.', key: 'testimonial3' as const, emoji: '✨' },
-    { name: 'Lucía S.', key: 'testimonial4' as const, emoji: '💍' },
-];
-
-// ============================================================
-// SHOWCASE PAGES - pre-made examples
-// ============================================================
-const SHOWCASE_PAGES_BASE = [
-    {
-        titleKey: 'showcasePage1Title' as const,
-        recipient: 'María',
-        messageKey: 'showcasePage1Message' as const,
-        theme: DEMO_THEMES[0],
-        stickers: ['❤️', '💖'],
-    },
-    {
-        titleKey: 'showcasePage2Title' as const,
-        recipient: 'Alejandro',
-        messageKey: 'showcasePage2Message' as const,
-        theme: DEMO_THEMES[1],
-        stickers: ['🌹', '💋'],
-    },
-    {
-        titleKey: 'showcasePage3Title' as const,
-        recipient: 'Andrea',
-        messageKey: 'showcasePage3Message' as const,
-        theme: DEMO_THEMES[2],
-        stickers: ['💌', '💑'],
-    },
-];
-
-// ============================================================
-// FLOATING HEARTS BACKGROUND
-// ============================================================
-function FloatingHearts() {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        // Delay rendering decorative hearts until after LCP
-        const timer = setTimeout(() => setMounted(true), 2000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    if (!mounted) return null;
-
-    const hearts = Array.from({ length: 12 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        size: Math.random() * 16 + 8,
-        delay: Math.random() * 8,
-        duration: Math.random() * 6 + 8,
-        opacity: Math.random() * 0.15 + 0.05,
-    }));
-
-    return (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-            {hearts.map((h) => (
-                <div
-                    key={h.id}
-                    className="absolute text-pink-400"
-                    style={{
-                        left: `${h.x}%`,
-                        bottom: '-5%',
-                        fontSize: `${h.size}px`,
-                        opacity: h.opacity,
-                        animation: `floatUp ${h.duration}s ease-in ${h.delay}s infinite`,
-                    }}
-                >
-                    ♥
-                </div>
-            ))}
-        </div>
-    );
-}
-
-// ============================================================
-// MAIN LANDING PAGE
-// ============================================================
+// ── Main landing page ────────────────────────────────────────
 export default function LandingPage() {
     const { user } = useAuthStore();
     const { t } = useTranslation();
-    const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
-
-    // Intersection Observer for scroll animations
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setVisibleSections((prev: any) => new Set([...prev, entry.target.id]));
-                    }
-                });
-            },
-            { threshold: 0.15 }
-        );
-
-        document.querySelectorAll('[data-animate]').forEach((el) => observer.observe(el));
-        return () => observer.disconnect();
-    }, []);
-
-    const isVisible = (id: string) => visibleSections.has(id);
-
-    const showcasePages = useMemo(() =>
-        SHOWCASE_PAGES_BASE.map((page) => ({
-            title: t.landing[page.titleKey],
-            recipient: page.recipient,
-            message: t.landing[page.messageKey],
-            theme: { ...page.theme, name: t.landing[THEME_NAME_KEYS[page.theme.id] as keyof typeof t.landing] as string },
-            stickers: page.stickers,
-        })),
-        [t]
-    );
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-rose-50 via-pink-50 to-white overflow-x-hidden">
-            <FloatingHearts />
+        <div style={{ width: '100%', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--sans)', position: 'relative', overflowX: 'hidden' }}>
+            {/* Floating background stickers — hidden on mobile to avoid overflow */}
+            <div className="hidden sm:block" style={{ position: 'absolute', top: 200, left: 80, fontSize: 80, transform: 'rotate(-18deg)', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }}>💗</div>
+            <div className="hidden sm:block" style={{ position: 'absolute', top: 540, right: 120, fontSize: 64, transform: 'rotate(20deg)', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }}>🌸</div>
+            <div className="hidden sm:block" style={{ position: 'absolute', top: 1200, left: 100, fontSize: 70, transform: 'rotate(15deg)', opacity: 0.3, pointerEvents: 'none', zIndex: 0 }}>✨</div>
 
-            {/* ===== HERO ===== */}
-            <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-16 sm:py-20">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-pink-200/40 via-transparent to-transparent" />
-
-                <div className="relative z-10 max-w-4xl mx-auto text-center">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-pink-200 rounded-full px-4 py-1.5 mb-6 shadow-sm animate-fadeInDown">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500" />
-                        </span>
-                        <span className="text-sm text-gray-700 font-medium">{t.landing.badge}</span>
+            {/* ── HERO ── */}
+            <section
+                style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 2 }}
+                className="px-5 pt-10 pb-14 sm:px-12 sm:pt-16 sm:pb-20 grid grid-cols-1 sm:grid-cols-[1.1fr_1fr] gap-10 sm:gap-14 items-center"
+            >
+                <div>
+                    <div className="sticker-badge" style={{ background: 'var(--mint)', marginBottom: 24 }}>
+                        <span>✨</span><span>nuevo · 2.4M páginas creadas</span>
                     </div>
-
-                    {/* Hero icon */}
-                    <div className="mb-6">
-                        <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-pink-500 to-rose-600 rounded-3xl rotate-3 shadow-xl shadow-pink-500/25 animate-heroHeart">
-                            <Heart className="w-10 h-10 sm:w-12 sm:h-12 text-white fill-white" />
-                        </div>
-                    </div>
-
-                    {/* Headline */}
-                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 mb-4 sm:mb-6 leading-[1.1] tracking-tight animate-fadeInUp">
-                        {t.landing.heroTitle1}
-                        <br />
-                        <span className="bg-gradient-to-r from-pink-600 via-rose-500 to-red-500 bg-clip-text text-transparent">
-                            {t.landing.heroTitle2}
-                        </span>
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(40px, 7vw, 88px)', margin: 0, lineHeight: 0.92, color: 'var(--ink)' }}>
+                        cartas de amor<br />
+                        que <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>responden</em>
+                        <span style={{ display: 'inline-block', fontSize: '0.7em', marginLeft: 12, transform: 'rotate(8deg)' }}>💌</span>
                     </h1>
-
-                    <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed animate-fadeInUp animation-delay-200">
-                        {t.landing.heroDescription}
+                    <p style={{ fontSize: 'clamp(15px, 2vw, 19px)', lineHeight: 1.55, color: 'var(--ink-2)', maxWidth: 500, marginTop: 20, fontWeight: 400 }}>
+                        diseña una página inolvidable, comparte el link, y descubre en tiempo real lo que la otra persona contesta.{' '}
+                        <span style={{ color: 'var(--accent-deep-hex)', fontWeight: 600 }}>romántico, cursi, inevitable.</span>
                     </p>
 
-                    {/* CTA buttons */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 animate-fadeInUp animation-delay-400">
-                        <Link
-                            href="/create"
-                            className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/30 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2"
-                        >
-                            <Sparkles className="w-5 h-5" />
-                            {t.landing.ctaCreate}
+                    <div style={{ display: 'flex', gap: 12, marginTop: 28, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Link href="/create">
+                            <button className="btn-accent" style={{ fontSize: 15, padding: '14px 24px' }}>
+                                crear mi página · gratis →
+                            </button>
                         </Link>
-                        <a
-                            href="#demo"
-                            className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-pink-200 text-pink-700 font-bold rounded-2xl hover:bg-pink-50 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2"
-                        >
-                            <Play className="w-5 h-5" />
-                            {t.landing.ctaDemo}
+                        <a href="#demo">
+                            <button style={{ background: 'white', border: '2px solid var(--ink)', color: 'var(--ink)', padding: '12px 20px', borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }}>
+                                ver demo 👀
+                            </button>
                         </a>
                     </div>
 
-                    {/* Social proof row */}
-                    <div className="flex items-center justify-center gap-6 text-sm text-gray-500 animate-fadeInUp animation-delay-600">
-                        <span className="flex items-center gap-1.5">
-                            <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
-                            {t.landing.unlimitedPages}
-                        </span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300" />
-                        <span className="flex items-center gap-1.5">
-                            <Crown className="w-4 h-4 text-amber-500" />
-                            {t.landing.proPrice}
-                        </span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300 hidden sm:block" />
-                        <span className="hidden sm:flex items-center gap-1.5">
-                            <Sparkles className="w-4 h-4 text-purple-500" />
-                            {t.landing.aiDesign}
-                        </span>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 36, flexWrap: 'wrap' }}>
+                        <Stat n="2.4M" label="páginas creadas" tone="lila" />
+                        <Stat n="89%" label="dicen sí" tone="peach" />
+                        <Stat n="$1.75" label="pro · una vez" tone="mint" />
                     </div>
+                </div>
 
-                    {/* Scroll indicator */}
-                    <div className="mt-12 animate-bounce">
-                        <ChevronDown className="w-6 h-6 text-gray-400 mx-auto" />
+                <div className="hidden sm:flex" style={{ position: 'relative', justifyContent: 'center' }}>
+                    <DemoPhone />
+                    <div style={{ position: 'absolute', top: 30, left: -10, transform: 'rotate(-8deg)' }}>
+                        <span className="sticker-badge" style={{ background: 'var(--butter)', fontSize: 11 }}>👀 vista previa en vivo</span>
+                    </div>
+                    <div style={{ position: 'absolute', bottom: 80, right: -40, transform: 'rotate(10deg)' }}>
+                        <span className="sticker-badge" style={{ background: 'var(--lila)', fontSize: 11 }}>🏃 el "no" se escapa</span>
                     </div>
                 </div>
             </section>
 
-            {/* ===== SHOWCASE - Example pages ===== */}
-            <section
-                id="showcase"
-                data-animate
-                className={`py-16 sm:py-24 px-4 transition-all duration-700 ${isVisible('showcase') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-            >
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            {t.landing.showcaseTitle}
-                        </h2>
-                        <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto">
-                            {t.landing.showcaseDesc}
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-                        {showcasePages.map((page, i) => (
-                            <div
-                                key={i}
-                                className="transition-all duration-500"
-                                style={{ transitionDelay: `${i * 150}ms` }}
-                            >
-                                <MiniPagePreview
-                                    title={page.title}
-                                    recipient={page.recipient}
-                                    message={page.message}
-                                    theme={page.theme}
-                                    yesText="¡Sí! 💖"
-                                    noText="No 😅"
-                                    noEscapes={i === 0}
-                                    stickers={page.stickers}
-                                    animation={i === 0 ? 'hearts-falling' : 'none'}
-                                />
-                                {i === 0 && (
-                                    <p className="text-center text-xs text-pink-500 mt-2 font-medium">
-                                        {t.landing.tryPressNo}
-                                    </p>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+            {/* ── Marquee ── */}
+            <section style={{ overflow: 'hidden', background: 'var(--ink)', color: 'var(--paper)', borderTop: '2px solid var(--ink)', borderBottom: '2px solid var(--ink)' }} className="py-4 sm:py-5">
+                <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 32px)', animation: 'scroll-x 30s linear infinite', whiteSpace: 'nowrap' }}>
+                    {Array.from({ length: 4 }).flatMap((_, k) =>
+                        [['san valentín', '💕'], ['aniversarios', '🥂'], ['cumpleaños', '🎂'], ['declaraciones', '💌'], ['amistad', '🫶'], ['pedidas', '💍'], ['perdón', '🌷']].map(([text, emoji], i) => (
+                            <span key={`${k}-${i}`} className="serif-display" style={{ fontSize: 'clamp(18px, 3vw, 28px)', fontStyle: i % 2 ? 'italic' : 'normal', color: i % 2 ? 'var(--melocoton)' : 'var(--paper)' }}>
+                                {text} {emoji}
+                            </span>
+                        ))
+                    )}
                 </div>
             </section>
 
-            {/* ===== HOW IT WORKS ===== */}
+            {/* ── Pillars ── */}
             <section
-                id="how-it-works"
-                data-animate
-                className={`py-16 sm:py-24 px-4 bg-white/60 backdrop-blur-sm transition-all duration-700 ${isVisible('how-it-works') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 2 }}
+                className="px-5 py-14 sm:px-12 sm:py-20 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6"
             >
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            {t.landing.howItWorksTitle}
-                        </h2>
-                        <p className="text-gray-600 text-base sm:text-lg">{t.landing.howItWorksDesc}</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[
-                            {
-                                step: '1',
-                                icon: '✍️',
-                                title: t.landing.step1Title,
-                                desc: t.landing.step1Desc,
-                            },
-                            {
-                                step: '2',
-                                icon: '🔗',
-                                title: t.landing.step2Title,
-                                desc: t.landing.step2Desc,
-                            },
-                            {
-                                step: '3',
-                                icon: '💌',
-                                title: t.landing.step3Title,
-                                desc: t.landing.step3Desc,
-                            },
-                        ].map((item, i) => (
-                            <div key={i} className="text-center group">
-                                <div className="relative inline-flex items-center justify-center w-20 h-20 mb-4">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-rose-200 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform" />
-                                    <div className="relative bg-white rounded-2xl w-full h-full flex items-center justify-center shadow-sm text-3xl">
-                                        {item.icon}
-                                    </div>
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                                <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <Pillar n="01" emoji="🎨" tone="lila" title="diseña sin saber diseñar" body="plantillas curadas, animaciones suaves, paleta heredada del color rosa-melocotón más bonito que existe." />
+                <Pillar n="02" emoji="🔗" tone="peach" title="comparte un link, recibe respuesta" body="cada página vive en su propia URL. tu pareja la abre, contesta sí o no, y tú lo ves al instante." />
+                <Pillar n="03" emoji="📊" tone="mint" title="estadísticas que importan" body="visitas, tiempo dedicado, y la respuesta. notificaciones push cuando recibes una visita." />
             </section>
 
-            {/* ===== FEATURES HIGHLIGHT ===== */}
-            <section
-                id="features"
-                data-animate
-                className={`py-16 sm:py-24 px-4 transition-all duration-700 ${isVisible('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-            >
-                <div className="max-w-5xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            {t.landing.featuresTitle}
-                        </h2>
+            {/* ── Testimonial ── */}
+            <section style={{ background: 'var(--lila-soft)' }} className="px-5 py-14 sm:px-12 sm:py-20">
+                <div style={{ maxWidth: 920, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
+                    {/* Decorative icons — hidden on small screens to avoid overlap */}
+                    <span className="hidden sm:block" style={{ position: 'absolute', top: -10, left: 60, fontSize: 60, transform: 'rotate(-20deg)', pointerEvents: 'none' }}>💬</span>
+                    <span className="hidden sm:block" style={{ position: 'absolute', top: 0, right: 60, fontSize: 60, transform: 'rotate(15deg)', pointerEvents: 'none' }}>💖</span>
+                    <div className="sticker-badge" style={{ background: 'white', marginBottom: 24 }}>
+                        <span>⭐</span><span>ana p. · guadalajara</span>
                     </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                        {[
-                            { emoji: '🎨', title: t.landing.feature1Title, desc: t.landing.feature1Desc },
-                            { emoji: '✨', title: t.landing.feature2Title, desc: t.landing.feature2Desc },
-                            { emoji: '😄', title: t.landing.feature3Title, desc: t.landing.feature3Desc },
-                            { emoji: '🎭', title: t.landing.feature4Title, desc: t.landing.feature4Desc },
-                            { emoji: '🔤', title: t.landing.feature5Title, desc: t.landing.feature5Desc },
-                            { emoji: '📊', title: t.landing.feature6Title, desc: t.landing.feature6Desc },
-                        ].map((f, i) => (
-                            <div
-                                key={i}
-                                className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 border border-pink-100 hover:border-pink-300 hover:shadow-lg hover:-translate-y-1 transition-all group"
-                            >
-                                <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">{f.emoji}</span>
-                                <h3 className="font-bold text-gray-900 mb-1 text-sm sm:text-base">{f.title}</h3>
-                                <p className="text-xs sm:text-sm text-gray-500">{f.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* PRO upsell */}
-                    <div className="mt-10 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
-                        <div className="flex-shrink-0">
-                            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
-                                <Crown className="w-8 h-8 text-white" />
-                            </div>
-                        </div>
-                        <div className="flex-1 text-center sm:text-left">
-                            <h3 className="text-xl font-bold text-gray-900 mb-1">
-                                {t.landing.proUpsellTitle}
-                            </h3>
-                            <p
-                                className="text-sm text-gray-600"
-                                dangerouslySetInnerHTML={{ __html: t.landing.proUpsellDesc }}
-                            />
-                        </div>
-                        <div className="flex-shrink-0">
-                            <Link href="/upgrade">
-                                <Button variant="gradient" size="lg" className="gap-2">
-                                    <Crown className="w-5 h-5" />
-                                    {t.landing.getPro}
-                                </Button>
-                            </Link>
+                    <blockquote className="serif-display" style={{ fontSize: 'clamp(26px, 4.5vw, 56px)', lineHeight: 1.05, margin: 0, fontStyle: 'italic', color: 'var(--ink)' }}>
+                        "le dije que sí antes de leer el último <em style={{ color: 'var(--accent-hex)' }}>párrafo</em>"
+                    </blockquote>
+                    <div style={{ marginTop: 24, display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center' }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 999, background: 'var(--accent-hex)', border: '2px solid var(--ink)', flexShrink: 0 }} />
+                        <div style={{ textAlign: 'left' }}>
+                            <div style={{ fontSize: 14, fontWeight: 600 }}>ana patricia m.</div>
+                            <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>recibió una pedida · feb 2026</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* ===== INTERACTIVE DEMO ===== */}
-            <section
-                id="demo"
-                data-animate
-                className={`py-16 sm:py-24 px-4 bg-gradient-to-b from-white/60 to-pink-50/60 backdrop-blur-sm transition-all duration-700 ${isVisible('demo') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-            >
-                <div className="max-w-5xl mx-auto">
-                    <div className="text-center mb-10">
-                        <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 font-semibold text-sm px-4 py-1.5 rounded-full mb-4">
-                            <Play className="w-4 h-4" />
-                            {t.landing.demoInteractive}
-                        </div>
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            {t.landing.demoTitle}
-                        </h2>
-                        <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto">
-                            {t.landing.demoDesc}
-                        </p>
-                    </div>
-
-                    <DemoBuilder />
-                </div>
-            </section>
-
-            {/* ===== TESTIMONIALS ===== */}
-            <section
-                id="testimonials"
-                data-animate
-                className={`py-16 sm:py-24 px-4 transition-all duration-700 ${isVisible('testimonials') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-            >
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-                            {t.landing.testimonialsTitle}
-                        </h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                        {TESTIMONIALS_DATA.map((testimonial, i) => (
-                            <div
-                                key={i}
-                                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-pink-100 shadow-sm hover:shadow-md transition-all"
-                            >
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full flex items-center justify-center text-lg">
-                                        {testimonial.emoji}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900 text-sm">{testimonial.name}</p>
-                                        <div className="flex gap-0.5">
-                                            {[...Array(5)].map((_, j) => (
-                                                <Star key={j} className="w-3 h-3 text-amber-400 fill-amber-400" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className="text-sm text-gray-600 leading-relaxed">"{t.landing[testimonial.key]}"</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ===== FINAL CTA ===== */}
-            <section className="py-20 sm:py-28 px-4">
-                <div className="max-w-2xl mx-auto text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl mb-6 shadow-xl shadow-pink-500/20">
-                        <Heart className="w-8 h-8 text-white fill-white" />
-                    </div>
-
-                    <h2 className="text-3xl sm:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
-                        {t.landing.finalCtaTitle1}
-                        <br />
-                        <span className="bg-gradient-to-r from-pink-600 to-rose-500 bg-clip-text text-transparent">
-                            {t.landing.finalCtaTitle2}
-                        </span>
+            {/* ── Demo ── */}
+            <section id="demo" style={{ maxWidth: 1200, margin: '0 auto' }} className="px-5 py-14 sm:px-12 sm:py-20">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40, flexWrap: 'wrap', gap: 16 }}>
+                    <h2 className="serif-display" style={{ fontSize: 'clamp(32px, 5vw, 64px)', margin: 0, lineHeight: 0.95, color: 'var(--ink)' }}>
+                        pruébalo tú mismo,<br /><em style={{ color: 'var(--accent-hex)' }}>ahora</em> 👇
                     </h2>
-
-                    <p className="text-gray-600 text-base sm:text-lg mb-8 max-w-lg mx-auto">
-                        {t.landing.finalCtaDesc}
-                    </p>
-
-                    <Link href={user ? '/dashboard' : '/create'}>
-                        <Button variant="gradient" size="lg" className="gap-2">
-                            <Heart className="w-5 h-5" />
-                            {user ? t.landing.goToMyPages : t.landing.createPageFree}
-                        </Button>
+                    <span className="sticker-badge" style={{ background: 'var(--lila)' }}>03 · demo</span>
+                </div>
+                {/* Phone wrapper: scale down on narrow screens */}
+                <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'hidden' }}>
+                    <div style={{ transform: 'scale(min(1, calc((100vw - 40px) / 320px)))', transformOrigin: 'top center' }}>
+                        <DemoPhone />
+                    </div>
+                </div>
+                <div style={{ textAlign: 'center', marginTop: 32 }}>
+                    <Link href="/create">
+                        <button className="btn-accent" style={{ fontSize: 15, padding: '14px 24px' }}>
+                            crear mi página gratis →
+                        </button>
                     </Link>
-
-                    <p className="mt-6 text-xs text-gray-400">
-                        Al continuar, aceptas nuestros términos y condiciones
-                    </p>
                 </div>
             </section>
 
-            {/* ===== FOOTER ===== */}
-            <footer className="py-8 px-4 border-t border-pink-100 bg-white/40">
-                <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-2">
-                        <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
-                        <span className="font-semibold text-gray-700">Love Pages</span>
-                    </div>
-                    <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                        <Link href="/blog" className="hover:text-pink-600 transition-colors">Blog</Link>
-                        <Link href="/about" className="hover:text-pink-600 transition-colors">Acerca de</Link>
-                        <Link href="/privacy-policy" className="hover:text-pink-600 transition-colors">Privacidad</Link>
-                        <Link href="/terms" className="hover:text-pink-600 transition-colors">Términos</Link>
-                        <Link href="/contact" className="hover:text-pink-600 transition-colors">Contacto</Link>
-                    </nav>
-                    <p>© {new Date().getFullYear()} Love Pages. Hecho con amor.</p>
+            {/* ── Pricing ── */}
+            <section style={{ maxWidth: 1200, margin: '0 auto' }} className="px-5 py-14 sm:px-12 sm:py-20">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40, flexWrap: 'wrap', gap: 16 }}>
+                    <h2 className="serif-display" style={{ fontSize: 'clamp(32px, 5vw, 64px)', margin: 0, lineHeight: 0.95, color: 'var(--ink)' }}>
+                        un precio justo,<br /><em style={{ color: 'var(--accent-hex)' }}>para siempre</em> 💸
+                    </h2>
+                    <span className="sticker-badge" style={{ background: 'var(--butter)' }}>04 · precios</span>
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <PriceCard
+                        plan="free"
+                        price="$0"
+                        pitch="suficiente para esa carta importante"
+                        features={['2 páginas activas', 'animaciones básicas', 'URL lovepages.ink/p/xxxx', 'marca de agua sutil']}
+                        ctaLabel="empezar gratis"
+                        ctaHref="/create"
+                    />
+                    <PriceCard
+                        plan="pro"
+                        price="$1.75"
+                        sub="una vez · de por vida"
+                        pitch="para los que se enamoran seguido"
+                        features={['páginas ilimitadas', 'diseño con IA ✨', 'URL personalizada', 'sin marca de agua', 'música ilimitada', 'estadísticas avanzadas']}
+                        highlight
+                        ctaLabel="hacer upgrade ✨"
+                        ctaHref="/upgrade"
+                    />
+                </div>
+            </section>
+
+            {/* ── Final CTA ── */}
+            <section
+                style={{ background: 'var(--accent-hex)', color: 'white', textAlign: 'center', position: 'relative', overflow: 'hidden' }}
+                className="px-5 py-20 sm:px-12 sm:py-32"
+            >
+                <span className="hidden sm:block" style={{ position: 'absolute', top: 60, left: '15%', fontSize: 60, transform: 'rotate(-15deg)', pointerEvents: 'none' }}>💌</span>
+                <span className="hidden sm:block" style={{ position: 'absolute', bottom: 80, right: '15%', fontSize: 60, transform: 'rotate(20deg)', pointerEvents: 'none' }}>🌸</span>
+                <h2 className="serif-display" style={{ fontSize: 'clamp(48px, 9vw, 112px)', margin: 0, lineHeight: 0.95, position: 'relative', zIndex: 2 }}>
+                    ¿y tú,<br />
+                    <em style={{ fontStyle: 'italic' }}>a quién le escribes?</em>
+                </h2>
+                <Link href={user ? '/dashboard' : '/create'}>
+                    <button style={{ marginTop: 36, background: 'white', color: 'var(--ink)', border: '2px solid var(--ink)', padding: '16px 28px', borderRadius: 999, fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '4px 4px 0 var(--ink)', position: 'relative', zIndex: 2 }}>
+                        {user ? 'ir a mis páginas →' : 'empezar mi página →'}
+                    </button>
+                </Link>
+            </section>
+
+            {/* ── Footer ── */}
+            <footer
+                style={{ borderTop: '2px solid var(--rule)', background: 'white', gap: 16 }}
+                className="px-5 py-8 sm:px-12 flex flex-wrap justify-between items-center max-sm:flex-col max-sm:text-center"
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span className="serif-display" style={{ fontSize: 18, fontStyle: 'italic', color: 'var(--ink)' }}>love</span>
+                    <span>💗</span>
+                    <span className="serif-display" style={{ fontSize: 18, color: 'var(--ink)' }}>pages</span>
+                </div>
+                <nav style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {[
+                        { href: '/blog', label: 'Blog' },
+                        { href: '/about', label: 'Acerca de' },
+                        { href: '/privacy-policy', label: 'Privacidad' },
+                        { href: '/terms', label: 'Términos' },
+                        { href: '/contact', label: 'Contacto' },
+                    ].map(({ href, label }) => (
+                        <Link key={href} href={href} style={{ fontSize: 13, color: 'var(--ink-soft)', textDecoration: 'none' }}
+                            className="hover:text-[var(--ink)] transition-colors">
+                            {label}
+                        </Link>
+                    ))}
+                </nav>
+                <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: 0 }}>
+                    © {new Date().getFullYear()} Love Pages. hecho con 💗
+                </p>
             </footer>
-
-            {/* ===== GLOBAL ANIMATIONS CSS ===== */}
-            <style jsx global>{`
-                @keyframes floatUp {
-                    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-                    10% { opacity: 1; }
-                    90% { opacity: 0.5; }
-                    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
-                }
-
-                @keyframes fadeInUp {
-                    from { opacity: 0; transform: translateY(24px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-
-                @keyframes fadeInDown {
-                    from { opacity: 0; transform: translateY(-16px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-
-                @keyframes demoFall {
-                    0% { transform: translateY(0) rotate(0deg); }
-                    100% { transform: translateY(600px) rotate(360deg); }
-                }
-
-                @keyframes demoBounce {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-6px); }
-                }
-
-                @keyframes demoHeartBeat {
-                    0%, 100% { transform: scale(1); }
-                    25% { transform: scale(1.15); }
-                    50% { transform: scale(1); }
-                    75% { transform: scale(1.08); }
-                }
-
-                @keyframes heroHeart {
-                    0%, 100% { transform: rotate(3deg) scale(1); }
-                    50% { transform: rotate(-3deg) scale(1.05); }
-                }
-
-                .animate-fadeInUp {
-                    animation: fadeInUp 0.8s ease-out both;
-                }
-
-                .animate-fadeInDown {
-                    animation: fadeInDown 0.6s ease-out both;
-                }
-
-                .animate-heroHeart {
-                    animation: heroHeart 3s ease-in-out infinite;
-                }
-
-                .animation-delay-200 {
-                    animation-delay: 200ms;
-                }
-
-                .animation-delay-400 {
-                    animation-delay: 400ms;
-                }
-
-                .animation-delay-600 {
-                    animation-delay: 600ms;
-                }
-            `}</style>
         </div>
     );
 }

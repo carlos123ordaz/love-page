@@ -1,17 +1,32 @@
 import type { Metadata } from 'next';
-import { Inter, Dancing_Script } from 'next/font/google';
+import { Fraunces, Bricolage_Grotesque, Caveat, JetBrains_Mono } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { LanguageProvider } from '@/i18n';
 import './globals.css';
 import Script from 'next/script';
 
-const inter = Inter({ subsets: ['latin'] });
-const dancingScript = Dancing_Script({
-  weight: '700',
+const fraunces = Fraunces({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-dancing',
+  variable: '--font-fraunces',
+  axes: ['SOFT', 'WONK', 'opsz'],
+});
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-bricolage',
+});
+const caveat = Caveat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-caveat',
+});
+const jetbrains = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jetbrains',
+  weight: ['400', '500', '700'],
 });
 
 export const metadata: Metadata = {
@@ -111,27 +126,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} ${dancingScript.variable}`}>
+      <body className={`${bricolage.variable} ${fraunces.variable} ${caveat.variable} ${jetbrains.variable}`}>
         <LanguageProvider>
           <AuthProvider>
             {children}
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">
-              <div className="w-full max-w-3xl rounded-[2rem] border border-white/20 bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 p-8 text-center text-white shadow-2xl md:p-12">
-                <span className="mb-4 inline-flex rounded-full border border-white/30 bg-white/15 px-4 py-1 text-sm font-semibold uppercase tracking-[0.3em]">
-                  Mantenimiento
-                </span>
-                <h1 className="text-4xl font-black leading-tight md:text-6xl">
-                  Esta pagina esta en mantenimiento
-                </h1>
-                <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white/90 md:text-xl">
-                  El backend estara apagado por unos dias mientras realizo ajustes.
-                  Algunas funciones pueden no responder o no estar disponibles temporalmente.
-                </p>
-                <p className="mt-4 text-sm text-white/80 md:text-base">
-                  Vuelve a intentarlo mas tarde.
-                </p>
-              </div>
-            </div>
             <Toaster
               position="top-center"
               toastOptions={{

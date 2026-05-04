@@ -463,8 +463,9 @@ export default function PublicPageView() {
     // ---- Loading ----
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-rose-100">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-600"></div>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 999, border: '3px solid #d9c7f5', borderTopColor: '#ff6b9d', animation: 'spin 1s linear infinite' }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
             </div>
         );
     }
@@ -472,18 +473,20 @@ export default function PublicPageView() {
     // ---- Expired ----
     if (pageExpired) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-rose-100">
-                <div className="text-center max-w-sm mx-auto px-6">
-                    <div className="text-6xl mb-4">⏰</div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Esta página ha expirado</h1>
-                    <p className="text-gray-600 mb-6">
-                        Las páginas del plan gratuito están disponibles por 7 días. Esta página ya no está activa.
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)', padding: '24px' }}>
+                <div style={{ textAlign: 'center', maxWidth: 400 }}>
+                    <div style={{ fontSize: 72, marginBottom: 16 }}>⏰</div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'white', border: '2px solid #2d1b3d', borderRadius: 999, boxShadow: '3px 3px 0 #2d1b3d', fontWeight: 600, fontSize: 12, marginBottom: 16 }}>
+                        <span>😔</span><span>página expirada</span>
+                    </div>
+                    <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 40, fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95, color: '#2d1b3d', margin: '0 0 12px' }}>
+                        esta <em style={{ fontStyle: 'italic', color: '#ff6b9d' }}>página</em> ya no está activa
+                    </h1>
+                    <p style={{ fontSize: 16, color: '#4d3361', lineHeight: 1.55, marginBottom: 28 }}>
+                        Las páginas del plan gratuito están disponibles por 7 días.
                     </p>
-                    <a
-                        href="/upgrade"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white font-semibold rounded-full shadow hover:from-amber-500 hover:to-yellow-600 transition-all"
-                    >
-                        Crear con plan PRO — sin vencimiento
+                    <a href="/upgrade" style={{ display: 'inline-block', background: '#ff6b9d', color: 'white', border: '2px solid #2d1b3d', padding: '14px 24px', borderRadius: 999, fontSize: 14, fontWeight: 700, textDecoration: 'none', boxShadow: '3px 3px 0 #2d1b3d' }}>
+                        crear con plan PRO · sin vencimiento ✨
                     </a>
                 </div>
             </div>
@@ -493,10 +496,13 @@ export default function PublicPageView() {
     // ---- Not found ----
     if (!page) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-rose-100">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.publicPage.pageNotFound}</h1>
-                    <p className="text-gray-600">{t.publicPage.pageNotFoundDesc}</p>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)', padding: '24px' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 72, marginBottom: 16 }}>💔</div>
+                    <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 40, fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95, color: '#2d1b3d', margin: '0 0 12px' }}>
+                        {t.publicPage.pageNotFound}
+                    </h1>
+                    <p style={{ fontSize: 16, color: '#4d3361' }}>{t.publicPage.pageNotFoundDesc}</p>
                 </div>
             </div>
         );
@@ -536,230 +542,153 @@ export default function PublicPageView() {
         );
     }
 
-    // ---- FREE page with enhanced design ----
-    const animationClass = page.animation === 'fade-in' ? 'animate-fade-in' : '';
-    const titleFont = page.titleFont || 'inherit';
-    const bodyFont = page.bodyFont || 'inherit';
-    const accentColor = page.accentColor || page.backgroundColor;
+    // ---- FREE page — Pastel Gen-Z aesthetic ----
+    const stickers = (page.selectedStickers || []).map((id: string) => STICKER_MAP[id] || '💖').slice(0, 3);
+    const titleFont = page.titleFont;
+    const bodyFont = page.bodyFont;
 
     return (
         <div
-            className={`min-h-screen flex items-center justify-center p-4 transition-all relative overflow-hidden ${animationClass}`}
-            style={{ backgroundColor: page.backgroundColor, color: page.textColor }}
+            style={{
+                position: 'relative',
+                minHeight: '100vh',
+                width: '100%',
+                background: page.backgroundColor || 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)',
+                overflow: 'hidden',
+                fontFamily: 'Bricolage Grotesque, system-ui, sans-serif',
+                color: page.textColor || '#2d1b3d',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
         >
-            {/* Imagen de fondo */}
+            {/* Soft blob shapes */}
+            <div style={{ position: 'absolute', top: '-10%', left: '-15%', width: '60%', aspectRatio: '1', borderRadius: '50%', background: 'radial-gradient(circle, rgba(217,199,245,0.6), transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '-15%', right: '-15%', width: '70%', aspectRatio: '1', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,181,154,0.5), transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+
+            {/* Background image */}
             {page.backgroundImageUrl && (
-                <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                        backgroundImage: `url(${page.backgroundImageUrl})`,
-                        opacity: 0.25,
-                    }}
-                />
+                <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${page.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.2, pointerEvents: 'none' }} />
             )}
 
-            {/* Animación de fondo */}
-            <BackgroundAnimation type={page.animation || 'none'} color={page.textColor} />
+            {/* Particle animation */}
+            <BackgroundAnimation type={page.animation || 'none'} color={page.textColor || '#ff6b9d'} />
 
-            {/* Música de fondo */}
+            {/* Music */}
             {page.backgroundMusic && page.backgroundMusic !== 'none' && (
                 <MusicPlayer musicId={page.backgroundMusic} />
             )}
 
-            {/* Contenido principal */}
-            <div className="max-w-2xl w-full text-center relative z-20">
-                {/* Stickers */}
-                <FloatingStickers stickerIds={page.selectedStickers || []} />
 
-                {/* Corazón animado */}
-                <div className="mb-6">
-                    <Heart
-                        className="w-20 h-20 mx-auto animate-heart-beat"
-                        style={{ color: page.textColor }}
-                    />
-                </div>
-
-                {/* Título */}
-                <h1
-                    className="text-4xl md:text-5xl font-bold mb-6"
-                    style={{
-                        fontFamily: `'${titleFont}', cursive`,
-                        color: page.textColor,
-                        animation: 'fadeInUp 0.8s ease-out both',
-                    }}
-                >
-                    {page.title}
-                </h1>
-
-                {/* Nombre del destinatario */}
-                <div
-                    className="text-2xl md:text-3xl mb-4"
-                    style={{
-                        fontFamily: `'${bodyFont}', sans-serif`,
-                        animation: 'fadeInUp 0.8s ease-out 0.2s both',
-                    }}
-                >
-                    <span className="font-semibold">{page.recipientName}</span>
-                </div>
-
-                {/* Mensaje */}
-                {page.message && (
-                    <p
-                        className="text-lg md:text-xl mb-6 opacity-90 max-w-xl mx-auto"
-                        style={{
-                            fontFamily: `'${bodyFont}', sans-serif`,
-                            animation: 'fadeInUp 0.8s ease-out 0.4s both',
-                        }}
-                    >
-                        {page.message}
-                    </p>
-                )}
-
-                {/* Imágenes decorativas */}
-                <DecorativeImages urls={page.decorativeImageUrls || []} />
-
-                {/* Video embed */}
-                {page.videoUrl && <VideoEmbed url={page.videoUrl} />}
-
-                {/* Botones */}
+            {/* Main composition */}
+            <div style={{ position: 'relative', zIndex: 3, padding: '80px 24px 100px', textAlign: 'center', maxWidth: 560, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {!answered ? (
-                    <div
-                        className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10"
-                        style={{ animation: 'fadeInUp 0.8s ease-out 0.6s both' }}
-                    >
-                        <button
-                            onClick={() => handleAnswer('yes')}
-                            className="px-8 py-4 text-lg font-semibold rounded-xl hover:scale-105 transition-all min-w-[150px] shadow-lg"
-                            style={{
-                                backgroundColor: accentColor,
-                                color: page.textColor,
-                                fontFamily: `'${bodyFont}', sans-serif`,
-                            }}
-                        >
-                            {page.yesButtonText}
-                        </button>
+                    <>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(237,228,250,0.9)', border: '2px solid #2d1b3d', borderRadius: 999, boxShadow: '3px 3px 0 #2d1b3d', fontWeight: 600, fontSize: 12, marginBottom: 22 }}>
+                            <span>💌</span><span>una carta para {page.recipientName?.toLowerCase()}</span>
+                        </div>
 
-                        {/* Botón No: si NO está escapando, renderizar inline */}
-                        {!noButtonInitialized && (
-                            <button
-                                ref={noButtonRef}
-                                onMouseEnter={handleNoButtonMouseEnter}
-                                onTouchStart={handleNoButtonTouchStart}
-                                onClick={() => !page.noButtonEscapes && handleAnswer('no')}
-                                className="px-8 py-4 text-lg font-semibold bg-white/10 backdrop-blur rounded-xl hover:bg-white/20 transition-colors min-w-[150px]"
-                                style={{
-                                    color: page.textColor,
-                                    fontFamily: `'${bodyFont}', sans-serif`,
-                                }}
-                            >
-                                {page.noButtonText}
-                            </button>
+                        {/* Floating stickers + title */}
+                        <div style={{ position: 'relative', marginBottom: 4 }}>
+                            {stickers[0] && <span style={{ position: 'absolute', left: -36, top: -10, fontSize: 32, transform: 'rotate(-18deg)', filter: 'drop-shadow(2px 2px 0 rgba(45,27,61,0.15))' }}>{stickers[0]}</span>}
+                            {stickers[1] && <span style={{ position: 'absolute', right: -32, top: -20, fontSize: 28, transform: 'rotate(20deg)', filter: 'drop-shadow(2px 2px 0 rgba(45,27,61,0.15))' }}>{stickers[1]}</span>}
+
+                            <h1 style={{
+                                fontFamily: titleFont ? `'${titleFont}', Fraunces, Georgia, serif` : 'Fraunces, Georgia, serif',
+                                fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95,
+                                fontSize: 'clamp(40px, 10vw, 60px)', margin: 0, color: page.textColor || '#2d1b3d',
+                            }}>
+                                {page.title}
+                            </h1>
+                        </div>
+
+                        {/* Message */}
+                        {page.message && (
+                            <p style={{ marginTop: 24, fontFamily: bodyFont ? `'${bodyFont}', sans-serif` : 'inherit', fontSize: 16, color: page.textColor || '#4d3361', maxWidth: 320, lineHeight: 1.55, fontWeight: 400, opacity: 0.9 }}>
+                                {page.message}
+                            </p>
                         )}
 
-                        {/* Botón No escapando: renderizar con portal fuera de cualquier transform */}
-                        {noButtonInitialized && noButtonPos && typeof document !== 'undefined' &&
-                            createPortal(
+                        {/* Images & video */}
+                        <DecorativeImages urls={page.decorativeImageUrls || []} />
+                        {page.videoUrl && <VideoEmbed url={page.videoUrl} />}
+
+                        {/* Sender signature */}
+                        <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 18px', background: 'white', borderRadius: 999, border: '2px solid #2d1b3d', boxShadow: '3px 3px 0 #2d1b3d' }}>
+                            <span style={{ fontFamily: 'Caveat, cursive', fontWeight: 600, fontSize: 22, color: '#ff6b9d' }}>
+                                con amor ♥
+                            </span>
+                            {stickers[2] && <span style={{ fontSize: 18 }}>{stickers[2]}</span>}
+                        </div>
+
+                        {/* CTA buttons */}
+                        <div style={{ marginTop: 44, display: 'flex', gap: 16, alignItems: 'center', position: 'relative' }}>
+                            <button
+                                onClick={() => handleAnswer('yes')}
+                                style={{ background: page.accentColor || '#ff6b9d', color: 'white', border: '2px solid #2d1b3d', padding: '14px 32px', borderRadius: 999, fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '3px 3px 0 #2d1b3d' }}
+                            >
+                                {page.yesButtonText}
+                            </button>
+
+                            {!noButtonInitialized && (
                                 <button
+                                    ref={noButtonRef}
                                     onMouseEnter={handleNoButtonMouseEnter}
                                     onTouchStart={handleNoButtonTouchStart}
-                                    onClick={() => {
-                                        if (page.noButtonEscapes) return;
-                                        handleAnswer('no');
-                                    }}
-                                    className="px-8 py-4 text-lg font-semibold bg-white/10 backdrop-blur rounded-xl hover:bg-white/20 min-w-[150px]"
-                                    style={{
-                                        position: 'fixed',
-                                        left: `${noButtonPos.x}px`,
-                                        top: `${noButtonPos.y}px`,
-                                        zIndex: 9999,
-                                        color: page.textColor,
-                                        fontFamily: `'${bodyFont}', sans-serif`,
-                                        transition: 'left 0.25s ease-out, top 0.25s ease-out',
-                                        margin: 0,
-                                    }}
+                                    onClick={() => !page.noButtonEscapes && handleAnswer('no')}
+                                    style={{ background: 'white', color: '#2d1b3d', border: '2px solid #2d1b3d', padding: '14px 30px', borderRadius: 999, fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '3px 3px 0 #2d1b3d' }}
                                 >
                                     {page.noButtonText}
-                                </button>,
-                                document.body
-                            )
-                        }
-                    </div>
-                ) : (
-                    <div
-                        className="mt-10 p-6 bg-white/20 backdrop-blur rounded-xl inline-block"
-                        style={{ animation: 'fadeInUp 0.5s ease-out both' }}
-                    >
-                        <div
-                            className="text-2xl font-semibold mb-2"
-                            style={{ fontFamily: `'${titleFont}', cursive` }}
-                        >
-                            {selectedAnswer === 'yes' ? `${t.publicPage.thanks} 💕` : `${t.publicPage.understood} 😊`}
-                        </div>
-                        <p
-                            className="text-sm opacity-90"
-                            style={{ fontFamily: `'${bodyFont}', sans-serif` }}
-                        >
-                            {t.publicPage.responseRecorded}
-                        </p>
-                    </div>
-                )}
+                                </button>
+                            )}
 
-                {/* Watermark */}
-                {page.showWatermark && (
-                    <p
-                        className="mt-12 text-xs opacity-30"
-                        style={{ fontFamily: `'${bodyFont}', sans-serif` }}
-                    >
-                        {t.publicPage.madeWith}
-                    </p>
+                            {noButtonInitialized && noButtonPos && typeof document !== 'undefined' &&
+                                createPortal(
+                                    <button
+                                        onMouseEnter={handleNoButtonMouseEnter}
+                                        onTouchStart={handleNoButtonTouchStart}
+                                        onClick={() => { if (!page.noButtonEscapes) handleAnswer('no'); }}
+                                        style={{ position: 'fixed', left: `${noButtonPos.x}px`, top: `${noButtonPos.y}px`, zIndex: 9999, background: 'white', color: '#2d1b3d', border: '2px solid #2d1b3d', padding: '14px 30px', borderRadius: 999, fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '3px 3px 0 #2d1b3d', transition: 'left 0.25s cubic-bezier(.2,.9,.3,1.1), top 0.25s cubic-bezier(.2,.9,.3,1.1)', margin: 0 }}
+                                    >
+                                        {page.noButtonText}
+                                    </button>,
+                                    document.body
+                                )
+                            }
+                        </div>
+
+                        {/* Watermark */}
+                        {page.showWatermark && (
+                            <div style={{ position: 'absolute', bottom: 18, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+                                <span style={{ fontSize: 10, color: 'rgba(45,27,61,0.4)', fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 600, letterSpacing: '0.06em' }}>
+                                    made with 💗 on lovepages
+                                </span>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', animation: 'fadeUp .6s ease' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: '#b8e6d2', border: '2px solid #2d1b3d', borderRadius: 999, boxShadow: '3px 3px 0 #2d1b3d', fontWeight: 600, fontSize: 12, marginBottom: 18 }}>
+                            <span>✨</span><span>{selectedAnswer === 'yes' ? 'respondiste que sí 💖' : 'respuesta registrada'}</span>
+                        </div>
+                        <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95, fontSize: 'clamp(64px, 18vw, 100px)', margin: 0, color: '#2d1b3d' }}>
+                            {selectedAnswer === 'yes'
+                                ? <><em style={{ fontStyle: 'italic', color: '#ff6b9d' }}>¡sí!</em><span style={{ fontSize: 56, marginLeft: 8 }}>💖</span></>
+                                : <em style={{ fontStyle: 'italic', color: '#8a7099' }}>entendido</em>
+                            }
+                        </h1>
+                        <div style={{ marginTop: 20, fontSize: 16, color: '#4d3361', maxWidth: 300, lineHeight: 1.55 }}>
+                            {t.publicPage.responseRecorded}
+                        </div>
+                        <button onClick={() => { setAnswered(false); setSelectedAnswer(null); setNoButtonPos(null); setNoButtonInitialized(false); }}
+                            style={{ marginTop: 28, background: 'white', border: '2px solid #2d1b3d', padding: '8px 16px', borderRadius: 999, cursor: 'pointer', fontSize: 11, boxShadow: '2px 2px 0 #2d1b3d', color: '#8a7099', fontWeight: 600, letterSpacing: '0.06em' }}>
+                            ← ver carta otra vez
+                        </button>
+                        <style>{`@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }`}</style>
+                    </div>
                 )}
             </div>
-
-            {/* CSS para animaciones inline */}
-            <style jsx global>{`
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                @keyframes bounce {
-                    0%, 100% {
-                        transform: translateY(0);
-                    }
-                    50% {
-                        transform: translateY(-10px);
-                    }
-                }
-
-                @keyframes heartBeat {
-                    0%, 100% {
-                        transform: scale(1);
-                    }
-                    25% {
-                        transform: scale(1.1);
-                    }
-                    50% {
-                        transform: scale(1);
-                    }
-                    75% {
-                        transform: scale(1.05);
-                    }
-                }
-
-                .animate-heart-beat {
-                    animation: heartBeat 1.5s ease-in-out infinite;
-                }
-
-                .animate-fade-in {
-                    animation: fadeInUp 1s ease-out both;
-                }
-            `}</style>
         </div>
     );
 }

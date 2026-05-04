@@ -4,26 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { api } from '@/lib/api';
-import {
-    Crown,
-    Sparkles,
-    Lock,
-    Heart,
-    Gift,
-    PartyPopper,
-    Star,
-    Snowflake,
-    Users,
-    LayoutTemplate,
-    Eye,
-    Search,
-    LayoutGrid,
-    List,
-} from 'lucide-react';
-import Link from 'next/link';
+import { Crown, Sparkles, Eye, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Template {
@@ -35,12 +17,7 @@ interface Template {
     isPro: boolean;
     tags: string[];
     usageCount: number;
-    editableFields: {
-        key: string;
-        label: string;
-        type: string;
-        defaultValue: string;
-    }[];
+    editableFields: { key: string; label: string; type: string; defaultValue: string }[];
 }
 
 const CATEGORIES = [
@@ -54,256 +31,165 @@ const CATEGORIES = [
     { id: 'otro', name: 'Otros', emoji: '🎁' },
 ];
 
+const CAT_TONES: Record<string, string> = {
+    all: 'var(--lila)', 'san-valentin': 'var(--accent-hex)', declaracion: 'var(--melocoton)',
+    cumpleanos: 'var(--butter)', aniversario: 'var(--lila-2)', amistad: 'var(--mint)',
+    navidad: 'var(--mint)', otro: 'var(--butter)',
+};
+
 export default function TemplatesPage() {
     const router = useRouter();
-    const { user, loading: authLoading } = useAuthStore();
+    const { user } = useAuthStore();
     const [templates, setTemplates] = useState<Template[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-    useEffect(() => {
-        loadTemplates();
-    }, [activeCategory]);
+    useEffect(() => { loadTemplates(); }, [activeCategory]);
 
     const loadTemplates = async () => {
         try {
             setLoading(true);
-            const { data } = await api.templates.getAll(
-                activeCategory !== 'all' ? activeCategory : undefined
-            );
+            const { data } = await api.templates.getAll(activeCategory !== 'all' ? activeCategory : undefined);
             setTemplates(data.data);
-        } catch (error) {
-            console.error('Error loading templates:', error);
+        } catch {
             toast.error('Error al cargar plantillas');
         } finally {
             setLoading(false);
         }
     };
 
-    const filteredTemplates = templates.filter((t) => {
+    const filtered = templates.filter((t) => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
-        return (
-            t.name.toLowerCase().includes(q) ||
-            t.description.toLowerCase().includes(q) ||
-            t.tags.some((tag) => tag.toLowerCase().includes(q))
-        );
+        return t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || t.tags.some((tag) => tag.toLowerCase().includes(q));
     });
 
-    const handleTemplateClick = (template: Template) => {
-        router.push(`/templates/${template._id}`);
-    };
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--sans)' }}>
             <Header />
 
-            <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
-
-                <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide justify-start sm:justify-center">
-                    {CATEGORIES.map((cat) => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setActiveCategory(cat.id)}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeCategory === cat.id
-                                ? 'bg-pink-600 text-white shadow-md shadow-pink-600/20'
-                                : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-200'
-                                }`}
-                        >
-                            <span>{cat.emoji}</span>
-                            <span>{cat.name}</span>
-                        </button>
-                    ))}
-                </div>
-
-                {/* View Mode Toggle */}
-                <div className="flex items-center justify-between mb-5">
-                    <p className="text-sm text-gray-500">
-                        {!loading && `${filteredTemplates.length} plantilla${filteredTemplates.length !== 1 ? 's' : ''}`}
-                    </p>
-                    <div className="flex items-center gap-1 bg-white rounded-lg border border-gray-200 p-1">
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid'
-                                ? 'bg-pink-600 text-white shadow-sm'
-                                : 'text-gray-400 hover:text-gray-600'
-                                }`}
-                            title="Vista mosaico"
-                        >
-                            <LayoutGrid className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'list'
-                                ? 'bg-pink-600 text-white shadow-sm'
-                                : 'text-gray-400 hover:text-gray-600'
-                                }`}
-                            title="Vista lista"
-                        >
-                            <List className="w-4 h-4" />
-                        </button>
+            <main style={{ maxWidth: 1200, margin: '0 auto', padding: '0 48px 80px' }} className="max-sm:px-4">
+                {/* Hero */}
+                <section style={{ padding: '40px 0 32px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 32 }}>
+                        <div>
+                            <span className="sticker-badge" style={{ background: 'var(--lila)', marginBottom: 12 }}>
+                                📚 plantillas curadas
+                            </span>
+                            <h1 className="serif-display" style={{ fontSize: 'clamp(36px, 5vw, 56px)', margin: '12px 0 0', color: 'var(--ink)', lineHeight: 0.95 }}>
+                                encuentra tu <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>carta</em> 💌
+                            </h1>
+                        </div>
+                        {/* Search */}
+                        <div style={{ display: 'flex', alignItems: 'center', border: '2px solid var(--ink)', borderRadius: 999, background: 'white', overflow: 'hidden', boxShadow: '3px 3px 0 var(--ink)' }}>
+                            <span style={{ padding: '0 14px', fontSize: 16 }}>🔍</span>
+                            <input
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="buscar plantillas..."
+                                style={{ padding: '10px 16px 10px 0', border: 'none', background: 'transparent', fontSize: 14, color: 'var(--ink)', outline: 'none', width: 220 }}
+                            />
+                        </div>
                     </div>
-                </div>
 
-                {/* Templates Grid/List */}
+                    {/* Category pills */}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {CATEGORIES.map((cat) => (
+                            <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+                                    borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                    border: '2px solid var(--ink)',
+                                    background: activeCategory === cat.id ? CAT_TONES[cat.id] : 'white',
+                                    boxShadow: activeCategory === cat.id ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
+                                    color: 'var(--ink)',
+                                    transition: 'all 120ms',
+                                }}>
+                                {cat.emoji} {cat.name}
+                            </button>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Count */}
+                {!loading && (
+                    <div className="mono-eyebrow" style={{ marginBottom: 20, fontSize: 12 }}>
+                        {filtered.length} plantilla{filtered.length !== 1 ? 's' : ''}
+                    </div>
+                )}
+
+                {/* Grid */}
                 {loading ? (
-                    <div className="flex justify-center py-16">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-600" />
+                    <div style={{ textAlign: 'center', padding: '80px 0' }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 999, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+                        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
                     </div>
-                ) : filteredTemplates.length === 0 ? (
-                    <div className="text-center py-16">
-                        <LayoutTemplate className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            No hay plantillas disponibles
+                ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '80px 24px', border: '2px dashed var(--ink)', borderRadius: 24 }}>
+                        <span style={{ fontSize: 64 }}>📭</span>
+                        <h3 className="serif-display" style={{ fontSize: 32, margin: '16px 0 8px', fontStyle: 'italic', color: 'var(--ink)' }}>
+                            {searchQuery ? 'nada con esa búsqueda' : 'sin plantillas aún'}
                         </h3>
-                        <p className="text-gray-500 text-sm">
-                            {searchQuery
-                                ? 'Intenta con otra búsqueda'
-                                : 'Pronto agregaremos más plantillas'}
+                        <p style={{ color: 'var(--ink-soft)', fontSize: 15 }}>
+                            {searchQuery ? 'intenta con otra búsqueda' : 'pronto agregaremos más'}
                         </p>
                     </div>
                 ) : (
-                    <div className={viewMode === 'grid'
-                        ? 'grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5 lg:gap-6'
-                        : 'flex flex-col gap-2 sm:gap-3'
-                    }>
-                        {filteredTemplates.map((template) => (
-                            viewMode === 'grid' ? (
-                                <Card
-                                    key={template._id}
-                                    className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 border-0 shadow-md hover:-translate-y-1"
-                                    onClick={() => handleTemplateClick(template)}
-                                >
-                                    {/* Preview Image */}
-                                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                                        <img
-                                            src={template.previewImageUrl}
-                                            alt={template.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            loading="lazy"
-                                        />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }} className="max-sm:grid-cols-1">
+                        {filtered.map((template) => {
+                            const catTone = CAT_TONES[template.category] || 'var(--lila)';
+                            return (
+                                <div key={template._id}
+                                    onClick={() => router.push(`/templates/${template._id}`)}
+                                    style={{ border: '2px solid var(--ink)', borderRadius: 24, background: 'white', overflow: 'hidden', boxShadow: '5px 5px 0 var(--ink)', cursor: 'pointer', transition: 'transform 120ms' }}
+                                    className="hover:-translate-y-0.5 transition-transform">
 
-                                        {/* Overlay on hover */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                                            <div className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-gray-900">
-                                                <Eye className="w-4 h-4" />
-                                                Ver plantilla
-                                            </div>
-                                        </div>
-
-                                        {/* PRO badge */}
-                                        {template.isPro && (
-                                            <div className="absolute top-1 right-1 sm:top-3 sm:right-3 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-[10px] sm:text-xs font-bold rounded-full flex items-center gap-0.5 sm:gap-1 shadow-lg">
-                                                <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                                PRO
-                                            </div>
+                                    {/* Preview */}
+                                    <div style={{ height: 180, background: catTone, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '2px solid var(--ink)', overflow: 'hidden' }}>
+                                        {template.previewImageUrl ? (
+                                            <img src={template.previewImageUrl} alt={template.name}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                                        ) : (
+                                            <span style={{ fontSize: 56 }}>
+                                                {CATEGORIES.find((c) => c.id === template.category)?.emoji ?? '💌'}
+                                            </span>
                                         )}
 
-                                        {/* Category badge */}
-                                        <div className="absolute top-1 left-1 sm:top-3 sm:left-3 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-white/80 backdrop-blur-sm text-gray-700 text-[10px] sm:text-xs font-medium rounded-full">
-                                            {CATEGORIES.find((c) => c.id === template.category)?.emoji}
-                                            <span className="hidden sm:inline">
-                                                {' '}{CATEGORIES.find((c) => c.id === template.category)?.name}
+                                        {template.isPro && (
+                                            <span style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--butter)', border: '2px solid var(--ink)', borderRadius: 999, fontSize: 10, fontWeight: 700, color: 'var(--ink)', boxShadow: '2px 2px 0 var(--ink)' }}>
+                                                <Crown style={{ width: 10, height: 10 }} /> PRO
                                             </span>
-                                        </div>
+                                        )}
+
+                                        <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 10px', background: 'rgba(255,255,255,0.85)', border: '1.5px solid var(--ink)', borderRadius: 999, fontSize: 10, fontWeight: 600, color: 'var(--ink)' }}>
+                                            {CATEGORIES.find((c) => c.id === template.category)?.emoji}{' '}
+                                            {CATEGORIES.find((c) => c.id === template.category)?.name}
+                                        </span>
                                     </div>
 
                                     {/* Info */}
-                                    <CardContent className="p-2 sm:p-4">
-                                        <h3 className="font-bold text-gray-900 text-xs sm:text-base mb-0.5 sm:mb-1 group-hover:text-pink-600 transition-colors line-clamp-1">
+                                    <div style={{ padding: '16px 18px' }}>
+                                        <h3 className="serif-display" style={{ fontSize: 20, margin: '0 0 6px', color: 'var(--ink)', lineHeight: 1.1 }}>
                                             {template.name}
                                         </h3>
-                                        <p className="hidden sm:block text-sm text-gray-500 line-clamp-2 mb-3">
+                                        <p style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.5, margin: '0 0 14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {template.description}
                                         </p>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
-                                                <Users className="w-3.5 h-3.5" />
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--ink-soft)' }}>
+                                                <Users style={{ width: 12, height: 12 }} />
                                                 {template.usageCount} usos
                                             </div>
-
-                                            {template.isPro ? (
-                                                <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium text-amber-600">
-                                                    <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                                                    <span className="hidden sm:inline">Requiere</span> PRO
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium text-green-600">
-                                                    <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                                                    Gratis
-                                                </span>
-                                            )}
+                                            <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '2px solid var(--ink)', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: template.isPro ? 'var(--butter)' : 'var(--mint)', boxShadow: '2px 2px 0 var(--ink)', color: 'var(--ink)' }}>
+                                                <Eye style={{ width: 12, height: 12 }} />
+                                                usar →
+                                            </button>
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                /* List View */
-                                <Card
-                                    key={template._id}
-                                    className="group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 border-0 shadow-sm"
-                                    onClick={() => handleTemplateClick(template)}
-                                >
-                                    <div className="flex flex-row">
-                                        <div className="relative w-24 h-20 sm:w-48 md:w-56 sm:h-36 overflow-hidden bg-gray-100 flex-shrink-0">
-                                            <img
-                                                src={template.previewImageUrl}
-                                                alt={template.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                loading="lazy"
-                                            />
-                                            {template.isPro && (
-                                                <div className="absolute top-2 right-2 px-2 py-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
-                                                    <Crown className="w-3 h-3" />
-                                                    PRO
-                                                </div>
-                                            )}
-                                        </div>
-                                        <CardContent className="p-2.5 sm:p-4 flex flex-col justify-center flex-1 min-w-0">
-                                            <div className="flex items-start justify-between gap-2 sm:gap-3">
-                                                <div className="min-w-0">
-                                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                                                        <h3 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-pink-600 transition-colors truncate">
-                                                            {template.name}
-                                                        </h3>
-                                                        <span className="hidden sm:inline-flex text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
-                                                            {CATEGORIES.find((c) => c.id === template.category)?.emoji}{' '}
-                                                            {CATEGORIES.find((c) => c.id === template.category)?.name}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs sm:text-sm text-gray-500 line-clamp-1 sm:line-clamp-2 mb-1 sm:mb-2">
-                                                        {template.description}
-                                                    </p>
-                                                    <div className="flex items-center gap-2 sm:gap-4">
-                                                        <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
-                                                            <Users className="w-3.5 h-3.5" />
-                                                            {template.usageCount} usos
-                                                        </div>
-                                                        {template.isPro ? (
-                                                            <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium text-amber-600">
-                                                                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                                                                PRO
-                                                            </span>
-                                                        ) : (
-                                                            <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium text-green-600">
-                                                                <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                                                                Gratis
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-pink-50 text-pink-600 rounded-full text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                    <Eye className="w-4 h-4" />
-                                                    Ver
-                                                </div>
-                                            </div>
-                                        </CardContent>
                                     </div>
-                                </Card>
-                            )
-                        ))}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </main>

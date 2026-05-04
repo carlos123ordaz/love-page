@@ -3,134 +3,68 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/store';
 import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { useTranslation } from '@/i18n';
-import {
-    Mail,
-    MessageCircle,
-    Heart,
-    Send,
-    CheckCircle,
-    Sparkles,
-    HelpCircle,
-} from 'lucide-react';
+import { Mail, MessageCircle, Send, Sparkles, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+
+const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '10px 14px', border: '2px solid var(--ink)', background: 'white',
+    borderRadius: 'var(--r-sm)', fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--ink)',
+    boxShadow: '2px 2px 0 var(--ink)', outline: 'none', boxSizing: 'border-box',
+};
 
 export default function ContactPage() {
     const { user } = useAuthStore();
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [formData, setFormData] = useState({
-        name: user?.displayName || '',
-        email: user?.email || '',
-        type: 'comment',
-        subject: '',
-        message: '',
-    });
+    const [formData, setFormData] = useState({ name: user?.displayName || '', email: user?.email || '', type: 'comment', subject: '', message: '' });
 
     const contactTypes = useMemo(() => [
-        {
-            value: 'comment',
-            label: t.contact.typeGeneral,
-            icon: MessageCircle,
-            description: t.contact.typeGeneralDesc,
-        },
-        {
-            value: 'custom_page',
-            label: t.contact.typeCustomPage,
-            icon: Sparkles,
-            description: t.contact.typeCustomPageDesc,
-        },
-        {
-            value: 'support',
-            label: t.contact.typeSupport,
-            icon: HelpCircle,
-            description: t.contact.typeSupportDesc,
-        },
-        {
-            value: 'other',
-            label: t.contact.typeOther,
-            icon: Mail,
-            description: t.contact.typeOtherDesc,
-        },
+        { value: 'comment', label: t.contact.typeGeneral, icon: MessageCircle, tone: 'var(--lila)' },
+        { value: 'custom_page', label: t.contact.typeCustomPage, icon: Sparkles, tone: 'var(--butter)' },
+        { value: 'support', label: t.contact.typeSupport, icon: HelpCircle, tone: 'var(--mint)' },
+        { value: 'other', label: t.contact.typeOther, icon: Mail, tone: 'var(--melocoton)' },
     ], [t]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+        setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-            toast.error(t.contact.fillAllFields);
-            return;
-        }
-
-        if (formData.message.length > 2000) {
-            toast.error(t.contact.messageTooLong);
-            return;
-        }
-
+        if (!formData.name || !formData.email || !formData.subject || !formData.message) { toast.error(t.contact.fillAllFields); return; }
+        if (formData.message.length > 2000) { toast.error(t.contact.messageTooLong); return; }
         setLoading(true);
-
         try {
             await api.contact.create(formData);
             setSuccess(true);
             toast.success(t.contact.sentToast);
-
-            setFormData({
-                name: user?.displayName || '',
-                email: user?.email || '',
-                type: 'comment',
-                subject: '',
-                message: '',
-            });
+            setFormData({ name: user?.displayName || '', email: user?.email || '', type: 'comment', subject: '', message: '' });
         } catch (error: any) {
-            console.error('Error sending message:', error);
             toast.error(error.response?.data?.message || t.common.error);
-        } finally {
-            setLoading(false);
-        }
+        } finally { setLoading(false); }
     };
 
     if (success) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+            <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
                 <Header />
-                <main className="container px-4 sm:px-6 py-10 sm:py-16">
-                    <div className="max-w-2xl mx-auto text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full mb-4 sm:mb-6">
-                            <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
-                        </div>
-                        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-                            {t.contact.messageSent}
-                        </h1>
-                        <p className="text-base sm:text-xl text-gray-600 mb-6 sm:mb-8 px-2">
-                            {t.contact.thankYou}
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
-                            <Link href="/dashboard" className="w-full sm:w-auto">
-                                <Button variant="gradient" size="lg" className="w-full sm:w-auto">
-                                    {t.contact.goToDashboard}
-                                </Button>
-                            </Link>
-                            <Button
-                                onClick={() => setSuccess(false)}
-                                variant="outline"
-                                size="lg"
-                                className="w-full sm:w-auto"
-                            >
-                                {t.contact.sendAnother}
-                            </Button>
-                        </div>
+                <main style={{ maxWidth: 560, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+                    <span style={{ fontSize: 72 }}>✅</span>
+                    <h1 className="serif-display" style={{ fontSize: 48, margin: '16px 0 12px', color: 'var(--ink)', lineHeight: 0.95 }}>
+                        <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>mensaje</em> enviado 💌
+                    </h1>
+                    <p style={{ fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.55, marginBottom: 32 }}>{t.contact.thankYou}</p>
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <Link href="/dashboard">
+                            <button className="btn-accent" style={{ padding: '14px 24px', fontSize: 14 }}>{t.contact.goToDashboard}</button>
+                        </Link>
+                        <button onClick={() => setSuccess(false)}
+                            style={{ background: 'white', border: '2px solid var(--ink)', color: 'var(--ink)', padding: '12px 22px', borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }}>
+                            {t.contact.sendAnother}
+                        </button>
                     </div>
                 </main>
             </div>
@@ -138,204 +72,88 @@ export default function ContactPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--sans)' }}>
             <Header />
 
-            <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-                <div className="max-w-4xl mx-auto">
-                    {/* Header */}
-                    <div className="text-center mb-6 sm:mb-8">
-                        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full mb-3 sm:mb-4">
-                            <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            <main style={{ maxWidth: 760, margin: '0 auto', padding: '40px 48px 80px' }} className="max-sm:px-4">
+                {/* Hero */}
+                <section style={{ marginBottom: 36 }}>
+                    <span className="sticker-badge" style={{ background: 'var(--lila)', marginBottom: 16 }}>✉️ contacto</span>
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(36px, 5vw, 56px)', margin: '12px 0 8px', color: 'var(--ink)', lineHeight: 0.95 }}>
+                        {t.contact.title}
+                    </h1>
+                    <p style={{ fontSize: 17, color: 'var(--ink-2)', lineHeight: 1.55 }}>{t.contact.subtitle}</p>
+                </section>
+
+                {/* Type selector */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 28 }} className="max-sm:grid-cols-2">
+                    {contactTypes.map((type) => {
+                        const Icon = type.icon;
+                        const selected = formData.type === type.value;
+                        return (
+                            <button key={type.value} onClick={() => setFormData({ ...formData, type: type.value })}
+                                style={{ padding: '14px 16px', border: '2px solid var(--ink)', borderRadius: 'var(--r-md)', background: selected ? type.tone : 'white', cursor: 'pointer', textAlign: 'left', boxShadow: selected ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)', transition: 'all 120ms', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ width: 32, height: 32, borderRadius: 'var(--r-sm)', background: selected ? 'white' : 'var(--lila-soft)', border: '1.5px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Icon style={{ width: 14, height: 14, color: 'var(--ink)' }} />
+                                </div>
+                                <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--ink)' }}>{type.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Form */}
+                <div style={{ border: '2px solid var(--ink)', borderRadius: 28, background: 'white', padding: 32, boxShadow: '5px 5px 0 var(--ink)' }}>
+                    <div className="mono-eyebrow" style={{ marginBottom: 20 }}>{t.contact.formTitle}</div>
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }} className="max-sm:grid-cols-1">
+                            <div>
+                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--ink-soft)', marginBottom: 8, textTransform: 'lowercase' }}>{t.contact.nameLabel}</label>
+                                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder={t.contact.namePlaceholder} required style={inputStyle} />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--ink-soft)', marginBottom: 8, textTransform: 'lowercase' }}>{t.contact.emailLabel}</label>
+                                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder={t.contact.emailPlaceholder} required style={inputStyle} />
+                            </div>
                         </div>
-                        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-3">
-                            {t.contact.title}
-                        </h1>
-                        <p className="text-sm sm:text-lg text-gray-600 px-2">
-                            {t.contact.subtitle}
-                        </p>
-                    </div>
 
-                    {/* Type Selection Cards - 2x2 grid en móvil */}
-                    <div className="grid grid-cols-2 md:grid-cols-2 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
-                        {contactTypes.map((type) => {
-                            const Icon = type.icon;
-                            const isSelected = formData.type === type.value;
-                            return (
-                                <button
-                                    key={type.value}
-                                    onClick={() =>
-                                        setFormData({ ...formData, type: type.value })
-                                    }
-                                    className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${isSelected
-                                            ? 'border-pink-500 bg-pink-50'
-                                            : 'border-gray-200 bg-white hover:border-pink-300'
-                                        }`}
-                                >
-                                    {/* Layout vertical en móvil, horizontal en desktop */}
-                                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
-                                        <div
-                                            className={`p-1.5 sm:p-2 rounded-lg w-fit ${isSelected
-                                                    ? 'bg-pink-500 text-white'
-                                                    : 'bg-gray-100 text-gray-600'
-                                                }`}
-                                        >
-                                            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold text-gray-900 text-xs sm:text-base mb-0.5 sm:mb-1 leading-tight">
-                                                {type.label}
-                                            </h3>
-                                            <p className="text-[11px] sm:text-sm text-gray-600 leading-tight line-clamp-2">
-                                                {type.description}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--ink-soft)', marginBottom: 8, textTransform: 'lowercase' }}>{t.contact.subjectLabel}</label>
+                            <input type="text" name="subject" value={formData.subject} onChange={handleChange} placeholder={t.contact.subjectPlaceholder} maxLength={200} required style={inputStyle} />
+                        </div>
 
-                    {/* Contact Form */}
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle className="text-base sm:text-lg">{t.contact.formTitle}</CardTitle>
-                            <CardDescription className="text-xs sm:text-sm">
-                                {t.contact.formDesc}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                                {/* Name and Email */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                                    <div>
-                                        <label
-                                            htmlFor="name"
-                                            className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
-                                        >
-                                            {t.contact.nameLabel}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="name"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
-                                            placeholder={t.contact.namePlaceholder}
-                                            required
-                                        />
-                                    </div>
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--ink-soft)', textTransform: 'lowercase' }}>{t.contact.messageLabel}</label>
+                                <span style={{ fontSize: 10, color: 'var(--ink-soft)' }}>{formData.message.length}/2000</span>
+                            </div>
+                            <textarea name="message" value={formData.message} onChange={handleChange} rows={5} placeholder={t.contact.messagePlaceholder} maxLength={2000} required style={{ ...inputStyle, resize: 'none', lineHeight: 1.5 }} />
+                        </div>
 
-                                    <div>
-                                        <label
-                                            htmlFor="email"
-                                            className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
-                                        >
-                                            {t.contact.emailLabel}
-                                        </label>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
-                                            placeholder={t.contact.emailPlaceholder}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Subject */}
+                        {formData.type === 'custom_page' && (
+                            <div style={{ padding: '14px 16px', background: 'var(--butter)', border: '2px solid var(--ink)', borderRadius: 'var(--r-md)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                                <Sparkles style={{ width: 16, height: 16, color: 'var(--ink)', flexShrink: 0, marginTop: 2 }} />
                                 <div>
-                                    <label
-                                        htmlFor="subject"
-                                        className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
-                                    >
-                                        {t.contact.subjectLabel}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="subject"
-                                        name="subject"
-                                        value={formData.subject}
-                                        onChange={handleChange}
-                                        className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
-                                        placeholder={t.contact.subjectPlaceholder}
-                                        maxLength={200}
-                                        required
-                                    />
+                                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{t.contact.customPageTitle}</div>
+                                    <div style={{ fontSize: 12, color: 'var(--ink-2)', lineHeight: 1.5 }}>{t.contact.customPageDesc}</div>
                                 </div>
+                            </div>
+                        )}
 
-                                {/* Message */}
-                                <div>
-                                    <label
-                                        htmlFor="message"
-                                        className="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
-                                    >
-                                        {t.contact.messageLabel}
-                                    </label>
-                                    <textarea
-                                        id="message"
-                                        name="message"
-                                        value={formData.message}
-                                        onChange={handleChange}
-                                        rows={5}
-                                        className="w-full px-3 sm:px-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none text-sm sm:text-base"
-                                        placeholder={t.contact.messagePlaceholder}
-                                        maxLength={2000}
-                                        required
-                                    />
-                                    <div className="mt-1 text-xs sm:text-sm text-gray-500 text-right">
-                                        {formData.message.length}/2000
-                                    </div>
-                                </div>
+                        <button type="submit" disabled={loading}
+                            className="btn-accent" style={{ padding: '14px 24px', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.7 : 1 }}>
+                            <Send style={{ width: 16, height: 16 }} />
+                            {loading ? 'enviando...' : t.contact.submitButton}
+                        </button>
+                    </form>
+                </div>
 
-                                {/* Special note for custom pages */}
-                                {formData.type === 'custom_page' && (
-                                    <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                        <div className="flex items-start gap-2">
-                                            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                                            <div className="text-xs sm:text-sm text-amber-800">
-                                                <p className="font-semibold mb-0.5 sm:mb-1">
-                                                    {t.contact.customPageTitle}
-                                                </p>
-                                                <p className="leading-relaxed">
-                                                    {t.contact.customPageDesc}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Submit Button */}
-                                <Button
-                                    type="submit"
-                                    variant="gradient"
-                                    size="lg"
-                                    className="w-full"
-                                    loading={loading}
-                                >
-                                    {!loading && <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />}
-                                    {t.contact.submitButton}
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-
-                    {/* Additional Info */}
-                    <div className="mt-6 sm:mt-8 text-center pb-6 sm:pb-0">
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
-                            {t.contact.directContact}
-                        </p>
-                        <a
-                            href="mailto:soporte@lovepages.app"
-                            className="text-sm sm:text-base text-pink-600 hover:text-pink-700 font-medium"
-                        >
-                            soporte@lovepages.app
-                        </a>
-                    </div>
+                {/* Direct email */}
+                <div style={{ textAlign: 'center', marginTop: 28 }}>
+                    <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 6 }}>{t.contact.directContact}</p>
+                    <a href="mailto:soporte@lovepages.ink" style={{ fontSize: 15, color: 'var(--accent-hex)', fontWeight: 600, textDecoration: 'none' }}>
+                        soporte@lovepages.ink
+                    </a>
                 </div>
             </main>
         </div>

@@ -420,6 +420,31 @@ function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 }
 
 // ============================================================
+// DESKTOP HELPERS — defined outside component to avoid remount on each render
+// ============================================================
+function DField({ label, hint, children }: { label: string; hint?: React.ReactNode; children: React.ReactNode }) {
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span className="mono-eyebrow" style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)' }}>{label}</span>
+                {hint && <span style={{ fontSize: 10, color: 'var(--ink-soft)' }}>{hint}</span>}
+            </div>
+            {children}
+        </div>
+    );
+}
+
+const dI: React.CSSProperties = {
+    width: '100%', padding: '10px 14px',
+    border: '2px solid var(--ink)', background: 'white',
+    borderRadius: 12, fontSize: 13, color: 'var(--ink)',
+    boxShadow: '2px 2px 0 var(--ink)', outline: 'none',
+    fontFamily: 'var(--sans)',
+};
+
+const colorKeyMap = { bg: 'backgroundColor', text: 'textColor', accent: 'accentColor' } as const;
+
+// ============================================================
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function CreatePageEnhanced() {
@@ -859,14 +884,454 @@ export default function CreatePageEnhanced() {
         </div>
     );
 
+    // ── Render ───────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 pb-20 lg:pb-8">
+        <>
+        {/* ═══════════════════════════════════════════════════════
+            DESKTOP — 3-column builder (≥ lg)
+        ═══════════════════════════════════════════════════════ */}
+        <div
+            className="hidden lg:flex flex-col"
+            style={{ height: '100vh', background: 'var(--paper)', color: 'var(--ink)', overflow: 'hidden', fontFamily: 'var(--sans)' }}
+        >
+            {/* ── TOP BAR ── */}
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', borderBottom: '2px solid var(--ink)', background: 'white', flexShrink: 0, gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Link href="/dashboard">
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'var(--ink)', padding: '4px 0' }}>← mis páginas</button>
+                    </Link>
+                    <span style={{ width: 1, height: 16, background: 'var(--rule)' }} />
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>{formData.title || 'nueva página'}</span>
+                    <span style={{ fontSize: 9, padding: '3px 8px', background: 'var(--butter)', border: '1.5px solid var(--ink)', borderRadius: 999, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>borrador</span>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    {freeLimitReached && <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>Límite alcanzado</span>}
+                    {isPro && <ProBadge />}
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading || freeLimitReached}
+                        style={{ background: freeLimitReached ? '#ccc' : 'var(--accent-hex)', color: 'white', padding: '8px 18px', fontSize: 13, border: '2px solid var(--ink)', borderRadius: 999, cursor: freeLimitReached ? 'not-allowed' : 'pointer', fontWeight: 600, boxShadow: '2px 2px 0 var(--ink)', opacity: freeLimitReached ? 0.5 : 1 }}
+                    >
+                        {loading ? 'publicando...' : 'publicar ✨'}
+                    </button>
+                </div>
+            </header>
+
+            {/* ── 3-COLUMN GRID ── */}
+            <div style={{ flex: 1, overflow: 'hidden', display: 'grid', gridTemplateColumns: '56px 1fr 380px' }}>
+
+                {/* ─ SIDEBAR ─ */}
+                <aside style={{ borderRight: '2px solid var(--ink)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: 16, background: 'white' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 999, background: 'var(--accent-hex)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--ink)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>L</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+                        {([['Aa', 'content', 'contenido'], ['🎨', 'design', 'tema'], ['☺', 'media', 'media'], ['♪', 'effects', 'efectos'], ['⚙', 'preview', 'enlace']] as [string, Step, string][]).map(([icon, step, label]) => (
+                            <button
+                                key={step}
+                                onClick={() => setCurrentStep(step)}
+                                title={label}
+                                style={{
+                                    width: 40, height: 40,
+                                    border: '2px solid var(--ink)',
+                                    background: currentStep === step ? 'var(--lila-soft)' : 'white',
+                                    borderRadius: 12, cursor: 'pointer', fontSize: 16,
+                                    boxShadow: currentStep === step ? '2px 2px 0 var(--ink)' : 'none',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    transition: 'all 0.1s',
+                                }}
+                            >{icon}</button>
+                        ))}
+                    </div>
+                </aside>
+
+                {/* ─ CANVAS ─ */}
+                <main style={{ position: 'relative', overflow: 'hidden', background: 'var(--lila-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* Dot grid */}
+                    <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, var(--lila) 1.5px, transparent 1.5px)', backgroundSize: '24px 24px', opacity: 0.6, pointerEvents: 'none' }} />
+
+                    {/* iPhone frame */}
+                    <div style={{ position: 'relative', width: 290, height: 580, background: 'var(--ink)', borderRadius: 44, padding: 10, boxShadow: '8px 8px 0 rgba(45,27,61,0.25), var(--shadow-card)', border: '2px solid var(--ink)', flexShrink: 0, zIndex: 1 }}>
+                        <div style={{ width: '100%', height: '100%', borderRadius: 36, overflow: 'hidden' }}>
+                            <PreviewContent />
+                        </div>
+                        {/* Notch */}
+                        <div style={{ position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)', width: 80, height: 20, background: 'var(--ink)', borderRadius: 999, zIndex: 10, pointerEvents: 'none' }} />
+                    </div>
+
+                    {/* Preview badge */}
+                    <div style={{ position: 'absolute', top: 20, left: 20, background: 'white', border: '2px solid var(--ink)', borderRadius: 999, padding: '5px 12px', fontSize: 11, fontWeight: 600, boxShadow: '2px 2px 0 var(--ink)', zIndex: 2 }}>
+                        👀 vista previa · iphone
+                    </div>
+
+                    {/* URL badge */}
+                    <div style={{ position: 'absolute', bottom: 20, left: 20, padding: '8px 14px', background: 'white', border: '2px solid var(--ink)', borderRadius: 999, fontFamily: 'var(--mono)', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8, boxShadow: '3px 3px 0 var(--ink)', zIndex: 2 }}>
+                        <span style={{ color: 'var(--ink-soft)' }}>lovepages.ink/p/</span>
+                        <span style={{ color: 'var(--accent-deep-hex)', fontWeight: 700 }}>{formData.customSlug || '—'}</span>
+                        <span style={{ cursor: 'pointer' }} onClick={() => typeof window !== 'undefined' && navigator.clipboard.writeText(`${window.location.origin}/p/${formData.customSlug}`)}>📋</span>
+                    </div>
+                </main>
+
+                {/* ─ RIGHT PANEL ─ */}
+                <aside style={{ borderLeft: '2px solid var(--ink)', display: 'flex', flexDirection: 'column', background: 'white', overflow: 'hidden' }}>
+                    {/* Tabs */}
+                    <div style={{ display: 'flex', borderBottom: '2px solid var(--ink)', padding: '0 10px', flexShrink: 0 }}>
+                        {([['contenido', 'content'], ['tema', 'design'], ['media', 'media'], ['efectos', 'effects'], ['enlace', 'preview']] as [string, Step][]).map(([label, step]) => (
+                            <button
+                                key={step}
+                                onClick={() => setCurrentStep(step)}
+                                style={{
+                                    background: 'transparent', border: 'none',
+                                    padding: '12px 10px', cursor: 'pointer',
+                                    borderBottom: currentStep === step ? '3px solid var(--accent-hex)' : '3px solid transparent',
+                                    color: currentStep === step ? 'var(--ink)' : 'var(--ink-soft)',
+                                    fontSize: 12, fontWeight: 600, marginBottom: -2,
+                                    whiteSpace: 'nowrap', transition: 'all 0.1s',
+                                }}
+                            >{label}</button>
+                        ))}
+                    </div>
+
+                    {/* Scrollable content */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+                        {/* Expiration notice */}
+                        {!isPro && showExpirationNotice && (
+                            <div style={{ padding: '10px 14px', background: 'var(--butter)', border: '1.5px solid var(--ink)', borderRadius: 12, fontSize: 12, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                                <span style={{ flex: 1 }}>⏱ Tu página expira en <strong>7 días</strong>. <button onClick={goToUpgrade} style={{ textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: 'var(--ink)', padding: 0 }}>Actualiza a PRO</button></span>
+                                <button onClick={dismissExpirationNotice} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-soft)', padding: 0, lineHeight: 1 }}>×</button>
+                            </div>
+                        )}
+
+                        {/* ── Tab: contenido ── */}
+                        {currentStep === 'content' && (<>
+                            <DField label="título">
+                                <input value={formData.title} onChange={e => updateForm({ title: e.target.value })} placeholder={t.create.titlePlaceholder} maxLength={200} style={dI} />
+                            </DField>
+                            <DField label="para quién">
+                                <input value={formData.recipientName} onChange={e => updateForm({ recipientName: e.target.value })} placeholder={t.create.recipientPlaceholder} maxLength={100} style={dI} />
+                            </DField>
+                            <DField label="tu mensaje" hint={`${formData.message.length}/1000`}>
+                                <textarea value={formData.message} onChange={e => updateForm({ message: e.target.value })} placeholder={t.create.messagePlaceholder} maxLength={1000} rows={5} style={{ ...dI, resize: 'none', lineHeight: 1.5 }} />
+                            </DField>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                <DField label="botón sí">
+                                    <input value={formData.yesButtonText} onChange={e => updateForm({ yesButtonText: e.target.value })} maxLength={50} style={dI} />
+                                </DField>
+                                <DField label="botón no">
+                                    <input value={formData.noButtonText} onChange={e => updateForm({ noButtonText: e.target.value })} maxLength={50} style={dI} />
+                                </DField>
+                            </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--paper)', border: '2px solid var(--ink)', borderRadius: 12, cursor: 'pointer', fontSize: 13, boxShadow: '2px 2px 0 var(--ink)' }}>
+                                <input type="checkbox" checked={formData.noButtonEscapes} onChange={e => updateForm({ noButtonEscapes: e.target.checked })} style={{ width: 18, height: 18 }} />
+                                {t.create.noEscapes}
+                            </label>
+                            {isPro && (
+                                <div style={{ borderTop: '1.5px solid var(--rule)', paddingTop: 16 }}>
+                                    <CustomSlugInput value={formData.customSlug} onChange={v => updateForm({ customSlug: v })} isPro={isPro} onUpgrade={goToUpgrade} recipientName={formData.recipientName} />
+                                </div>
+                            )}
+                            {isPro && (
+                                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', background: 'var(--lila-soft)', border: '2px solid var(--ink)', borderRadius: 12, cursor: 'pointer', fontSize: 13, boxShadow: '2px 2px 0 var(--ink)' }}>
+                                    <input type="checkbox" checked={formData.pageType === 'pro'} onChange={e => updateForm({ pageType: e.target.checked ? 'pro' : 'free' })} style={{ width: 16, height: 16, marginTop: 2 }} />
+                                    <div>
+                                        <span style={{ fontWeight: 600 }}>✨ {t.create.useAI}</span>
+                                        <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 2 }}>{t.create.useAIDesc}</p>
+                                    </div>
+                                </label>
+                            )}
+                        </>)}
+
+                        {/* ── Tab: tema ── */}
+                        {currentStep === 'design' && (<>
+                            <DField label="paleta">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                                    {THEMES.map(theme => (
+                                        <div key={theme.id} style={{ position: 'relative' }}>
+                                            {!theme.free && !isPro && <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 10 }}><ProBadge small /></div>}
+                                            <button
+                                                onClick={() => selectTheme(theme)}
+                                                style={{
+                                                    width: '100%', padding: 10,
+                                                    border: '2px solid var(--ink)', borderRadius: 12,
+                                                    background: formData.theme === theme.id ? 'var(--lila-soft)' : 'white',
+                                                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                                                    boxShadow: formData.theme === theme.id ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
+                                                    opacity: !theme.free && !isPro ? 0.6 : 1,
+                                                    outline: formData.theme === theme.id ? '2px solid var(--accent-hex)' : 'none',
+                                                    outlineOffset: -3, textAlign: 'left',
+                                                }}
+                                            >
+                                                <span style={{ display: 'flex', flexShrink: 0 }}>
+                                                    <span style={{ width: 18, height: 18, background: theme.colors.bg, borderRadius: '50% 0 0 50%', border: '1.5px solid var(--ink)' }} />
+                                                    <span style={{ width: 18, height: 18, background: theme.colors.accent, borderRadius: '0 50% 50% 0', border: '1.5px solid var(--ink)', borderLeft: 'none' }} />
+                                                </span>
+                                                <span style={{ fontSize: 11, fontWeight: 500 }}>{theme.emoji} {t.themes[theme.id as keyof typeof t.themes] || theme.name}</span>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </DField>
+
+                            <DField label="colores personalizados">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                                    {(['bg', 'text', 'accent'] as const).map(ct => {
+                                        const labels = { bg: t.create.colorBg, text: t.create.colorText, accent: t.create.colorAccent };
+                                        const ck = colorKeyMap[ct];
+                                        const val = formData[ck] as string;
+                                        return (
+                                            <div key={ct}>
+                                                <span style={{ fontSize: 10, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>{labels[ct]}</span>
+                                                <button
+                                                    onClick={() => setShowColorPicker(showColorPicker === ct ? null : ct)}
+                                                    style={{ width: '100%', height: 44, border: '2px solid var(--ink)', borderRadius: 12, background: val, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '2px 2px 0 var(--ink)' }}
+                                                >
+                                                    <span style={{ fontSize: 9, fontFamily: 'var(--mono)', color: 'white', mixBlendMode: 'difference' }}>{val}</span>
+                                                </button>
+                                                {showColorPicker === ct && (
+                                                    <div style={{ position: 'relative' }}>
+                                                        <div style={{ position: 'fixed', inset: 0, zIndex: 19 }} onClick={() => setShowColorPicker(null)} />
+                                                        <div style={{ position: 'absolute', zIndex: 20, marginTop: 8 }}>
+                                                            <HexColorPicker color={val} onChange={c => updateForm({ [ck]: c })} />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </DField>
+
+                            <DField label="tipografía">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
+                                    {GOOGLE_FONTS.map(font => (
+                                        <div key={font.name} style={{ position: 'relative' }}>
+                                            {!font.free && !isPro && <div style={{ position: 'absolute', top: 4, right: 4, zIndex: 5 }}><ProBadge small /></div>}
+                                            <button
+                                                onClick={() => selectFont(font, 'titleFont')}
+                                                style={{
+                                                    width: '100%', padding: '8px 12px',
+                                                    border: '2px solid var(--ink)', borderRadius: 12,
+                                                    background: formData.titleFont === font.name ? 'var(--lila-soft)' : 'white',
+                                                    cursor: 'pointer', textAlign: 'left',
+                                                    boxShadow: formData.titleFont === font.name ? '2px 2px 0 var(--ink)' : 'none',
+                                                    opacity: !font.free && !isPro ? 0.6 : 1,
+                                                    fontFamily: `'${font.name}', ${font.category}`,
+                                                    outline: formData.titleFont === font.name ? '2px solid var(--accent-hex)' : 'none',
+                                                    outlineOffset: -3,
+                                                }}
+                                            >
+                                                <span style={{ fontSize: 20 }}>Aa</span>
+                                                <span className="mono-eyebrow" style={{ fontSize: 9, display: 'block', marginTop: 2 }}>{font.name}</span>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </DField>
+                        </>)}
+
+                        {/* ── Tab: media ── */}
+                        {currentStep === 'media' && (<>
+                            <DField label="imagen de fondo">
+                                <div {...bgDropzone.getRootProps()} style={{ border: '2px dashed var(--ink)', borderRadius: 12, padding: 16, textAlign: 'center', cursor: 'pointer', background: bgDropzone.isDragActive ? 'var(--lila-soft)' : 'var(--paper)', boxShadow: '2px 2px 0 var(--ink)' }}>
+                                    <input {...bgDropzone.getInputProps()} />
+                                    {bgImagePreview ? (
+                                        <div>
+                                            <img src={bgImagePreview} alt="Fondo" style={{ maxHeight: 90, borderRadius: 8, margin: '0 auto', display: 'block' }} />
+                                            <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 6 }}>{t.create.bgImageChange}</p>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <Upload style={{ width: 26, height: 26, margin: '0 auto 6px', color: 'var(--ink-soft)' }} />
+                                            <p style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{t.create.bgImageDrop}</p>
+                                        </div>
+                                    )}
+                                </div>
+                                {bgImagePreview && (
+                                    <button onClick={() => { updateForm({ backgroundImage: null }); setBgImagePreview(null); }} style={{ marginTop: 6, fontSize: 11, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <Trash2 style={{ width: 11, height: 11 }} /> {t.create.bgImageRemove}
+                                    </button>
+                                )}
+                            </DField>
+
+                            <DField label="stickers" hint={`${formData.selectedStickers.length}/${isPro ? 10 : 3}`}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                                    {STICKERS.map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => toggleSticker(s.id)}
+                                            style={{
+                                                aspectRatio: '1', border: '2px solid var(--ink)', borderRadius: 12,
+                                                background: formData.selectedStickers.includes(s.id) ? 'var(--lila)' : 'white',
+                                                cursor: 'pointer', fontSize: 22,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: formData.selectedStickers.includes(s.id) ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
+                                                opacity: !s.free && !isPro ? 0.4 : 1, position: 'relative',
+                                            }}
+                                        >
+                                            {s.emoji}
+                                            {!s.free && !isPro && <Lock style={{ width: 10, height: 10, position: 'absolute', bottom: 2, right: 2, color: '#f59e0b' }} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </DField>
+
+                            <DField label="imágenes decorativas" hint={<span style={{ fontSize: 9, padding: '2px 8px', background: 'var(--lila-soft)', border: '1px solid var(--ink)', borderRadius: 999 }}>{!isPro ? '1 gratis' : '5 pro'}</span>}>
+                                {decorativeImagePreviews.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                                        {decorativeImagePreviews.map((p, i) => (
+                                            <div key={i} style={{ position: 'relative' }}>
+                                                <img src={p} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: '2px solid var(--ink)', display: 'block' }} />
+                                                <button onClick={() => removeDecorativeImage(i)} style={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, background: '#ef4444', color: 'white', border: 'none', borderRadius: 999, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11 }}>×</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <div {...decorativeDropzone.getRootProps()} style={{ border: '2px dashed var(--ink)', borderRadius: 12, padding: 12, textAlign: 'center', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '2px 2px 0 var(--ink)', background: 'var(--paper)' }}>
+                                    <input {...decorativeDropzone.getInputProps()} />
+                                    <Plus style={{ width: 18, height: 18, color: 'var(--ink-soft)' }} />
+                                    <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{t.create.decorativeAdd}</span>
+                                </div>
+                            </DField>
+                        </>)}
+
+                        {/* ── Tab: efectos ── */}
+                        {currentStep === 'effects' && (<>
+                            <DField label="partículas">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                                    {ANIMATIONS.map(anim => (
+                                        <div key={anim.id} style={{ position: 'relative' }}>
+                                            {!anim.free && !isPro && <div style={{ position: 'absolute', top: 4, right: 4, zIndex: 5 }}><ProBadge small /></div>}
+                                            <button
+                                                onClick={() => { if (!anim.free && !isPro) { goToUpgrade(); return; } updateForm({ animation: anim.id }); }}
+                                                style={{
+                                                    width: '100%', padding: '10px 8px',
+                                                    border: '2px solid var(--ink)', borderRadius: 12,
+                                                    background: formData.animation === anim.id ? 'var(--lila)' : 'white',
+                                                    cursor: 'pointer', textAlign: 'left',
+                                                    boxShadow: formData.animation === anim.id ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
+                                                    opacity: !anim.free && !isPro ? 0.6 : 1, fontSize: 12,
+                                                }}
+                                            >
+                                                <span style={{ fontSize: 20, display: 'block', marginBottom: 2 }}>{anim.emoji}</span>
+                                                {t.animations[anim.id as keyof typeof t.animations] || anim.name}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </DField>
+
+                            <DField label="música de fondo" hint={!isPro ? <ProBadge small /> : undefined}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    {BACKGROUND_MUSIC.map(music => (
+                                        <button
+                                            key={music.id}
+                                            onClick={() => { if (!music.free && !isPro) { goToUpgrade(); return; } updateForm({ backgroundMusic: music.id }); }}
+                                            style={{
+                                                padding: '10px 14px', border: '2px solid var(--ink)', borderRadius: 12,
+                                                background: formData.backgroundMusic === music.id ? 'var(--lila-soft)' : 'white',
+                                                cursor: 'pointer', textAlign: 'left', fontSize: 12,
+                                                boxShadow: formData.backgroundMusic === music.id ? '2px 2px 0 var(--ink)' : 'none',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                opacity: !music.free && !isPro ? 0.6 : 1,
+                                            }}
+                                        >
+                                            <span>{t.music[music.id as keyof typeof t.music] || music.name}</span>
+                                            {formData.backgroundMusic === music.id && <CheckCircle2 style={{ width: 14, height: 14, color: 'var(--accent-hex)' }} />}
+                                            {!music.free && !isPro && <Lock style={{ width: 12, height: 12, color: '#f59e0b' }} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </DField>
+
+                            <DField label="video embed" hint={!isPro ? <ProBadge small /> : undefined}>
+                                {isPro ? (
+                                    <input type="url" placeholder="https://youtube.com/..." value={formData.videoUrl} onChange={e => updateForm({ videoUrl: e.target.value })} style={dI} />
+                                ) : (
+                                    <button onClick={goToUpgrade} style={{ width: '100%', padding: '10px 14px', border: '2px dashed var(--lila-2)', borderRadius: 12, background: 'var(--lila-soft)', cursor: 'pointer', fontSize: 12, color: 'var(--ink-soft)', textAlign: 'center' }}>
+                                        YouTube / TikTok — solo PRO ✨
+                                    </button>
+                                )}
+                            </DField>
+                        </>)}
+
+                        {/* ── Tab: enlace ── */}
+                        {currentStep === 'preview' && (<>
+                            <DField label="URL personalizada" hint={!isPro ? <span style={{ fontSize: 9, padding: '2px 8px', background: 'var(--butter)', border: '1px solid var(--ink)', borderRadius: 999, fontWeight: 700 }}>✨ pro</span> : undefined}>
+                                <div style={{ display: 'flex', alignItems: 'center', border: '2px solid var(--ink)', borderRadius: 12, background: 'white', overflow: 'hidden', boxShadow: '2px 2px 0 var(--ink)' }}>
+                                    <span style={{ padding: '10px 12px', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-soft)', borderRight: '2px solid var(--ink)', background: 'var(--lila-soft)', flexShrink: 0 }}>lovepages.ink/p/</span>
+                                    {isPro ? (
+                                        <input value={formData.customSlug} onChange={e => updateForm({ customSlug: e.target.value })} style={{ border: 'none', flex: 1, fontFamily: 'var(--mono)', fontSize: 12, padding: '10px 12px', outline: 'none', color: 'var(--ink)' }} placeholder="tu-slug-aqui" />
+                                    ) : (
+                                        <button onClick={goToUpgrade} style={{ flex: 1, padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-soft)', textAlign: 'left' }}>
+                                            {formData.recipientName ? `para-${formData.recipientName.toLowerCase()}` : '—'}
+                                        </button>
+                                    )}
+                                </div>
+                            </DField>
+
+                            <DField label="privacidad">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    {[['🔓', 'pública', 'cualquiera con el link'], ['🔒', 'con código', 'requiere PIN (pronto)']].map(([icon, title, hint], k) => (
+                                        <div key={title} style={{ padding: 12, border: '2px solid var(--ink)', borderRadius: 12, background: k === 0 ? 'var(--mint)' : 'white', display: 'flex', alignItems: 'center', gap: 12, boxShadow: k === 0 ? '2px 2px 0 var(--ink)' : 'none' }}>
+                                            <span style={{ fontSize: 18 }}>{icon}</span>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 600 }}>{title}</div>
+                                                <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{hint}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </DField>
+
+                            <div style={{ padding: 14, background: 'var(--paper)', border: '2px solid var(--ink)', borderRadius: 12, boxShadow: '2px 2px 0 var(--ink)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {[
+                                    ['Título', formData.title || '—'],
+                                    ['Para', formData.recipientName || '—'],
+                                    ['Tema', THEMES.find(th => th.id === formData.theme)?.name || '—'],
+                                    ['Animación', ANIMATIONS.find(a => a.id === formData.animation)?.name || '—'],
+                                ].map(([k, v]) => (
+                                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                                        <span style={{ color: 'var(--ink-soft)' }}>{k}</span>
+                                        <span style={{ fontWeight: 600 }}>{v}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {!isPro && (
+                                <div style={{ padding: 12, background: 'var(--lila-soft)', border: '1.5px solid var(--ink)', borderRadius: 12, fontSize: 12, color: 'var(--ink)' }}>
+                                    <span>Tu página: <strong className="mono-eyebrow" style={{ fontSize: 10 }}>lovepages.ink/p/xK9mP2</strong></span>
+                                    <br />
+                                    <span style={{ color: 'var(--ink-soft)' }}>Con PRO: </span>
+                                    <strong style={{ color: 'var(--accent-deep-hex)', fontFamily: 'var(--mono)', fontSize: 11 }}>para-{(formData.recipientName || 'ella').toLowerCase()}</strong>
+                                    <button onClick={goToUpgrade} style={{ display: 'block', marginTop: 8, width: '100%', padding: '8px 14px', background: 'var(--accent-hex)', color: 'white', border: '2px solid var(--ink)', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, boxShadow: '2px 2px 0 var(--ink)' }}>
+                                        Hacerlo más especial — PRO ✨
+                                    </button>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handleSubmit}
+                                disabled={loading || freeLimitReached}
+                                style={{ width: '100%', padding: '12px 20px', background: freeLimitReached ? '#ccc' : 'var(--accent-hex)', color: 'white', border: '2px solid var(--ink)', borderRadius: 12, cursor: freeLimitReached ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 700, boxShadow: '3px 3px 0 var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: freeLimitReached ? 0.5 : 1 }}
+                            >
+                                <Sparkles style={{ width: 16, height: 16 }} />
+                                {loading ? 'publicando...' : 'publicar página ✨'}
+                            </button>
+                        </>)}
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════
+            MOBILE — step wizard (< lg)
+        ═══════════════════════════════════════════════════════ */}
+        <div className="lg:hidden min-h-screen pb-20" style={{ background: 'var(--paper)' }}>
             <Header />
 
-            <main className="container py-4 lg:py-8 px-4 lg:px-8">
-                <div className="max-w-6xl mx-auto">
-                    {/* ====== MOBILE HEADER (compact) ====== */}
-                    <div className="lg:hidden mb-4">
+            <main className="container py-4 px-4">
+                <div className="max-w-lg mx-auto">
+                    {/* Mobile header */}
+                    <div className="mb-4">
                         <div className="flex items-center gap-3 mb-3">
                             <Link href="/dashboard">
                                 <button className="p-2 rounded-full hover:bg-white/60 active:scale-95 transition-all">
@@ -895,89 +1360,26 @@ export default function CreatePageEnhanced() {
                         </div>
                     </div>
 
-                    {/* ====== DESKTOP HEADER ====== */}
-                    <div className="hidden lg:flex items-center gap-4 mb-8">
-                        <Link href="/dashboard">
-                            <Button variant="ghost" size="icon">
-                                <ArrowLeft className="w-5 h-5" />
-                            </Button>
-                        </Link>
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900">{t.create.title}</h1>
-                            <p className="text-gray-600 mt-1">
-                                {t.create.subtitle}
-                                {isPro && (
-                                    <span className="ml-2 inline-flex items-center gap-1 text-amber-600 font-medium">
-                                        <Crown className="w-4 h-4" /> {t.create.proActive}
-                                    </span>
-                                )}
-                            </p>
-                        </div>
-                    </div>
-
                     {freeLimitReached && (
-                        <Card className="mb-4 lg:mb-6 border-amber-200 bg-amber-50">
-                            <CardContent className="py-3 lg:py-4 text-sm text-amber-900">
-                                {t.create.freeLimitReached}
-                            </CardContent>
-                        </Card>
+                        <div className="mb-4 px-3 py-2.5 text-sm rounded-xl" style={{ background: 'var(--butter)', border: '1.5px solid var(--ink)' }}>
+                            {t.create.freeLimitReached}
+                        </div>
                     )}
 
-                    {/* ====== DESKTOP Step indicator ====== */}
-                    <div className="hidden lg:flex items-center justify-center mb-8">
-                        <div className="flex items-center gap-2">
-                            {steps.map((step, index) => (
-                                <div key={step.key} className="flex items-center">
-                                    <button
-                                        onClick={() => {
-                                            if (index <= stepIndex) setCurrentStep(step.key);
-                                        }}
-                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${index <= stepIndex
-                                            ? 'bg-pink-600 text-white cursor-pointer'
-                                            : 'bg-gray-200 text-gray-500 cursor-default'
-                                            }`}
-                                    >
-                                        {step.icon}
-                                        <span>{step.label}</span>
-                                    </button>
-                                    {index < steps.length - 1 && (
-                                        <div
-                                            className={`w-10 h-0.5 mx-1 transition-all ${index < stepIndex ? 'bg-pink-600' : 'bg-gray-200'}`}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Expiration notice for free users */}
                     {!isPro && showExpirationNotice && (
-                        <div className="mb-4 lg:mb-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-3 lg:px-4 py-2.5 lg:py-3">
-                            <Clock className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5 hidden sm:block" />
-                            <div className="flex-1 text-xs sm:text-sm text-amber-800">
+                        <div className="mb-4 flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: 'var(--butter)', border: '1.5px solid var(--ink)' }}>
+                            <div className="flex-1 text-xs" style={{ color: 'var(--ink)' }}>
                                 <span className="font-semibold">Tu página expirará en 7 días.</span>{' '}
-                                <span className="hidden sm:inline">Con el plan gratuito, las páginas se desactivan automáticamente después de 7 días.</span>{' '}
-                                <button
-                                    type="button"
-                                    onClick={goToUpgrade}
-                                    className="font-semibold underline hover:text-amber-900 transition-colors"
-                                >
-                                    Actualiza a PRO
-                                </button>
+                                <button type="button" onClick={goToUpgrade} className="font-semibold underline">Actualiza a PRO</button>
                             </div>
-                            <button
-                                type="button"
-                                aria-label="Cerrar aviso de expiración"
-                                onClick={dismissExpirationNotice}
-                                className="rounded-md p-1 text-amber-500 transition-colors hover:bg-amber-100 hover:text-amber-700"
-                            >
+                            <button type="button" onClick={dismissExpirationNotice} style={{ color: 'var(--ink-soft)' }}>
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
                     )}
 
-                    {/* Main grid: Editor + Preview */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+                    {/* Mobile steps */}
+                    <div className="grid grid-cols-1 gap-4">
                         {/* LEFT: Editor */}
                         <div>
                             {/* ======== STEP 1: CONTENIDO ======== */}
@@ -1775,149 +2177,27 @@ export default function CreatePageEnhanced() {
                             )}
                         </div>
 
-                        {/* RIGHT: Live Preview - DESKTOP ONLY */}
-                        <div className="hidden lg:block lg:sticky lg:top-24 h-fit">
-                            <Card className="bg-white/80 backdrop-blur overflow-hidden">
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-center gap-2">
-                                        <Eye className="w-5 h-5 text-gray-600" />
-                                        <CardTitle className="text-base">Vista Previa</CardTitle>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div
-                                        className="aspect-[9/16] rounded-xl overflow-hidden relative flex flex-col items-center justify-center text-center transition-all"
-                                        style={{
-                                            backgroundColor: formData.backgroundColor,
-                                            color: formData.textColor,
-                                        }}
-                                    >
-                                        {/* Background image */}
-                                        {bgImagePreview && (
-                                            <div
-                                                className="absolute inset-0 bg-cover bg-center opacity-30"
-                                                style={{ backgroundImage: `url(${bgImagePreview})` }}
-                                            />
-                                        )}
-
-                                        {/* Content */}
-                                        <div className="relative z-10 p-6 flex flex-col items-center justify-center h-full">
-                                            {/* Stickers arriba */}
-                                            {formData.selectedStickers.length > 0 && (
-                                                <div className="flex gap-2 mb-4 text-3xl">
-                                                    {formData.selectedStickers.map((id) => (
-                                                        <span key={id} className="animate-bounce">
-                                                            {STICKERS.find((s) => s.id === id)?.emoji}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            <Heart className="w-14 h-14 mb-4 animate-pulse" />
-
-                                            <h2
-                                                className="text-2xl font-bold mb-3 leading-tight"
-                                                style={{ fontFamily: `'${formData.titleFont}', cursive` }}
-                                            >
-                                                {formData.title || 'Tu título aquí'}
-                                            </h2>
-
-                                            <p
-                                                className="text-lg mb-1"
-                                                style={{ fontFamily: `'${formData.bodyFont}', sans-serif` }}
-                                            >
-                                                {formData.recipientName || 'Nombre'}
-                                            </p>
-
-                                            {formData.message && (
-                                                <p
-                                                    className="text-sm opacity-85 mb-4 max-w-[80%]"
-                                                    style={{ fontFamily: `'${formData.bodyFont}', sans-serif` }}
-                                                >
-                                                    {formData.message}
-                                                </p>
-                                            )}
-
-                                            {/* Decorative images */}
-                                            {decorativeImagePreviews.length > 0 && (
-                                                <div className="flex gap-2 my-3">
-                                                    {decorativeImagePreviews.map((preview, i) => (
-                                                        <img
-                                                            key={i}
-                                                            src={preview}
-                                                            alt=""
-                                                            className="w-16 h-16 object-cover rounded-lg border-2 border-white/30"
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Buttons */}
-                                            <div className="flex gap-3 mt-auto">
-                                                <button
-                                                    className="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all"
-                                                    style={{
-                                                        backgroundColor: formData.accentColor,
-                                                        color: formData.textColor,
-                                                    }}
-                                                >
-                                                    {formData.yesButtonText || 'Sí'}
-                                                </button>
-                                                <button
-                                                    className="px-5 py-2.5 bg-white/20 backdrop-blur rounded-lg font-semibold text-sm"
-                                                    style={{ color: formData.textColor }}
-                                                >
-                                                    {formData.noButtonText || 'No'}
-                                                </button>
-                                            </div>
-
-                                            {/* Watermark */}
-                                            {!isPro && (
-                                                <p className="absolute bottom-2 text-[9px] opacity-40">
-                                                    Hecho con Love Pages 💕
-                                                </p>
-                                            )}
-
-                                            {/* Animation indicator */}
-                                            {formData.animation !== 'none' && (
-                                                <div className="absolute top-2 right-2 text-xs bg-black/20 backdrop-blur px-2 py-1 rounded-full">
-                                                    {ANIMATIONS.find((a) => a.id === formData.animation)?.emoji}{' '}
-                                                    {ANIMATIONS.find((a) => a.id === formData.animation)?.name}
-                                                </div>
-                                            )}
-
-                                            {/* Music indicator */}
-                                            {formData.backgroundMusic !== 'none' && (
-                                                <div className="absolute top-2 left-2 text-xs bg-black/20 backdrop-blur px-2 py-1 rounded-full flex items-center gap-1">
-                                                    <Volume2 className="w-3 h-3" />
-                                                    🎵
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
                     </div>
                 </div>
             </main>
 
-            {/* ====== MOBILE: Floating Preview Button ====== */}
+            {/* Mobile: Floating Preview Button */}
             {currentStep !== 'preview' && (
                 <motion.button
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
                     onClick={() => setShowMobilePreview(true)}
-                    className="lg:hidden fixed right-4 bottom-20 z-30 w-14 h-14 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform"
+                    style={{ background: 'var(--accent-hex)' }}
+                    className="fixed right-4 bottom-20 z-30 w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform"
                     aria-label="Ver vista previa"
                 >
                     <Eye className="w-6 h-6" />
                 </motion.button>
             )}
 
-            {/* ====== MOBILE: Bottom navigation bar ====== */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-30 px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))]">
+            {/* Mobile: Bottom navigation bar */}
+            <div className="fixed bottom-0 left-0 right-0 z-30 px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))]" style={{ background: 'white', borderTop: '2px solid var(--ink)' }}>
                 <div className="flex items-center gap-2 max-w-md mx-auto">
                     {stepIndex > 0 ? (
                         <Button
@@ -1964,25 +2244,28 @@ export default function CreatePageEnhanced() {
                 </div>
             </div>
 
-            {/* ====== MOBILE: Preview bottom sheet ====== */}
-            <BottomSheet
-                isOpen={showMobilePreview}
-                onClose={() => setShowMobilePreview(false)}
-                title="Vista previa"
-                height="90vh"
-            >
-                <div className="p-4">
-                    <div className="max-w-[300px] mx-auto">
-                        <PreviewContent />
-                    </div>
-                    <p className="text-center text-xs text-gray-500 mt-4">
-                        Así se verá tu página
-                    </p>
-                </div>
-            </BottomSheet>
-
-            {/* Modal de Upgrade PRO */}
-            <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
         </div>
+
+        {/* ═══════════════════════════════════════════════════════
+            SHARED — BottomSheets + Modal (mobile + desktop)
+        ═══════════════════════════════════════════════════════ */}
+        <BottomSheet
+            isOpen={showMobilePreview}
+            onClose={() => setShowMobilePreview(false)}
+            title="Vista previa"
+            height="90vh"
+        >
+            <div className="p-4">
+                <div className="max-w-[300px] mx-auto">
+                    <PreviewContent />
+                </div>
+                <p className="text-center text-xs mt-4" style={{ color: 'var(--ink-soft)' }}>
+                    Así se verá tu página
+                </p>
+            </div>
+        </BottomSheet>
+
+        <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+        </>
     );
 }

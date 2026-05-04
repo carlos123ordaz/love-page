@@ -20,6 +20,7 @@ interface AuthStore {
     loading: boolean;
     setFirebaseUser: (user: FirebaseUser | null) => void;
     setUser: (user: User | null) => void;
+    updateUser: (updates: Partial<User>) => void;
     setLoading: (loading: boolean) => void;
     logout: () => void;
 }
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     loading: true,
     setFirebaseUser: (firebaseUser) => set({ firebaseUser }),
     setUser: (user) => set({ user }),
+    updateUser: (updates) => set((state) => ({ user: state.user ? { ...state.user, ...updates } : null })),
     setLoading: (loading) => set({ loading }),
     logout: () => set({ firebaseUser: null, user: null }),
 }));

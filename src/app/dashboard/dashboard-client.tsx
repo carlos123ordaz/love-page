@@ -1,70 +1,245 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore, usePageStore } from '@/store';
 import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { useTranslation } from '@/i18n';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-import {
-    Plus,
-    Heart,
-    Eye,
-    MessageCircle,
-    Trash2,
-    ToggleLeft,
-    ToggleRight,
-    Crown,
-    Sparkles,
-    MoreVertical,
-    Link2,
-    LayoutTemplate,
-    Gamepad2,
-    Clock,
-    Bell,
-    BellOff,
-} from 'lucide-react';
+import { Plus, Eye, Trash2, ToggleLeft, ToggleRight, Crown, Sparkles, Link2, Clock, Bell, BellOff } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { getTimeAgo, copyToClipboard } from '@/lib/utils';
 
+// ── Mini stat with badge ──────────────────────────────────────
+function Mini({ n, l, tone }: { n: string | number; l: string; tone: 'lila' | 'peach' | 'accent' | 'mint' }) {
+    const colors: Record<string, string> = { lila: 'var(--lila)', peach: 'var(--melocoton)', accent: 'var(--accent-hex)', mint: 'var(--mint)' };
+    return (
+        <div>
+            <div style={{ display: 'inline-block', padding: '6px 14px', background: colors[tone], borderRadius: 999, border: '2px solid var(--ink)' }}>
+                <span className="serif-display" style={{ fontSize: 28, lineHeight: 1, color: tone === 'accent' ? 'white' : 'var(--ink)' }}>{n}</span>
+            </div>
+            <div style={{ marginTop: 8, fontSize: 11, fontWeight: 600, color: 'var(--ink)' }}>{l}</div>
+        </div>
+    );
+}
+
+// ── Sparkline chart ──────────────────────────────────────────
+function Sparkline({ points }: { points: number[] }) {
+    const max = Math.max(...points, 1);
+    const w = 200, h = 48;
+    const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${(i / (points.length - 1)) * w} ${h - (p / max) * h}`).join(' ');
+    const last = points[points.length - 1];
+    return (
+        <div>
+            <div className="mono-eyebrow" style={{ fontSize: 11, marginBottom: 6 }}>respuestas · 14 días</div>
+            <svg viewBox={`0 0 ${w} ${h}`} style={{ display: 'block', width: '100%', height: h }}>
+                <path d={`${path} L ${w} ${h} L 0 ${h} Z`} fill="rgba(255,107,157,0.2)" />
+                <path d={path} stroke="var(--accent-hex)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                <circle cx={w} cy={h - (last / max) * h} r="5" fill="var(--accent-hex)" stroke="var(--ink)" strokeWidth="1.5" />
+            </svg>
+        </div>
+    );
+}
+
+// ── Page card ────────────────────────────────────────────────
+function PageCard({
+    page, onToggle, onDelete, onCopy, openMenuId, setOpenMenuId,
+}: {
+    page: any; onToggle: () => void; onDelete: () => void; onCopy: () => void;
+    openMenuId: string | null; setOpenMenuId: (id: string | null) => void;
+}) {
+    const { t } = useTranslation();
+    const total = page.yesCount + page.noCount;
+    const yesPct = total ? Math.round((page.yesCount / total) * 100) : 0;
+
+    const toneIndex = Math.abs(page.title?.charCodeAt(0) ?? 0) % 3;
+    const tones = ['lila', 'butter', 'peach'];
+    const tone = tones[toneIndex];
+    const bgs: Record<string, string> = {
+        lila: 'linear-gradient(160deg, #ede4fa, #d9c7f5)',
+        butter: 'linear-gradient(160deg, #fff3d6, #ffe5a0)',
+        peach: 'linear-gradient(160deg, #fde5dd, #ffb59a)',
+    };
+
+    const isExpired = page.expiresAt ? new Date(page.expiresAt) < new Date() : false;
+    const expirationText = page.expiresAt
+        ? isExpired ? t.dashboard.cardExpired : t.dashboard.cardExpires.replace('{time}', getTimeAgo(page.expiresAt))
+        : null;
+
+    const titleChars = [...(page.title ?? '')];
+    const emoji = titleChars.find((c: string) => c.codePointAt(0)! > 0xffff) ?? '💌';
+
+    return (
+        <div style={{ border: '2px solid var(--ink)', borderRadius: 24, background: 'white', overflow: 'hidden', boxShadow: '5px 5px 0 var(--ink)' }}>
+            {/* Card header gradient */}
+            <div style={{ height: 140, background: bgs[tone], display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '2px solid var(--ink)' }}>
+                <div style={{ fontSize: 50 }}>{emoji}</div>
+
+                <span className="sticker-badge" style={{ position: 'absolute', top: 12, left: 12, padding: '3px 10px', fontSize: 9, background: page.isActive ? 'var(--accent-hex)' : 'white', color: page.isActive ? 'white' : 'var(--ink)', border: '2px solid var(--ink)' }}>
+                    ● {page.isActive ? 'activa' : 'borrador'}
+                </span>
+
+                {page.pageType === 'pro' && (
+                    <span style={{ position: 'absolute', top: 12, left: page.isActive ? 'auto' : 12, right: page.isActive ? 50 : 'auto', display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--butter)', border: '2px solid var(--ink)', borderRadius: 999, fontSize: 9, fontWeight: 700, color: 'var(--ink)', boxShadow: '1px 1px 0 var(--ink)' }}>
+                        <Sparkles style={{ width: 8, height: 8 }} /> PRO
+                    </span>
+                )}
+
+                <button
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === page._id ? null : page._id); }}
+                    style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: 'white', border: '2px solid var(--ink)', cursor: 'pointer', boxShadow: '2px 2px 0 var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, zIndex: 10 }}>
+                    ⋯
+                </button>
+                {openMenuId === page._id && (
+                    <div style={{ position: 'absolute', top: 50, right: 12, background: 'white', border: '2px solid var(--ink)', borderRadius: 'var(--r-md)', boxShadow: '4px 4px 0 var(--ink)', overflow: 'hidden', minWidth: 160, zIndex: 50 }}>
+                        <button onClick={() => { onToggle(); setOpenMenuId(null); }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', width: '100%', fontSize: 13, fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)', textAlign: 'left' }}
+                            className="hover:bg-[var(--lila-soft)]">
+                            {page.isActive ? <ToggleRight style={{ width: 14, height: 14 }} /> : <ToggleLeft style={{ width: 14, height: 14 }} />}
+                            {page.isActive ? t.dashboard.deactivate : t.dashboard.activate}
+                        </button>
+                        <button onClick={() => { onDelete(); setOpenMenuId(null); }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', width: '100%', fontSize: 13, fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', textAlign: 'left', borderTop: '1.5px dashed var(--rule)' }}
+                            className="hover:bg-red-50">
+                            <Trash2 style={{ width: 14, height: 14 }} />
+                            {t.common.delete}
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Card body */}
+            <div style={{ padding: 20 }}>
+                <div className="mono-eyebrow" style={{ fontSize: 11 }}>para {page.recipientName}</div>
+                <h3 className="serif-display" style={{ fontSize: 22, margin: '6px 0 4px', color: 'var(--ink)', lineHeight: 1.1 }}>
+                    {page.title}
+                </h3>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-soft)' }}>
+                    /p/{page.shortId}
+                </div>
+
+                {expirationText && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, padding: '3px 10px', background: isExpired ? '#fee2e2' : 'var(--butter)', border: '1.5px solid var(--ink)', borderRadius: 999, fontSize: 10, fontWeight: 600, color: isExpired ? '#dc2626' : 'var(--ink)' }}>
+                        <Clock style={{ width: 10, height: 10 }} /> {expirationText}
+                    </span>
+                )}
+
+                {page.isActive && page.totalResponses > 0 ? (
+                    <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18, paddingTop: 16, borderTop: '1.5px dashed var(--rule)' }}>
+                            <div>
+                                <div className="serif-display" style={{ fontSize: 20, lineHeight: 1, color: 'var(--ink)' }}>{page.views}</div>
+                                <div className="mono-eyebrow" style={{ fontSize: 10, marginTop: 4 }}>visitas</div>
+                            </div>
+                            <div>
+                                <div className="serif-display" style={{ fontSize: 20, lineHeight: 1, color: 'var(--accent-hex)' }}>{page.yesCount}</div>
+                                <div className="mono-eyebrow" style={{ fontSize: 10, marginTop: 4 }}>sí</div>
+                            </div>
+                            <div>
+                                <div className="serif-display" style={{ fontSize: 20, lineHeight: 1, color: 'var(--ink)' }}>{page.noCount}</div>
+                                <div className="mono-eyebrow" style={{ fontSize: 10, marginTop: 4 }}>no</div>
+                            </div>
+                        </div>
+                        <div style={{ marginTop: 14 }}>
+                            <div style={{ display: 'flex', height: 10, borderRadius: 999, overflow: 'hidden', background: 'var(--lila-soft)', border: '1.5px solid var(--ink)' }}>
+                                <div style={{ width: `${yesPct}%`, background: 'var(--accent-hex)' }} />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: 'var(--ink-soft)' }}>
+                                <span>{yesPct}% dijeron sí 💖</span>
+                                <span>{getTimeAgo(page.createdAt)}</span>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1.5px dashed var(--rule)', fontSize: 13, color: 'var(--ink-soft)' }}>
+                        {page.isActive ? `${page.views} visitas · sin respuestas` : `sin publicar · ${getTimeAgo(page.createdAt)}`}
+                    </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                    <Link href={`/page/${page.shortId}`} style={{ flex: 1 }}>
+                        <button style={{ width: '100%', padding: '10px 12px', border: '2px solid var(--ink)', background: page.isActive ? 'var(--accent-hex)' : 'var(--ink)', color: 'white', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', boxShadow: '2px 2px 0 var(--ink)' }}>
+                            {page.isActive ? 'ver →' : 'continuar →'}
+                        </button>
+                    </Link>
+                    <button onClick={onCopy} style={{ flex: 1, padding: '10px 12px', border: '2px solid var(--ink)', background: 'white', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', boxShadow: '2px 2px 0 var(--ink)', color: 'var(--ink)' }}>
+                        📋 copiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Free limit modal ─────────────────────────────────────────
+function LimitModal({ onClose }: { onClose: () => void }) {
+    return (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}
+            onClick={onClose}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(45,27,61,0.45)', backdropFilter: 'blur(4px)' }} />
+            <div style={{ position: 'relative', background: 'white', border: '2px solid var(--ink)', borderRadius: 28, padding: '40px 32px', maxWidth: 400, width: '100%', boxShadow: '6px 6px 0 var(--ink)', textAlign: 'center' }}
+                onClick={(e) => e.stopPropagation()}>
+                <div style={{ fontSize: 56, marginBottom: 16 }}>💌</div>
+                <h2 className="serif-display" style={{ fontSize: 28, color: 'var(--ink)', marginBottom: 10, lineHeight: 1.05 }}>
+                    ya usaste tu página <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>gratis</em>
+                </h2>
+                <p style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.6, marginBottom: 28 }}>
+                    El plan free incluye 1 página. Hazte PRO por <strong style={{ color: 'var(--ink)' }}>$1.75</strong> una sola vez y crea páginas ilimitadas, añade música, efectos y más.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <Link href="/upgrade">
+                        <button className="btn-accent" style={{ width: '100%', padding: '14px 20px', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                            <Crown style={{ width: 16, height: 16 }} /> ver plan PRO ✨
+                        </button>
+                    </Link>
+                    <button onClick={onClose}
+                        style={{ width: '100%', padding: '12px 20px', border: '2px solid var(--ink)', borderRadius: 999, background: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: 'var(--ink)', boxShadow: '2px 2px 0 var(--ink)' }}>
+                        ahora no
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── New page card ────────────────────────────────────────────
+function NewCard({ onClick }: { onClick: () => void }) {
+    return (
+        <button onClick={onClick} style={{ border: '2px dashed var(--ink)', background: 'transparent', borderRadius: 24, padding: 0, cursor: 'pointer', fontFamily: 'var(--sans)', color: 'var(--ink)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, minHeight: 380, width: '100%' }}
+            className="hover:bg-white/50 transition-colors">
+            <div style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--accent-hex)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: 'white', boxShadow: '4px 4px 0 var(--ink)' }} className="serif-display">+</div>
+            <div className="serif-display" style={{ fontSize: 22, fontStyle: 'italic', color: 'var(--ink)' }}>nueva carta</div>
+            <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>en blanco o desde plantilla ✨</div>
+        </button>
+    );
+}
+
+// ── Main dashboard ───────────────────────────────────────────
 export default function DashboardPage() {
-    const { user, loading: authLoading } = useAuthStore();
+    const router = useRouter();
+    const { user, loading: authLoading, updateUser } = useAuthStore();
     const { pages, setPages, removePage, updatePage } = usePageStore();
     const [loadingPages, setLoadingPages] = useState(true);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [filter, setFilter] = useState<'all' | 'active' | 'draft'>('all');
+    const [showLimitModal, setShowLimitModal] = useState(false);
     const { t } = useTranslation();
     const { permission, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
     const handlePushToggle = async () => {
-        if (permission === 'granted') {
-            await unsubscribe();
-            toast(t.dashboard.pushToastDeactivated);
-            return;
-        }
-
+        if (permission === 'granted') { await unsubscribe(); toast(t.dashboard.pushToastDeactivated); return; }
         const ok = await subscribe();
-        if (ok) {
-            toast.success(t.dashboard.pushToastActivated);
-        } else if (permission === 'denied') {
-            toast.error(t.dashboard.pushToastDenied);
-        }
+        if (ok) toast.success(t.dashboard.pushToastActivated);
+        else if (permission === 'denied') toast.error(t.dashboard.pushToastDenied);
     };
 
-    useEffect(() => {
-        if (user) {
-            loadPages();
-        }
-    }, [user]);
+    useEffect(() => { if (user) loadPages(); }, [user]);
 
     useEffect(() => {
-        const handleClickOutside = () => setOpenMenuId(null);
-        if (openMenuId) {
-            document.addEventListener('click', handleClickOutside);
-            return () => document.removeEventListener('click', handleClickOutside);
-        }
+        const close = () => setOpenMenuId(null);
+        if (openMenuId) { document.addEventListener('click', close); return () => document.removeEventListener('click', close); }
     }, [openMenuId]);
 
     const loadPages = async () => {
@@ -72,477 +247,208 @@ export default function DashboardPage() {
             setLoadingPages(true);
             const { data } = await api.pages.getMyPages();
             setPages(data.data);
-        } catch (error) {
-            toast.error(t.dashboard.loadError);
-        } finally {
-            setLoadingPages(false);
-        }
+        } catch { toast.error(t.dashboard.loadError); }
+        finally { setLoadingPages(false); }
     };
 
-    const handleCopyUrl = (url: string) => {
-        copyToClipboard(url);
-        toast.success(t.dashboard.linkCopied);
-    };
+    const handleCopyUrl = (url: string) => { copyToClipboard(url); toast.success(t.dashboard.linkCopied); };
 
-    const handleToggleStatus = async (pageId: string, currentStatus: boolean) => {
+    const handleToggleStatus = async (pageId: string, current: boolean) => {
         try {
             await api.pages.toggleStatus(pageId);
-            updatePage(pageId, { isActive: !currentStatus });
-            toast.success(currentStatus ? t.dashboard.pageDeactivated : t.dashboard.pageActivated);
-        } catch (error) {
-            toast.error(t.dashboard.statusChangeError);
-        }
+            updatePage(pageId, { isActive: !current });
+            toast.success(current ? t.dashboard.pageDeactivated : t.dashboard.pageActivated);
+        } catch { toast.error(t.dashboard.statusChangeError); }
     };
 
     const handleDelete = async (pageId: string) => {
         if (!confirm(t.dashboard.confirmDelete)) return;
-
         try {
             await api.pages.delete(pageId);
             removePage(pageId);
+            const newCount = Math.max(0, user!.pagesCreated - 1);
+            updateUser({
+                pagesCreated: newCount,
+                canCreatePage: true,
+                remainingPages: typeof user!.remainingPages === 'number' ? user!.remainingPages + 1 : 'unlimited',
+            });
             toast.success(t.dashboard.pageDeleted);
-        } catch (error) {
-            toast.error(t.dashboard.deleteError);
-        }
+        } catch { toast.error(t.dashboard.deleteError); }
     };
 
     if (authLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 999, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite' }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
             </div>
         );
     }
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+            <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
                 <Header />
-                <main className="container px-4 sm:px-6 lg:px-8 py-12 max-w-7xl mx-auto">
-                    <div className="text-center max-w-2xl mx-auto">
-                        <Heart className="w-16 h-16 text-pink-300 mx-auto mb-4" />
-                        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                            {t.dashboard.heroTitle}
-                        </h1>
-                        <p className="text-lg text-gray-600 mb-8">
-                            {t.dashboard.heroDesc}
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <Link href="/create">
-                                <Button variant="gradient" size="lg" className="gap-2">
-                                    <Plus className="w-5 h-5" />
-                                    {t.dashboard.createPageFree}
-                                </Button>
-                            </Link>
-                            <Link href="/templates">
-                                <Button variant="outline" size="lg" className="gap-2 border-pink-200 text-pink-700 hover:bg-pink-50">
-                                    <LayoutTemplate className="w-5 h-5" />
-                                    {t.dashboard.viewTemplates}
-                                </Button>
-                            </Link>
-                        </div>
+                <main style={{ maxWidth: 640, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+                    <span style={{ fontSize: 64 }}>💌</span>
+                    <h1 className="serif-display" style={{ fontSize: 48, margin: '16px 0 12px', color: 'var(--ink)', lineHeight: 0.95 }}>
+                        <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>inicia sesión</em> para ver tus páginas
+                    </h1>
+                    <p style={{ color: 'var(--ink-2)', fontSize: 17, lineHeight: 1.55 }}>{t.dashboard.heroDesc}</p>
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
+                        <Link href="/create">
+                            <button className="btn-accent" style={{ fontSize: 15, padding: '14px 24px' }}>
+                                <Plus style={{ width: 16, height: 16, display: 'inline', marginRight: 6 }} />
+                                {t.dashboard.createPageFree}
+                            </button>
+                        </Link>
+                        <Link href="/templates">
+                            <button style={{ background: 'white', border: '2px solid var(--ink)', color: 'var(--ink)', padding: '12px 22px', borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }}>
+                                {t.dashboard.viewTemplates}
+                            </button>
+                        </Link>
                     </div>
                 </main>
             </div>
         );
     }
 
-    const totalViews = pages.reduce((sum, page) => sum + page.views, 0);
-    const totalResponses = pages.reduce((sum, page) => sum + page.totalResponses, 0);
+    const totalViews = pages.reduce((s, p) => s + p.views, 0);
+    const totalResponses = pages.reduce((s, p) => s + p.totalResponses, 0);
+    const activeCount = pages.filter((p) => p.isActive).length;
+    const draftCount = pages.filter((p) => !p.isActive).length;
     const freeLimitReached = !user.isPro && user.canCreatePage === false;
-    const createHref = freeLimitReached ? '/upgrade' : '/create';
-    const visiblePages = pages.filter((page) => page.isActive).length;
-    const tools = [
-        {
-            href: '/templates',
-            label: t.dashboard.viewTemplates,
-            icon: LayoutTemplate,
-            className: 'border-pink-200 text-pink-700 hover:bg-pink-50',
-        },
-        {
-            href: '/games',
-            label: t.nav.games,
-            icon: Gamepad2,
-            className: 'border-rose-200 text-rose-700 hover:bg-rose-50',
-        },
-    ];
-    const summaryStats = [
-        {
-            label: t.dashboard.pages,
-            value: user.pagesCreated,
-            helper: t.dashboard.activeCount.replace('{count}', String(visiblePages)),
-            icon: Heart,
-            iconClassName: 'text-pink-600',
-        },
-        {
-            label: t.dashboard.views,
-            value: totalViews,
-            helper: t.common.total,
-            icon: Eye,
-            iconClassName: 'text-sky-600',
-        },
-        {
-            label: t.dashboard.responses,
-            value: totalResponses,
-            helper: t.common.total,
-            icon: MessageCircle,
-            iconClassName: 'text-emerald-600',
-        },
-    ];
+    const handleCreate = () => {
+        if (freeLimitReached) { setShowLimitModal(true); return; }
+        router.push('/create');
+    };
+
+    const filteredPages = pages.filter((p) =>
+        filter === 'all' ? true : filter === 'active' ? p.isActive : !p.isActive
+    );
+
+    const greetingHour = new Date().getHours();
+    const greeting = greetingHour < 12 ? '🌤️ buenos días' : greetingHour < 19 ? '☀️ buenas tardes' : '🌙 buenas noches';
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', fontFamily: 'var(--sans)', color: 'var(--ink)' }}>
             <Header />
 
-            <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
-                <section className="mb-6 sm:mb-8">
-                    <Card className="overflow-hidden border-pink-100 bg-white/85 shadow-sm backdrop-blur-sm">
-                        <CardContent className="p-4 sm:p-6">
-                            <div className="flex flex-col gap-5">
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                                    <div className="min-w-0">
-                                        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-pink-700 ring-1 ring-pink-100">
-                                            <Heart className="h-3.5 w-3.5 text-pink-500" />
-                                            {t.dashboard.myPages}
-                                        </div>
-                                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                                            {t.dashboard.hereYourPages.replace('{name}', user.displayName || '')}
-                                        </h1>
-
-                                        {freeLimitReached && (
-                                            <p className="mt-3 text-sm font-medium text-amber-700">
-                                                {t.create.freeLimitReached}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-col gap-2 sm:min-w-[220px]">
-                                        <Link href={createHref} className="w-full">
-                                            <Button variant="gradient" size="lg" className="h-12 w-full gap-2 rounded-xl">
-                                                {freeLimitReached ? <Crown className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                                                {freeLimitReached ? t.nav.upgradeAPro : t.dashboard.createPage}
-                                            </Button>
-                                        </Link>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {tools.map((tool) => {
-                                                const Icon = tool.icon;
-                                                return (
-                                                    <Link key={tool.href} href={tool.href} className="w-full">
-                                                        <Button variant="outline" className={`h-11 w-full gap-2 rounded-xl text-sm ${tool.className}`}>
-                                                            <Icon className="h-4 w-4" />
-                                                            <span className="truncate">{tool.label}</span>
-                                                        </Button>
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-                                    <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-                                        {summaryStats.map((stat) => {
-                                            const Icon = stat.icon;
-                                            return (
-                                                <div
-                                                    key={stat.label}
-                                                    className="min-w-[152px] snap-start rounded-2xl bg-white px-4 py-3 ring-1 ring-gray-100 shadow-sm sm:min-w-0"
-                                                >
-                                                    <div className="mb-2 flex items-center justify-between gap-3">
-                                                        <span className="text-xs font-medium uppercase tracking-[0.14em] text-gray-500">
-                                                            {stat.label}
-                                                        </span>
-                                                        <Icon className={`h-4 w-4 ${stat.iconClassName}`} />
-                                                    </div>
-                                                    <div className="text-2xl font-bold text-gray-900">
-                                                        {stat.value}
-                                                    </div>
-                                                    <p className="mt-1 text-xs text-gray-500">{stat.helper}</p>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {permission !== 'unsupported' && (
-                                        <button
-                                            onClick={handlePushToggle}
-                                            disabled={pushLoading || permission === 'denied'}
-                                            title={permission === 'denied' ? t.dashboard.pushTitleBlocked : permission === 'granted' ? t.dashboard.pushTitleDeactivate : t.dashboard.pushTitleActivate}
-                                            className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-colors sm:w-[240px] ${permission === 'granted'
-                                                    ? 'border-green-200 bg-green-50 text-green-800'
-                                                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                                                } ${permission === 'denied' ? 'cursor-not-allowed opacity-60' : ''}`}
-                                        >
-                                            <div className="min-w-0">
-                                                <p className="text-sm font-semibold">
-                                                    {permission === 'granted' ? t.dashboard.pushAlertsActive : t.dashboard.pushAlertsTitle}
-                                                </p>
-                                                <p className="text-xs text-current/75">
-                                                    {permission === 'granted'
-                                                        ? t.dashboard.pushAlertsActiveDesc
-                                                        : permission === 'denied'
-                                                            ? t.dashboard.pushAlertsBlockedDesc
-                                                            : t.dashboard.pushAlertsInactiveDesc}
-                                                </p>
-                                            </div>
-                                            {permission === 'granted' ? (
-                                                <Bell className="h-5 w-5 flex-shrink-0" />
-                                            ) : (
-                                                <BellOff className="h-5 w-5 flex-shrink-0" />
-                                            )}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </section>
-
-                <div className="space-y-4">
-                    <div className="flex items-end justify-between gap-3">
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">{t.dashboard.myPages}</h2>
-                            <p className="mt-1 text-sm text-gray-600">
-                                {t.dashboard.managePages}
-                            </p>
-                        </div>
-                        {pages.length > 0 && (
-                            <Link href={createHref} className="hidden sm:block">
-                                <Button variant="outline" className="gap-2 border-pink-200 text-pink-700 hover:bg-pink-50">
-                                    <Plus className="h-4 w-4" />
-                                    {t.dashboard.createPage}
-                                </Button>
-                            </Link>
-                        )}
+            <main style={{ maxWidth: 1200, margin: '0 auto' }} className="px-5 pb-20 sm:px-12">
+                {/* ── Hero section ── */}
+                <section style={{ padding: '40px 0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+                    <div>
+                        <span className="sticker-badge" style={{ background: 'var(--butter)', marginBottom: 12 }}>
+                            {greeting}, {user.displayName?.split(' ')[0]?.toLowerCase() ?? 'tú'}
+                        </span>
+                        <h1 className="serif-display" style={{ fontSize: 'clamp(36px, 5vw, 56px)', margin: '12px 0 0', color: 'var(--ink)', lineHeight: 0.95 }}>
+                            tus <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>cartas</em> 💌
+                        </h1>
                     </div>
 
-                    {loadingPages ? (
-                        <div className="text-center py-12">
-                            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-pink-600 mx-auto"></div>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                        {/* Filter pills */}
+                        <div style={{ display: 'flex', gap: 4, padding: 4, border: '2px solid var(--ink)', borderRadius: 999, background: 'white', boxShadow: '3px 3px 0 var(--ink)' }}>
+                            {([['all', 'todas', pages.length], ['active', 'activas', activeCount], ['draft', 'borradores', draftCount]] as const).map(([val, label, count]) => (
+                                <button key={val} onClick={() => setFilter(val)}
+                                    style={{ padding: '6px 14px', borderRadius: 999, background: filter === val ? 'var(--ink)' : 'transparent', color: filter === val ? 'white' : 'var(--ink)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                                    {label} · {count}
+                                </button>
+                            ))}
                         </div>
-                    ) : pages.length === 0 ? (
-                        <Card className="text-center py-8 sm:py-12">
-                            <CardContent>
-                                <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
-                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                                    {t.dashboard.noPages}
-                                </h3>
-                                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 px-4">
-                                    {t.dashboard.noPagesDesc}
-                                </p>
-                                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                                    <Link href="/create">
-                                        <Button variant="gradient" size="lg" className="gap-2">
-                                            <Plus className="w-5 h-5" />
-                                            {t.dashboard.createFirstPage}
-                                        </Button>
-                                    </Link>
-                                    <Link href="/templates">
-                                        <Button variant="outline" size="lg" className="gap-2 border-pink-200 text-pink-700 hover:bg-pink-50">
-                                            <LayoutTemplate className="w-5 h-5" />
-                                            {t.dashboard.useTemplate}
-                                        </Button>
-                                    </Link>
+
+                        <button onClick={handleCreate} className="btn-accent" style={{ padding: '12px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Plus style={{ width: 14, height: 14 }} />
+                            + nueva carta ✨
+                        </button>
+                    </div>
+                </section>
+
+                {/* ── Stats strip ── */}
+                <section style={{ margin: '0 0 32px', border: '2px solid var(--ink)', background: 'white', borderRadius: 24, boxShadow: '5px 5px 0 var(--ink)' }} className="p-5 sm:p-8 grid grid-cols-2 gap-4 sm:grid-cols-[repeat(4,1fr)_2fr] sm:gap-6 items-center">
+                    <Mini n={user.pagesCreated} l="páginas" tone="lila" />
+                    <Mini n={totalViews} l="visitas totales" tone="peach" />
+                    <Mini n={totalResponses} l="respuestas sí" tone="accent" />
+                    <Mini n={activeCount} l="activas" tone="mint" />
+                    <div className="max-sm:col-span-2">
+                        <Sparkline points={[3, 7, 4, 12, 18, 11, 22, 28, 18, 24, 31, 29, 38, totalResponses || 1]} />
+                    </div>
+                </section>
+
+                {/* ── Push notifications toggle ── */}
+                {permission !== 'unsupported' && (
+                    <div style={{ marginBottom: 24 }}>
+                        <button onClick={handlePushToggle} disabled={pushLoading || permission === 'denied'}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', border: '2px solid var(--ink)', borderRadius: 'var(--r-md)', background: permission === 'granted' ? 'var(--mint)' : 'white', cursor: permission === 'denied' ? 'not-allowed' : 'pointer', opacity: permission === 'denied' ? 0.6 : 1, boxShadow: '3px 3px 0 var(--ink)' }}
+                            title={permission === 'denied' ? t.dashboard.pushTitleBlocked : permission === 'granted' ? t.dashboard.pushTitleDeactivate : t.dashboard.pushTitleActivate}>
+                            {permission === 'granted' ? <Bell style={{ width: 16, height: 16 }} /> : <BellOff style={{ width: 16, height: 16 }} />}
+                            <div style={{ textAlign: 'left' }}>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
+                                    {permission === 'granted' ? t.dashboard.pushAlertsActive : t.dashboard.pushAlertsTitle}
                                 </div>
-                            </CardContent>
-                        </Card>
+                                <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>
+                                    {permission === 'granted' ? t.dashboard.pushAlertsActiveDesc : permission === 'denied' ? t.dashboard.pushAlertsBlockedDesc : t.dashboard.pushAlertsInactiveDesc}
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                )}
+
+                {/* ── Pages grid ── */}
+                <section>
+                    <div className="mono-eyebrow" style={{ marginBottom: 18, fontSize: 12 }}>tus páginas</div>
+
+                    {loadingPages ? (
+                        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+                            <div style={{ width: 48, height: 48, borderRadius: 999, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+                        </div>
+                    ) : filteredPages.length === 0 && pages.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '80px 24px', border: '2px dashed var(--ink)', borderRadius: 24 }}>
+                            <span style={{ fontSize: 64 }}>💌</span>
+                            <h3 className="serif-display" style={{ fontSize: 36, margin: '16px 0 8px', color: 'var(--ink)', lineHeight: 0.95, fontStyle: 'italic' }}>
+                                {t.dashboard.noPages}
+                            </h3>
+                            <p style={{ color: 'var(--ink-soft)', fontSize: 15, marginBottom: 28 }}>{t.dashboard.noPagesDesc}</p>
+                            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                <Link href="/create">
+                                    <button className="btn-accent" style={{ padding: '14px 24px', fontSize: 14 }}>
+                                        + {t.dashboard.createFirstPage}
+                                    </button>
+                                </Link>
+                                <Link href="/templates">
+                                    <button style={{ background: 'white', border: '2px solid var(--ink)', color: 'var(--ink)', padding: '12px 22px', borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }}>
+                                        {t.dashboard.useTemplate}
+                                    </button>
+                                </Link>
+                            </div>
+                        </div>
                     ) : (
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-                            {pages.map((page) => {
-                                const isExpired = page.expiresAt ? new Date(page.expiresAt) < new Date() : false;
-                                const expirationText = page.expiresAt
-                                    ? isExpired
-                                        ? t.dashboard.cardExpired
-                                        : t.dashboard.cardExpires.replace('{time}', getTimeAgo(page.expiresAt))
-                                    : null;
-
-                                return (
-                                    <Card key={page._id} className="overflow-hidden border-white/60 bg-white/95 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
-                                        <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-3">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0 flex-1">
-                                                    <CardTitle className="mb-1 line-clamp-2 text-lg leading-snug sm:text-xl">
-                                                        {page.title}
-                                                    </CardTitle>
-                                                    <CardDescription className="truncate text-sm">
-                                                        {t.dashboard.forRecipient.replace('{name}', page.recipientName)}
-                                                    </CardDescription>
-                                                </div>
-                                                {page.pageType === 'pro' && (
-                                                    <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-2 py-1 text-[10px] font-semibold text-white sm:text-xs">
-                                                        <Sparkles className="h-3 w-3" />
-                                                        PRO
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardHeader>
-
-                                        <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <span
-                                                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${page.isActive
-                                                            ? 'bg-green-50 text-green-700 ring-green-200'
-                                                            : 'bg-gray-100 text-gray-600 ring-gray-200'
-                                                        }`}
-                                                >
-                                                    <span className={`h-2 w-2 rounded-full ${page.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                                    {page.isActive ? t.dashboard.active : t.dashboard.inactive}
-                                                </span>
-                                                {expirationText && (
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${isExpired
-                                                                ? 'bg-red-50 text-red-600 ring-red-200'
-                                                                : 'bg-amber-50 text-amber-700 ring-amber-200'
-                                                            }`}
-                                                    >
-                                                        <Clock className="h-3 w-3" />
-                                                        {expirationText}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-rose-50/70 p-3">
-                                                <div>
-                                                    <div className="flex items-center gap-1 text-xs font-medium text-gray-500">
-                                                        <Eye className="h-3.5 w-3.5 text-sky-600" />
-                                                        {t.dashboard.views}
-                                                    </div>
-                                                    <div className="mt-1 text-lg font-semibold text-gray-900">
-                                                        {page.views}
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-1 text-xs font-medium text-gray-500">
-                                                        <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
-                                                        {t.dashboard.responses}
-                                                    </div>
-                                                    <div className="mt-1 text-lg font-semibold text-gray-900">
-                                                        {page.totalResponses}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {page.totalResponses > 0 && (
-                                                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3">
-                                                    <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-                                                        <span className="font-medium text-emerald-900">{t.dashboard.cardResult}</span>
-                                                        <span className="text-xs text-emerald-800">
-                                                            {(page.totalResponses === 1
-                                                                ? t.dashboard.cardResponseCount
-                                                                : t.dashboard.cardResponseCountPlural
-                                                            ).replace('{count}', String(page.totalResponses))}
-                                                        </span>
-                                                    </div>
-                                                    <div className="mb-2 h-2 rounded-full bg-emerald-100">
-                                                        <div
-                                                            className="h-2 rounded-full bg-emerald-500 transition-all"
-                                                            style={{
-                                                                width: `${(page.yesCount / page.totalResponses) * 100}%`,
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <p className="text-sm text-emerald-900">
-                                                        {t.dashboard.cardYesNoCount
-                                                            .replace('{yes}', String(page.yesCount))
-                                                            .replace('{no}', String(page.noCount))}
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            <div className="text-xs text-gray-500">
-                                                {t.dashboard.cardCreated.replace('{time}', getTimeAgo(page.createdAt))}
-                                            </div>
-
-                                            <div className="flex flex-wrap items-center gap-2 pt-1 sm:flex-nowrap">
-                                                <Link href={`/page/${page.shortId}`} className="min-w-0 flex-1 sm:w-[120px] sm:flex-none">
-                                                    <Button
-                                                        variant="gradient"
-                                                        size="sm"
-                                                        className="h-10 w-full gap-2 rounded-xl text-sm"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                        {t.common.view}
-                                                    </Button>
-                                                </Link>
-
-                                                <Button
-                                                    onClick={() => handleCopyUrl(page.url)}
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-10 rounded-xl border-pink-200 px-3 text-sm text-pink-700 hover:bg-pink-50 sm:flex-none"
-                                                >
-                                                    <Link2 className="mr-1 h-4 w-4" />
-                                                    {t.common.copy}
-                                                </Button>
-
-                                                <div className="relative flex-shrink-0">
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setOpenMenuId(openMenuId === page._id ? null : page._id);
-                                                        }}
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-10 w-10 rounded-xl border border-gray-200 bg-white"
-                                                    >
-                                                        <MoreVertical className="w-4 h-4 text-gray-500" />
-                                                    </Button>
-
-                                                    {openMenuId === page._id && (
-                                                        <div className="absolute right-0 bottom-full z-50 mb-2 min-w-[180px] rounded-2xl border border-gray-200 bg-white py-1 shadow-lg">
-                                                            <button
-                                                                onClick={() => {
-                                                                    handleToggleStatus(page._id, page.isActive);
-                                                                    setOpenMenuId(null);
-                                                                }}
-                                                                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100"
-                                                            >
-                                                                {page.isActive ? (
-                                                                    <>
-                                                                        <ToggleRight className="w-4 h-4 text-green-600" />
-                                                                        {t.dashboard.deactivate}
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <ToggleLeft className="w-4 h-4 text-gray-400" />
-                                                                        {t.dashboard.activate}
-                                                                    </>
-                                                                )}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    handleDelete(page._id);
-                                                                    setOpenMenuId(null);
-                                                                }}
-                                                                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                                {t.common.delete}
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
+                        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
+                            {filteredPages.map((page) => (
+                                <PageCard
+                                    key={page._id}
+                                    page={page}
+                                    onToggle={() => handleToggleStatus(page._id, page.isActive)}
+                                    onDelete={() => handleDelete(page._id)}
+                                    onCopy={() => handleCopyUrl(page.url)}
+                                    openMenuId={openMenuId}
+                                    setOpenMenuId={setOpenMenuId}
+                                />
+                            ))}
+                            {filter === 'all' && <NewCard onClick={handleCreate} />}
                         </div>
                     )}
-                </div>
-
-                {pages.length > 0 && (
-                    <Link href={createHref} className="fixed bottom-5 right-5 z-40 sm:hidden">
-                        <Button
-                            variant="gradient"
-                            size="icon"
-                            className="h-14 w-14 rounded-full shadow-lg shadow-pink-500/30"
-                        >
-                            <Plus className="w-6 h-6" />
-                        </Button>
-                    </Link>
-                )}
+                </section>
             </main>
+
+            {/* Mobile FAB */}
+            {pages.length > 0 && (
+                <button onClick={handleCreate} className="btn-accent fixed bottom-5 right-5 z-40 md:hidden" style={{ width: 56, height: 56, borderRadius: 999, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, boxShadow: '4px 4px 0 var(--accent-deep-hex)' }}>
+                    +
+                </button>
+            )}
+
+            {showLimitModal && <LimitModal onClose={() => setShowLimitModal(false)} />}
         </div>
     );
 }
