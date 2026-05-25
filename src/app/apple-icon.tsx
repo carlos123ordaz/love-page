@@ -1,14 +1,8 @@
 import { ImageResponse } from 'next/og';
-import { readFileSync } from 'fs';
-import path from 'path';
 
 export const runtime = 'nodejs';
 export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
-
-const fontData = readFileSync(
-    path.join(process.cwd(), 'src', 'assets', 'fonts', 'noto-sans-v27-latin-regular.ttf'),
-);
 
 export default function AppleIcon() {
     return new ImageResponse(
@@ -84,9 +78,6 @@ export default function AppleIcon() {
                 </div>
             </div>
         ),
-        {
-            ...size,
-            fonts: [{ name: 'sans', data: fontData, weight: 400, style: 'normal' }],
-        },
+        { ...size },
     );
 }

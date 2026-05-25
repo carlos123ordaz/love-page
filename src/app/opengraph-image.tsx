@@ -1,15 +1,9 @@
 import { ImageResponse } from 'next/og';
-import { readFileSync } from 'fs';
-import path from 'path';
 
 export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 export const alt = 'Love Pages — cartas de amor que responden';
-
-const fontData = readFileSync(
-    path.join(process.cwd(), 'src', 'assets', 'fonts', 'noto-sans-v27-latin-regular.ttf'),
-);
 
 export default function OGImage() {
     return new ImageResponse(
@@ -275,9 +269,6 @@ export default function OGImage() {
                 </div>
             </div>
         ),
-        {
-            ...size,
-            fonts: [{ name: 'sans', data: fontData, weight: 400, style: 'normal' }],
-        },
+        { ...size },
     );
 }
