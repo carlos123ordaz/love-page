@@ -90,8 +90,8 @@ function BottomSheet({
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 overflow-hidden flex flex-col"
-                        style={{ maxHeight: height }}
+                        className="fixed bottom-0 left-0 right-0 bg-white z-50 overflow-hidden flex flex-col"
+                        style={{ maxHeight: height, borderTop: '2px solid var(--ink-black)' }}
                     >
                         {/* Handle bar */}
                         <div className="flex-shrink-0 pt-3 pb-2 px-4">
@@ -331,8 +331,7 @@ type Step = 'content' | 'design' | 'media' | 'effects' | 'preview';
 function ProBadge({ small = false }: { small?: boolean }) {
     return (
         <span
-            className={`inline-flex items-center gap-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white font-semibold rounded-full ${small ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
-                }`}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 2, background: 'var(--ink-blue)', color: 'var(--paper)', fontWeight: 700, border: '1.5px solid var(--ink-black)', padding: small ? '1px 6px' : '2px 8px', fontSize: small ? 10 : 11, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}
         >
             <Crown className={small ? 'w-2.5 h-2.5' : 'w-3 h-3'} />
             PRO
@@ -344,14 +343,15 @@ function ProBadge({ small = false }: { small?: boolean }) {
 // COMPONENTE: LockedOverlay (para opciones PRO bloqueadas)
 // ============================================================
 function LockedOverlay({ onUpgrade }: { onUpgrade: () => void }) {
+    const { t } = useTranslation();
     return (
         <div
             onClick={onUpgrade}
             className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-lg flex items-center justify-center cursor-pointer z-10 group"
         >
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-semibold rounded-full shadow-lg group-hover:scale-105 transition-transform">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'var(--ink-blue)', color: 'var(--paper)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', border: '1.5px solid var(--ink-black)', boxShadow: '2px 2px 0 var(--ink-black)' }}>
                 <Lock className="w-3 h-3" />
-                Desbloquear PRO
+                {t.create.unlockProBadge}
             </div>
         </div>
     );
@@ -361,6 +361,7 @@ function LockedOverlay({ onUpgrade }: { onUpgrade: () => void }) {
 // COMPONENTE: UpgradeModal (modal en vez de redirección)
 // ============================================================
 function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     return (
@@ -369,29 +370,19 @@ function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-0 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                {/* Header con gradiente */}
-                <div className="bg-gradient-to-r from-amber-400 to-yellow-500 p-6 text-white text-center">
-                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="relative bg-white max-w-md w-full p-0 overflow-hidden" style={{ border: '2px solid var(--ink-black)', boxShadow: '6px 6px 0 var(--ink-black)' }}>
+                {/* Header */}
+                <div className="p-6 text-white text-center" style={{ background: 'var(--ink-red)' }}>
+                    <div className="flex items-center justify-center mx-auto mb-3" style={{ width: 64, height: 64, background: 'rgba(248,241,222,0.2)', border: '2px solid rgba(248,241,222,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Crown className="w-8 h-8" />
                     </div>
-                    <h3 className="text-2xl font-bold">Desbloquea Love Pages PRO</h3>
-                    <p className="text-white/90 text-sm mt-1">Lleva tus páginas al siguiente nivel</p>
+                    <h3 className="text-2xl font-bold">{t.create.unlockPro}</h3>
+                    <p className="text-white/90 text-sm mt-1">{t.create.unlockProDesc}</p>
                 </div>
 
                 {/* Features */}
                 <div className="p-6 space-y-3">
-                    {[
-                        'Páginas sin vencimiento (gratis expiran en 7 días)',
-                        'Temas exclusivos (Neón, Aurora, Vintage...)',
-                        'Tipografías premium',
-                        'Hasta 5 imágenes decorativas',
-                        'Hasta 10 stickers',
-                        'Animaciones premium (confetti, fuegos artificiales...)',
-                        'Música de fondo',
-                        'Sin marca de agua',
-                        'Diseño generado por IA',
-                    ].map((feature, i) => (
+                    {[t.create.proFeature9, t.create.proFeature1, t.create.proFeature2, t.create.proFeature3, t.create.proFeature4, t.create.proFeature5, t.create.proFeature6, t.create.proFeature7, t.create.proFeature8].map((feature, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
                             <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                             {feature}
@@ -402,16 +393,16 @@ function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                 {/* Actions */}
                 <div className="p-6 pt-0 space-y-3">
                     <Link href="/upgrade" className="block">
-                        <Button variant="gradient" className="w-full gap-2" size="lg">
-                            <Crown className="w-5 h-5" />
-                            Ver planes PRO
-                        </Button>
+                        <button className="btn-accent" style={{ width: '100%', padding: '14px 20px', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                            <Crown className="w-4 h-4" />
+                            {t.create.viewProPlans}
+                        </button>
                     </Link>
                     <button
                         onClick={onClose}
                         className="w-full text-sm text-gray-500 hover:text-gray-700 py-2 transition-colors"
                     >
-                        Seguir con el plan gratuito
+                        {t.create.stayFree}
                     </button>
                 </div>
             </div>
@@ -426,7 +417,7 @@ function DField({ label, hint, children }: { label: string; hint?: React.ReactNo
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span className="mono-eyebrow" style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)' }}>{label}</span>
+                <span className="mono-eyebrow" style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-black)' }}>—— {label}</span>
                 {hint && <span style={{ fontSize: 10, color: 'var(--ink-soft)' }}>{hint}</span>}
             </div>
             {children}
@@ -435,14 +426,22 @@ function DField({ label, hint, children }: { label: string; hint?: React.ReactNo
 }
 
 const dI: React.CSSProperties = {
-    width: '100%', padding: '10px 14px',
-    border: '2px solid var(--ink)', background: 'white',
-    borderRadius: 12, fontSize: 13, color: 'var(--ink)',
-    boxShadow: '2px 2px 0 var(--ink)', outline: 'none',
-    fontFamily: 'var(--sans)',
+    width: '100%', padding: '10px 12px',
+    border: '1.5px solid var(--ink-black)', background: 'var(--paper)',
+    borderRadius: 0, fontSize: 12, color: 'var(--ink-black)',
+    outline: 'none', fontFamily: 'var(--mono)',
 };
 
 const colorKeyMap = { bg: 'backgroundColor', text: 'textColor', accent: 'accentColor' } as const;
+
+function renderMsg(text: string): React.ReactNode {
+    if (!text || !text.includes('*')) return text;
+    return text.split(/(\*[^*]+\*)/g).map((part, i) =>
+        part.startsWith('*') && part.endsWith('*') && part.length > 2
+            ? <em key={i} style={{ fontFamily: 'var(--serif-italic)', fontStyle: 'italic' }}>{part.slice(1, -1)}</em>
+            : part
+    );
+}
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -563,7 +562,7 @@ export default function CreatePageEnhanced() {
                 return { ...prev, selectedStickers: prev.selectedStickers.filter((s) => s !== stickerId) };
             }
             if (prev.selectedStickers.length >= maxStickers) {
-                toast.error(`Máximo ${maxStickers} stickers${!isPro ? ' (PRO: hasta 10)' : ''}`);
+                toast.error(t.create.maxStickers.replace('{count}', String(maxStickers)) + (!isPro ? t.create.maxStickersProHint : ''));
                 return prev;
             }
             return { ...prev, selectedStickers: [...prev.selectedStickers, stickerId] };
@@ -576,7 +575,7 @@ export default function CreatePageEnhanced() {
             const file = acceptedFiles[0];
             if (file) {
                 if (file.size > 15 * 1024 * 1024) {
-                    toast.error('La imagen no debe superar 5MB');
+                    toast.error(t.create.imageTooLarge);
                     return;
                 }
                 updateForm({ backgroundImage: file });
@@ -593,7 +592,11 @@ export default function CreatePageEnhanced() {
 
             if (currentCount >= maxImages) {
                 toast.error(
-                    `Máximo ${maxImages} imagen${maxImages > 1 ? 'es' : ''} decorativa${maxImages > 1 ? 's' : ''}${!isPro ? ' (PRO: hasta 5)' : ''}`
+                    t.create.maxDecorativeImages
+                        .replace('{count}', String(maxImages))
+                        .replace('{plural}', maxImages > 1 ? 'es' : '')
+                        .replace('{plural2}', maxImages > 1 ? 's' : '')
+                    + (!isPro ? t.create.maxDecorativeProHint : '')
                 );
                 return;
             }
@@ -601,7 +604,7 @@ export default function CreatePageEnhanced() {
             const file = acceptedFiles[0];
             if (file) {
                 if (file.size > 15 * 1024 * 1024) {
-                    toast.error('La imagen no debe superar 5MB');
+                    toast.error(t.create.imageTooLarge);
                     return;
                 }
                 updateForm({ decorativeImages: [...formData.decorativeImages, file] });
@@ -615,7 +618,7 @@ export default function CreatePageEnhanced() {
         const file = acceptedFiles[0];
         if (file) {
             if (file.size > 15 * 1024 * 1024) {
-                toast.error('La imagen no debe superar 5MB');
+                toast.error(t.create.imageTooLarge);
                 return;
             }
             updateForm({ referenceImage: file });
@@ -653,7 +656,7 @@ export default function CreatePageEnhanced() {
     // ---- Submit ----
     const handleSubmit = async () => {
         if (!user) {
-            toast.error('Inicia sesión con Google para guardar tu página');
+            toast.error(t.auth.loginToSave);
             return;
         }
         if (freeLimitReached) {
@@ -662,16 +665,16 @@ export default function CreatePageEnhanced() {
             return;
         }
         if (!formData.title.trim()) {
-            toast.error('El título es requerido');
+            toast.error(t.create.titleRequired);
             return;
         }
         if (!formData.recipientName.trim()) {
-            toast.error('El nombre del destinatario es requerido');
+            toast.error(t.create.recipientRequired);
             return;
         }
 
         if (formData.pageType === 'pro' && !isPro) {
-            toast.error('Necesitas el plan PRO');
+            toast.error(t.create.needProPlan);
             setShowUpgradeModal(true);
             return;
         }
@@ -718,12 +721,12 @@ export default function CreatePageEnhanced() {
                 data.append('customSlug', formData.customSlug.trim());
             }
             const response = await api.pages.create(data);
-            toast.success('¡Página creada exitosamente!');
+            toast.success(t.create.pageCreated);
             const identifier = response.data.data.customSlug || response.data.data.shortId;
             router.push(`/p/${identifier}`);
         } catch (error: any) {
             console.error('Error creating page:', error);
-            toast.error(error.response?.data?.message || 'Error al crear la página');
+            toast.error(error.response?.data?.message || t.create.createError);
         } finally {
             setLoading(false);
         }
@@ -733,7 +736,7 @@ export default function CreatePageEnhanced() {
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
+                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', animation: 'spin 1s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
             </div>
         );
     }
@@ -771,118 +774,119 @@ export default function CreatePageEnhanced() {
     // RENDER
     // ============================================================
     // ---- Preview component (reutilizable) ----
-    const PreviewContent = () => (
-        <div
-            className="aspect-[9/16] rounded-xl overflow-hidden relative flex flex-col items-center justify-center text-center transition-all"
-            style={{
-                backgroundColor: formData.backgroundColor,
-                color: formData.textColor,
-            }}
-        >
-            {/* Background image */}
-            {bgImagePreview && (
-                <div
-                    className="absolute inset-0 bg-cover bg-center opacity-30"
-                    style={{ backgroundImage: `url(${bgImagePreview})` }}
-                />
-            )}
+    const previewContent = () => {
+        const words = (formData.title || t.create.previewDefaultTitle).trim().split(/\s+/);
+        const recipient = formData.recipientName || t.create.previewDefaultRecipient;
+        const stk = formData.selectedStickers.slice(0, 3).map(
+            (id) => STICKERS.find((s) => s.id === id)?.emoji ?? ''
+        );
+        return (
+            <div
+                className="grain"
+                style={{
+                    width: '100%', height: '100%',
+                    background: 'var(--paper)',
+                    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.3  0 0 0 0 0.1  0 0 0 0 0 0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>\")",
+                    position: 'relative', overflow: 'hidden',
+                    fontFamily: 'var(--mono)', color: 'var(--ink-black)',
+                }}
+            >
+                {/* Background image overlay — mirrors public page rendering */}
+                {bgImagePreview && (
+                    <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${bgImagePreview})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.08, pointerEvents: 'none', mixBlendMode: 'multiply', zIndex: 1 }} />
+                )}
+                {/* Riso circles — top right, identical proportions to prototipo */}
+                <svg style={{ position: 'absolute', top: -60, right: -80, width: 220, height: 220, mixBlendMode: 'multiply', opacity: 0.78, pointerEvents: 'none' }} viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="90" fill="var(--ink-red)" />
+                </svg>
+                <svg style={{ position: 'absolute', top: -40, right: -100, width: 220, height: 220, mixBlendMode: 'multiply', opacity: 0.7, pointerEvents: 'none' }} viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="86" fill="var(--ink-blue)" />
+                </svg>
 
-            {/* Content */}
-            <div className="relative z-10 p-6 flex flex-col items-center justify-center h-full">
-                {/* Stickers arriba */}
-                {formData.selectedStickers.length > 0 && (
-                    <div className="flex gap-2 mb-4 text-3xl">
-                        {formData.selectedStickers.map((id) => (
-                            <span key={id} className="animate-bounce">
-                                {STICKERS.find((s) => s.id === id)?.emoji}
-                            </span>
-                        ))}
+                {/* Top chrome */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 5 }}>
+                    <div className="mono-eyebrow" style={{ fontSize: 7, padding: '3px 7px', border: '1.5px solid var(--ink-blue)', color: 'var(--ink-blue)', background: 'var(--paper)' }}>
+                        lovepages.ink
                     </div>
-                )}
-
-                <Heart className="w-14 h-14 mb-4 animate-pulse" />
-
-                <h2
-                    className="text-2xl font-bold mb-3 leading-tight"
-                    style={{ fontFamily: `'${formData.titleFont}', cursive` }}
-                >
-                    {formData.title || 'Tu título aquí'}
-                </h2>
-
-                <p
-                    className="text-lg mb-1"
-                    style={{ fontFamily: `'${formData.bodyFont}', sans-serif` }}
-                >
-                    {formData.recipientName || 'Nombre'}
-                </p>
-
-                {formData.message && (
-                    <p
-                        className="text-sm opacity-85 mb-4 max-w-[80%]"
-                        style={{ fontFamily: `'${formData.bodyFont}', sans-serif` }}
-                    >
-                        {formData.message}
-                    </p>
-                )}
-
-                {/* Decorative images */}
-                {decorativeImagePreviews.length > 0 && (
-                    <div className="flex gap-2 my-3">
-                        {decorativeImagePreviews.map((preview, i) => (
-                            <img
-                                key={i}
-                                src={preview}
-                                alt=""
-                                className="w-16 h-16 object-cover rounded-lg border-2 border-white/30"
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Buttons */}
-                <div className="flex gap-3 mt-auto">
-                    <button
-                        className="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all"
-                        style={{
-                            backgroundColor: formData.accentColor,
-                            color: formData.textColor,
-                        }}
-                    >
-                        {formData.yesButtonText || 'Sí'}
-                    </button>
-                    <button
-                        className="px-5 py-2.5 bg-white/20 backdrop-blur rounded-lg font-semibold text-sm"
-                        style={{ color: formData.textColor }}
-                    >
-                        {formData.noButtonText || 'No'}
-                    </button>
+                    {formData.backgroundMusic !== 'none' && (
+                        <span style={{ width: 24, height: 24, border: '2px solid var(--ink-blue)', color: 'var(--ink-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>♪</span>
+                    )}
                 </div>
 
-                {/* Watermark */}
-                {!isPro && (
-                    <p className="absolute bottom-2 text-[9px] opacity-40">
-                        Hecho con Love Pages
-                    </p>
-                )}
-
-                {/* Animation indicator */}
-                {formData.animation !== 'none' && (
-                    <div className="absolute top-2 right-2 text-xs bg-black/20 backdrop-blur px-2 py-1 rounded-full">
-                        {ANIMATIONS.find((a) => a.id === formData.animation)?.emoji}{' '}
-                        {ANIMATIONS.find((a) => a.id === formData.animation)?.name}
+                {/* Main — absolutely centered, mirrors prototipo */}
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '52px 20px 72px', textAlign: 'center', zIndex: 3 }}>
+                    {/* Eyebrow with lines */}
+                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 18, height: 1.5, background: 'var(--ink-blue)' }} />
+                        <span className="mono-eyebrow" style={{ fontSize: 8 }}>{t.create.previewForLabel} {recipient.toLowerCase()}</span>
+                        <span style={{ width: 18, height: 1.5, background: 'var(--ink-blue)' }} />
                     </div>
-                )}
 
-                {/* Music indicator */}
-                {formData.backgroundMusic !== 'none' && (
-                    <div className="absolute top-2 left-2 text-xs bg-black/20 backdrop-blur px-2 py-1 rounded-full flex items-center gap-1">
-                        <Volume2 className="w-3 h-3" />
-                        🎵
+                    {/* Stickers + title (stickers float absolutely around title) */}
+                    <div style={{ position: 'relative' }}>
+                        {stk[0] && <span style={{ position: 'absolute', left: -22, top: 4, fontSize: 18, color: 'var(--ink-red)', transform: 'rotate(-18deg)' }}>{stk[0]}</span>}
+                        {stk[1] && <span style={{ position: 'absolute', right: -18, top: -8, fontSize: 16, color: 'var(--ink-blue)', transform: 'rotate(14deg)' }}>{stk[1]}</span>}
+                        <h1
+                            className="serif-display"
+                            style={{ fontSize: 52, margin: 0, maxWidth: 260, lineHeight: 0.86 }}
+                        >
+                            {words.map((word, i) => (
+                                <span
+                                    key={i}
+                                    className={i % 2 === 0 ? 'mis-red' : 'mis-blue'}
+                                    style={{ display: 'inline-block', marginRight: '0.18em' }}
+                                >
+                                    {word}
+                                </span>
+                            ))}
+                        </h1>
                     </div>
-                )}
+
+                    {/* Message */}
+                    <div style={{ marginTop: 18, fontFamily: 'var(--serif)', fontSize: 12, fontStyle: 'italic', color: 'var(--ink-black)', maxWidth: 240, lineHeight: 1.55 }}>
+                        {formData.message ? renderMsg(formData.message) : t.create.previewMessagePlaceholder}
+                    </div>
+
+                    {/* Decorative images */}
+                    {decorativeImagePreviews.length > 0 && (
+                        <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {decorativeImagePreviews.slice(0, 3).map((src, i) => (
+                                <img key={i} src={src} alt="" style={{ width: 56, height: 56, objectFit: 'cover', border: '2px solid var(--ink-black)' }} />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Sender */}
+                    <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 14, height: 1, background: 'var(--ink-red)' }} />
+                        <span style={{ fontFamily: 'var(--hand)', fontSize: 18, color: 'var(--ink-red)' }}>{t.create.previewFrom}</span>
+                        {stk[2] && <span style={{ fontSize: 14, color: 'var(--ink-red)' }}>{stk[2]}</span>}
+                    </div>
+
+                    {/* CTA */}
+                    <div style={{ marginTop: 28, display: 'flex', gap: 12, alignItems: 'center' }}>
+                        <button className="btn-accent" style={{ fontSize: 10, padding: '8px 18px', cursor: 'default' }}>
+                            {formData.yesButtonText || '¡Sí!'}
+                        </button>
+                        <button style={{
+                            fontSize: 10, padding: '8px 18px', cursor: 'default',
+                            background: 'transparent', border: '2px solid var(--ink-blue)',
+                            color: 'var(--ink-blue)', fontFamily: 'var(--sans)',
+                            fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase',
+                        }}>
+                            {formData.noButtonText || 'No'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Footer — absolute bottom */}
+                <div style={{ position: 'absolute', bottom: 12, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--mono)', fontSize: 7, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-soft)', zIndex: 4 }}>
+                    <span>{t.create.previewFooter}</span>
+                    <span>lovepages · mx</span>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     // ── Render ───────────────────────────────────────────────────
     return (
@@ -892,27 +896,33 @@ export default function CreatePageEnhanced() {
         ═══════════════════════════════════════════════════════ */}
         <div
             className="hidden lg:flex flex-col"
-            style={{ height: '100vh', background: 'var(--paper)', color: 'var(--ink)', overflow: 'hidden', fontFamily: 'var(--sans)' }}
+            style={{ height: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', overflow: 'hidden', fontFamily: 'var(--mono)' }}
         >
             {/* ── TOP BAR ── */}
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', borderBottom: '2px solid var(--ink)', background: 'white', flexShrink: 0, gap: 12 }}>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 24px', borderBottom: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)', flexShrink: 0, gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <Link href="/dashboard">
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'var(--ink)', padding: '4px 0' }}>← mis páginas</button>
+                        <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-black)' }}>{t.create.backToPages}</button>
                     </Link>
-                    <span style={{ width: 1, height: 16, background: 'var(--rule)' }} />
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>{formData.title || 'nueva página'}</span>
-                    <span style={{ fontSize: 9, padding: '3px 8px', background: 'var(--butter)', border: '1.5px solid var(--ink)', borderRadius: 999, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>borrador</span>
+                    <span style={{ width: 1, height: 18, background: 'var(--ink-black)' }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--sans)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{formData.title || t.create.newLetter}</span>
+                    <span style={{ padding: '3px 8px', fontSize: 9, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.1em', background: 'var(--ink-blue)', color: 'var(--paper)', border: '1.5px solid var(--ink-black)' }}>{t.create.draftBadge}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    {freeLimitReached && <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>Límite alcanzado</span>}
+                    {freeLimitReached && <span className="mono-eyebrow" style={{ fontSize: 9, color: 'var(--ink-soft)' }}>{t.create.limitReached}</span>}
                     {isPro && <ProBadge />}
+                    {!freeLimitReached && <span className="mono-eyebrow" style={{ fontSize: 9, color: 'var(--ink-soft)' }}>{t.create.unsaved}</span>}
+                    <button
+                        style={{ padding: '8px 14px', border: '1.5px solid var(--ink-black)', background: 'var(--paper)', fontSize: 11, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.08em', cursor: 'pointer', color: 'var(--ink-black)' }}
+                        onClick={() => setShowMobilePreview(true)}
+                    >{t.create.previewBtn}</button>
                     <button
                         onClick={handleSubmit}
                         disabled={loading || freeLimitReached}
-                        style={{ background: freeLimitReached ? '#ccc' : 'var(--accent-hex)', color: 'white', padding: '8px 18px', fontSize: 13, border: '2px solid var(--ink)', borderRadius: 999, cursor: freeLimitReached ? 'not-allowed' : 'pointer', fontWeight: 600, boxShadow: '2px 2px 0 var(--ink)', opacity: freeLimitReached ? 0.5 : 1 }}
+                        className="btn-accent"
+                        style={{ padding: '8px 16px', fontSize: 11, opacity: freeLimitReached ? 0.5 : 1, cursor: freeLimitReached ? 'not-allowed' : 'pointer' }}
                     >
-                        {loading ? 'publicando...' : 'publicar ✨'}
+                        {loading ? t.create.publishing : t.create.publishBtn}
                     </button>
                 </div>
             </header>
@@ -921,20 +931,19 @@ export default function CreatePageEnhanced() {
             <div style={{ flex: 1, overflow: 'hidden', display: 'grid', gridTemplateColumns: '56px 1fr 380px' }}>
 
                 {/* ─ SIDEBAR ─ */}
-                <aside style={{ borderRight: '2px solid var(--ink)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: 16, background: 'white' }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 999, background: 'var(--accent-hex)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--ink)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>L</div>
+                <aside style={{ borderRight: '1.5px solid var(--ink-black)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: 16, background: 'var(--paper-soft)' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 0, background: 'var(--ink-red)', color: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--ink-black)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>L</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                        {([['Aa', 'content', 'contenido'], ['🎨', 'design', 'tema'], ['☺', 'media', 'media'], ['♪', 'effects', 'efectos'], ['⚙', 'preview', 'enlace']] as [string, Step, string][]).map(([icon, step, label]) => (
+                        {([['Aa', 'content', t.create.tabContent], ['◐', 'design', t.create.tabDesign], ['✦', 'media', t.create.tabMedia], ['♪', 'effects', t.create.tabEffects], ['⚙', 'preview', t.create.tabLink]] as [string, Step, string][]).map(([icon, step, label]) => (
                             <button
                                 key={step}
                                 onClick={() => setCurrentStep(step)}
                                 title={label}
                                 style={{
-                                    width: 40, height: 40,
-                                    border: '2px solid var(--ink)',
-                                    background: currentStep === step ? 'var(--lila-soft)' : 'white',
-                                    borderRadius: 12, cursor: 'pointer', fontSize: 16,
-                                    boxShadow: currentStep === step ? '2px 2px 0 var(--ink)' : 'none',
+                                    width: 36, height: 36,
+                                    border: currentStep === step ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
+                                    background: currentStep === step ? 'var(--paper)' : 'var(--paper-soft)',
+                                    borderRadius: 0, cursor: 'pointer', fontSize: 16,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     transition: 'all 0.1s',
                                 }}
@@ -944,84 +953,93 @@ export default function CreatePageEnhanced() {
                 </aside>
 
                 {/* ─ CANVAS ─ */}
-                <main style={{ position: 'relative', overflow: 'hidden', background: 'var(--lila-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {/* Dot grid */}
-                    <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, var(--lila) 1.5px, transparent 1.5px)', backgroundSize: '24px 24px', opacity: 0.6, pointerEvents: 'none' }} />
+                <main className="grain" style={{ flex: 1, position: 'relative', overflow: 'hidden', background: 'var(--paper-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+                    {/* Riso circles */}
+                    <svg style={{ position: 'absolute', top: '5%', left: '5%', width: 300, height: 300, mixBlendMode: 'multiply', opacity: 0.4, pointerEvents: 'none' }} viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="90" fill="var(--ink-red)" />
+                    </svg>
+                    <svg style={{ position: 'absolute', bottom: '5%', right: '5%', width: 250, height: 250, mixBlendMode: 'multiply', opacity: 0.4, pointerEvents: 'none' }} viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="85" fill="var(--ink-blue)" />
+                    </svg>
 
                     {/* iPhone frame */}
-                    <div style={{ position: 'relative', width: 290, height: 580, background: 'var(--ink)', borderRadius: 44, padding: 10, boxShadow: '8px 8px 0 rgba(45,27,61,0.25), var(--shadow-card)', border: '2px solid var(--ink)', flexShrink: 0, zIndex: 1 }}>
+                    <div style={{ position: 'relative', width: 320, height: 640, background: 'var(--ink-black)', borderRadius: 44, padding: 10, flexShrink: 0, zIndex: 1 }}>
                         <div style={{ width: '100%', height: '100%', borderRadius: 36, overflow: 'hidden' }}>
-                            <PreviewContent />
+                            {previewContent()}
                         </div>
                         {/* Notch */}
-                        <div style={{ position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)', width: 80, height: 20, background: 'var(--ink)', borderRadius: 999, zIndex: 10, pointerEvents: 'none' }} />
+                        <div style={{ position: 'absolute', top: 18, left: '50%', transform: 'translateX(-50%)', width: 90, height: 24, background: 'var(--ink-black)', borderRadius: 999, zIndex: 10, pointerEvents: 'none' }} />
                     </div>
 
                     {/* Preview badge */}
-                    <div style={{ position: 'absolute', top: 20, left: 20, background: 'white', border: '2px solid var(--ink)', borderRadius: 999, padding: '5px 12px', fontSize: 11, fontWeight: 600, boxShadow: '2px 2px 0 var(--ink)', zIndex: 2 }}>
-                        👀 vista previa · iphone
+                    <div style={{ position: 'absolute', top: 32, left: 32, padding: '6px 12px', background: 'var(--paper-soft)', border: '1.5px solid var(--ink-black)', fontFamily: 'var(--mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-blue)', zIndex: 2 }}>
+                        {t.create.previewBadge}
                     </div>
 
                     {/* URL badge */}
-                    <div style={{ position: 'absolute', bottom: 20, left: 20, padding: '8px 14px', background: 'white', border: '2px solid var(--ink)', borderRadius: 999, fontFamily: 'var(--mono)', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8, boxShadow: '3px 3px 0 var(--ink)', zIndex: 2 }}>
+                    <div style={{ position: 'absolute', bottom: 32, left: 32, padding: '8px 14px', background: 'var(--paper-soft)', border: '1.5px solid var(--ink-black)', fontFamily: 'var(--mono)', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8, zIndex: 2 }}>
                         <span style={{ color: 'var(--ink-soft)' }}>lovepages.ink/p/</span>
-                        <span style={{ color: 'var(--accent-deep-hex)', fontWeight: 700 }}>{formData.customSlug || '—'}</span>
-                        <span style={{ cursor: 'pointer' }} onClick={() => typeof window !== 'undefined' && navigator.clipboard.writeText(`${window.location.origin}/p/${formData.customSlug}`)}>📋</span>
+                        <span style={{ color: 'var(--ink-red)', fontWeight: 700 }}>{formData.customSlug || '—'}</span>
+                        <span style={{ marginLeft: 6, cursor: 'pointer' }} onClick={() => typeof window !== 'undefined' && navigator.clipboard.writeText(`${window.location.origin}/p/${formData.customSlug}`)}>📋</span>
                     </div>
                 </main>
 
                 {/* ─ RIGHT PANEL ─ */}
-                <aside style={{ borderLeft: '2px solid var(--ink)', display: 'flex', flexDirection: 'column', background: 'white', overflow: 'hidden' }}>
+                <aside style={{ borderLeft: '1.5px solid var(--ink-black)', display: 'flex', flexDirection: 'column', background: 'var(--paper-soft)', overflowY: 'auto' }}>
                     {/* Tabs */}
-                    <div style={{ display: 'flex', borderBottom: '2px solid var(--ink)', padding: '0 10px', flexShrink: 0 }}>
-                        {([['contenido', 'content'], ['tema', 'design'], ['media', 'media'], ['efectos', 'effects'], ['enlace', 'preview']] as [string, Step][]).map(([label, step]) => (
+                    <div style={{ display: 'flex', borderBottom: '1.5px solid var(--ink-black)', flexShrink: 0 }}>
+                        {([[t.create.tabContent, 'content'], [t.create.tabDesign, 'design'], [t.create.tabMedia, 'media'], [t.create.tabEffects, 'effects'], [t.create.tabLink, 'preview']] as [string, Step][]).map(([label, step]) => (
                             <button
                                 key={step}
                                 onClick={() => setCurrentStep(step)}
                                 style={{
-                                    background: 'transparent', border: 'none',
-                                    padding: '12px 10px', cursor: 'pointer',
-                                    borderBottom: currentStep === step ? '3px solid var(--accent-hex)' : '3px solid transparent',
-                                    color: currentStep === step ? 'var(--ink)' : 'var(--ink-soft)',
-                                    fontSize: 12, fontWeight: 600, marginBottom: -2,
+                                    flex: 1,
+                                    background: currentStep === step ? 'var(--paper)' : 'transparent',
+                                    border: 'none',
+                                    borderRight: '1.5px solid var(--ink-black)',
+                                    padding: '14px 8px', cursor: 'pointer',
+                                    borderBottom: currentStep === step ? '3px solid var(--ink-red)' : '3px solid transparent',
+                                    color: currentStep === step ? 'var(--ink-black)' : 'var(--ink-soft)',
+                                    fontSize: 10, fontWeight: 600, marginBottom: -1.5,
                                     whiteSpace: 'nowrap', transition: 'all 0.1s',
+                                    fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase',
                                 }}
                             >{label}</button>
                         ))}
                     </div>
 
                     {/* Scrollable content */}
-                    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                         {/* Expiration notice */}
                         {!isPro && showExpirationNotice && (
-                            <div style={{ padding: '10px 14px', background: 'var(--butter)', border: '1.5px solid var(--ink)', borderRadius: 12, fontSize: 12, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                                <span style={{ flex: 1 }}>⏱ Tu página expira en <strong>7 días</strong>. <button onClick={goToUpgrade} style={{ textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: 'var(--ink)', padding: 0 }}>Actualiza a PRO</button></span>
-                                <button onClick={dismissExpirationNotice} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-soft)', padding: 0, lineHeight: 1 }}>×</button>
+                            <div style={{ padding: '10px 14px', background: 'var(--paper-2)', border: '1.5px solid var(--ink-black)', fontSize: 11, fontFamily: 'var(--mono)', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                                <span style={{ flex: 1, lineHeight: 1.4 }}>⏱ expira en <strong>{t.create.expirationDays}</strong>. <button onClick={goToUpgrade} style={{ textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, color: 'var(--ink-red)', padding: 0, fontFamily: 'var(--mono)', fontSize: 11 }}>{t.create.expirationUpgradeLink}</button></span>
+                                <button onClick={dismissExpirationNotice} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--ink-soft)', padding: 0, lineHeight: 1 }}>×</button>
                             </div>
                         )}
 
                         {/* ── Tab: contenido ── */}
                         {currentStep === 'content' && (<>
-                            <DField label="título">
+                            <DField label={t.create.fieldTitle}>
                                 <input value={formData.title} onChange={e => updateForm({ title: e.target.value })} placeholder={t.create.titlePlaceholder} maxLength={200} style={dI} />
                             </DField>
-                            <DField label="para quién">
+                            <DField label={t.create.fieldRecipient}>
                                 <input value={formData.recipientName} onChange={e => updateForm({ recipientName: e.target.value })} placeholder={t.create.recipientPlaceholder} maxLength={100} style={dI} />
                             </DField>
-                            <DField label="tu mensaje" hint={`${formData.message.length}/1000`}>
+                            <DField label={t.create.fieldMessage} hint={`${formData.message.length}/1000`}>
                                 <textarea value={formData.message} onChange={e => updateForm({ message: e.target.value })} placeholder={t.create.messagePlaceholder} maxLength={1000} rows={5} style={{ ...dI, resize: 'none', lineHeight: 1.5 }} />
                             </DField>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                                <DField label="botón sí">
+                                <DField label={t.create.fieldYesBtn}>
                                     <input value={formData.yesButtonText} onChange={e => updateForm({ yesButtonText: e.target.value })} maxLength={50} style={dI} />
                                 </DField>
-                                <DField label="botón no">
+                                <DField label={t.create.fieldNoBtn}>
                                     <input value={formData.noButtonText} onChange={e => updateForm({ noButtonText: e.target.value })} maxLength={50} style={dI} />
                                 </DField>
                             </div>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--paper)', border: '2px solid var(--ink)', borderRadius: 12, cursor: 'pointer', fontSize: 13, boxShadow: '2px 2px 0 var(--ink)' }}>
-                                <input type="checkbox" checked={formData.noButtonEscapes} onChange={e => updateForm({ noButtonEscapes: e.target.checked })} style={{ width: 18, height: 18 }} />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--paper)', border: '1.5px solid var(--ink-black)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--mono)', letterSpacing: '0.04em' }}>
+                                <input type="checkbox" checked={formData.noButtonEscapes} onChange={e => updateForm({ noButtonEscapes: e.target.checked })} style={{ width: 16, height: 16, accentColor: 'var(--ink-red)' }} />
                                 {t.create.noEscapes}
                             </label>
                             {isPro && (
@@ -1030,11 +1048,11 @@ export default function CreatePageEnhanced() {
                                 </div>
                             )}
                             {isPro && (
-                                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', background: 'var(--lila-soft)', border: '2px solid var(--ink)', borderRadius: 12, cursor: 'pointer', fontSize: 13, boxShadow: '2px 2px 0 var(--ink)' }}>
-                                    <input type="checkbox" checked={formData.pageType === 'pro'} onChange={e => updateForm({ pageType: e.target.checked ? 'pro' : 'free' })} style={{ width: 16, height: 16, marginTop: 2 }} />
+                                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'var(--paper)', border: '1.5px solid var(--ink-black)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--mono)' }}>
+                                    <input type="checkbox" checked={formData.pageType === 'pro'} onChange={e => updateForm({ pageType: e.target.checked ? 'pro' : 'free' })} style={{ width: 16, height: 16, marginTop: 2, accentColor: 'var(--ink-red)' }} />
                                     <div>
-                                        <span style={{ fontWeight: 600 }}>✨ {t.create.useAI}</span>
-                                        <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 2 }}>{t.create.useAIDesc}</p>
+                                        <span style={{ fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>✦ {t.create.useAI}</span>
+                                        <p style={{ fontSize: 10, color: 'var(--ink-soft)', marginTop: 4, lineHeight: 1.4 }}>{t.create.useAIDesc}</p>
                                     </div>
                                 </label>
                             )}
@@ -1042,7 +1060,7 @@ export default function CreatePageEnhanced() {
 
                         {/* ── Tab: tema ── */}
                         {currentStep === 'design' && (<>
-                            <DField label="paleta">
+                            <DField label={t.create.fieldPalette}>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                                     {THEMES.map(theme => (
                                         <div key={theme.id} style={{ position: 'relative' }}>
@@ -1051,27 +1069,25 @@ export default function CreatePageEnhanced() {
                                                 onClick={() => selectTheme(theme)}
                                                 style={{
                                                     width: '100%', padding: 10,
-                                                    border: '2px solid var(--ink)', borderRadius: 12,
-                                                    background: formData.theme === theme.id ? 'var(--lila-soft)' : 'white',
-                                                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                                                    boxShadow: formData.theme === theme.id ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
-                                                    opacity: !theme.free && !isPro ? 0.6 : 1,
-                                                    outline: formData.theme === theme.id ? '2px solid var(--accent-hex)' : 'none',
-                                                    outlineOffset: -3, textAlign: 'left',
+                                                    border: formData.theme === theme.id ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
+                                                    background: 'var(--paper)', cursor: 'pointer',
+                                                    display: 'flex', alignItems: 'center', gap: 8,
+                                                    opacity: !theme.free && !isPro ? 0.5 : 1,
+                                                    textAlign: 'left',
                                                 }}
                                             >
                                                 <span style={{ display: 'flex', flexShrink: 0 }}>
-                                                    <span style={{ width: 18, height: 18, background: theme.colors.bg, borderRadius: '50% 0 0 50%', border: '1.5px solid var(--ink)' }} />
-                                                    <span style={{ width: 18, height: 18, background: theme.colors.accent, borderRadius: '0 50% 50% 0', border: '1.5px solid var(--ink)', borderLeft: 'none' }} />
+                                                    <span style={{ width: 18, height: 18, background: theme.colors.bg, border: '1.5px solid var(--ink-black)' }} />
+                                                    <span style={{ width: 18, height: 18, background: theme.colors.accent, border: '1.5px solid var(--ink-black)', borderLeft: 'none', mixBlendMode: 'multiply' }} />
                                                 </span>
-                                                <span style={{ fontSize: 11, fontWeight: 500 }}>{theme.emoji} {t.themes[theme.id as keyof typeof t.themes] || theme.name}</span>
+                                                <span style={{ fontSize: 11, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t.themes[theme.id as keyof typeof t.themes] || theme.name}</span>
                                             </button>
                                         </div>
                                     ))}
                                 </div>
                             </DField>
 
-                            <DField label="colores personalizados">
+                            <DField label={t.create.fieldColors}>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                                     {(['bg', 'text', 'accent'] as const).map(ct => {
                                         const labels = { bg: t.create.colorBg, text: t.create.colorText, accent: t.create.colorAccent };
@@ -1079,10 +1095,10 @@ export default function CreatePageEnhanced() {
                                         const val = formData[ck] as string;
                                         return (
                                             <div key={ct}>
-                                                <span style={{ fontSize: 10, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>{labels[ct]}</span>
+                                                <span className="mono-eyebrow" style={{ fontSize: 9, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>{labels[ct]}</span>
                                                 <button
                                                     onClick={() => setShowColorPicker(showColorPicker === ct ? null : ct)}
-                                                    style={{ width: '100%', height: 44, border: '2px solid var(--ink)', borderRadius: 12, background: val, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '2px 2px 0 var(--ink)' }}
+                                                    style={{ width: '100%', height: 40, border: '1.5px solid var(--ink-black)', background: val, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                 >
                                                     <span style={{ fontSize: 9, fontFamily: 'var(--mono)', color: 'white', mixBlendMode: 'difference' }}>{val}</span>
                                                 </button>
@@ -1100,27 +1116,22 @@ export default function CreatePageEnhanced() {
                                 </div>
                             </DField>
 
-                            <DField label="tipografía">
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
+                            <DField label={t.create.fieldFont}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 220, overflowY: 'auto' }}>
                                     {GOOGLE_FONTS.map(font => (
                                         <div key={font.name} style={{ position: 'relative' }}>
                                             {!font.free && !isPro && <div style={{ position: 'absolute', top: 4, right: 4, zIndex: 5 }}><ProBadge small /></div>}
                                             <button
                                                 onClick={() => selectFont(font, 'titleFont')}
                                                 style={{
-                                                    width: '100%', padding: '8px 12px',
-                                                    border: '2px solid var(--ink)', borderRadius: 12,
-                                                    background: formData.titleFont === font.name ? 'var(--lila-soft)' : 'white',
-                                                    cursor: 'pointer', textAlign: 'left',
-                                                    boxShadow: formData.titleFont === font.name ? '2px 2px 0 var(--ink)' : 'none',
-                                                    opacity: !font.free && !isPro ? 0.6 : 1,
-                                                    fontFamily: `'${font.name}', ${font.category}`,
-                                                    outline: formData.titleFont === font.name ? '2px solid var(--accent-hex)' : 'none',
-                                                    outlineOffset: -3,
+                                                    width: '100%', padding: '10px 12px',
+                                                    border: formData.titleFont === font.name ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
+                                                    background: 'var(--paper)', cursor: 'pointer', textAlign: 'left',
+                                                    opacity: !font.free && !isPro ? 0.5 : 1,
                                                 }}
                                             >
-                                                <span style={{ fontSize: 20 }}>Aa</span>
-                                                <span className="mono-eyebrow" style={{ fontSize: 9, display: 'block', marginTop: 2 }}>{font.name}</span>
+                                                <span className="mono-eyebrow" style={{ fontSize: 9, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>{font.name}</span>
+                                                <span style={{ fontSize: 22, fontFamily: `'${font.name}', ${font.category}`, display: 'block' }}>Aa Bb Cc</span>
                                             </button>
                                         </div>
                                     ))}
@@ -1130,12 +1141,12 @@ export default function CreatePageEnhanced() {
 
                         {/* ── Tab: media ── */}
                         {currentStep === 'media' && (<>
-                            <DField label="imagen de fondo">
-                                <div {...bgDropzone.getRootProps()} style={{ border: '2px dashed var(--ink)', borderRadius: 12, padding: 16, textAlign: 'center', cursor: 'pointer', background: bgDropzone.isDragActive ? 'var(--lila-soft)' : 'var(--paper)', boxShadow: '2px 2px 0 var(--ink)' }}>
+                            <DField label={t.create.fieldBgImage}>
+                                <div {...bgDropzone.getRootProps()} style={{ border: '2px dashed var(--ink)', borderRadius: 0, padding: 16, textAlign: 'center', cursor: 'pointer', background: bgDropzone.isDragActive ? 'var(--lila-soft)' : 'var(--paper)', boxShadow: '2px 2px 0 var(--ink)' }}>
                                     <input {...bgDropzone.getInputProps()} />
                                     {bgImagePreview ? (
                                         <div>
-                                            <img src={bgImagePreview} alt="Fondo" style={{ maxHeight: 90, borderRadius: 8, margin: '0 auto', display: 'block' }} />
+                                            <img src={bgImagePreview} alt="Fondo" style={{ maxHeight: 90, borderRadius: 0, margin: '0 auto', display: 'block' }} />
                                             <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 6 }}>{t.create.bgImageChange}</p>
                                         </div>
                                     ) : (
@@ -1152,14 +1163,14 @@ export default function CreatePageEnhanced() {
                                 )}
                             </DField>
 
-                            <DField label="stickers" hint={`${formData.selectedStickers.length}/${isPro ? 10 : 3}`}>
+                            <DField label={t.create.fieldStickers} hint={`${formData.selectedStickers.length}/${isPro ? 10 : 3}`}>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
                                     {STICKERS.map(s => (
                                         <button
                                             key={s.id}
                                             onClick={() => toggleSticker(s.id)}
                                             style={{
-                                                aspectRatio: '1', border: '2px solid var(--ink)', borderRadius: 12,
+                                                aspectRatio: '1', border: '2px solid var(--ink)', borderRadius: 0,
                                                 background: formData.selectedStickers.includes(s.id) ? 'var(--lila)' : 'white',
                                                 cursor: 'pointer', fontSize: 22,
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1174,18 +1185,18 @@ export default function CreatePageEnhanced() {
                                 </div>
                             </DField>
 
-                            <DField label="imágenes decorativas" hint={<span style={{ fontSize: 9, padding: '2px 8px', background: 'var(--lila-soft)', border: '1px solid var(--ink)', borderRadius: 999 }}>{!isPro ? '1 gratis' : '5 pro'}</span>}>
+                            <DField label={t.create.fieldDecorative} hint={<span style={{ fontSize: 9, padding: '2px 8px', background: 'var(--lila-soft)', border: '1px solid var(--ink)', borderRadius: 0 }}>{!isPro ? t.create.decorativeHintFree : t.create.decorativeHintPro}</span>}>
                                 {decorativeImagePreviews.length > 0 && (
                                     <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
                                         {decorativeImagePreviews.map((p, i) => (
                                             <div key={i} style={{ position: 'relative' }}>
-                                                <img src={p} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: '2px solid var(--ink)', display: 'block' }} />
-                                                <button onClick={() => removeDecorativeImage(i)} style={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, background: '#ef4444', color: 'white', border: 'none', borderRadius: 999, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11 }}>×</button>
+                                                <img src={p} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 0, border: '2px solid var(--ink)', display: 'block' }} />
+                                                <button onClick={() => removeDecorativeImage(i)} style={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, background: '#ef4444', color: 'white', border: 'none', borderRadius: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11 }}>×</button>
                                             </div>
                                         ))}
                                     </div>
                                 )}
-                                <div {...decorativeDropzone.getRootProps()} style={{ border: '2px dashed var(--ink)', borderRadius: 12, padding: 12, textAlign: 'center', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '2px 2px 0 var(--ink)', background: 'var(--paper)' }}>
+                                <div {...decorativeDropzone.getRootProps()} style={{ border: '2px dashed var(--ink)', borderRadius: 0, padding: 12, textAlign: 'center', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '2px 2px 0 var(--ink)', background: 'var(--paper)' }}>
                                     <input {...decorativeDropzone.getInputProps()} />
                                     <Plus style={{ width: 18, height: 18, color: 'var(--ink-soft)' }} />
                                     <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{t.create.decorativeAdd}</span>
@@ -1195,59 +1206,58 @@ export default function CreatePageEnhanced() {
 
                         {/* ── Tab: efectos ── */}
                         {currentStep === 'effects' && (<>
-                            <DField label="partículas">
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                            <DField label={t.create.fieldParticles}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
                                     {ANIMATIONS.map(anim => (
                                         <div key={anim.id} style={{ position: 'relative' }}>
-                                            {!anim.free && !isPro && <div style={{ position: 'absolute', top: 4, right: 4, zIndex: 5 }}><ProBadge small /></div>}
+                                            {!anim.free && !isPro && <div style={{ position: 'absolute', top: 2, right: 2, zIndex: 5 }}><ProBadge small /></div>}
                                             <button
                                                 onClick={() => { if (!anim.free && !isPro) { goToUpgrade(); return; } updateForm({ animation: anim.id }); }}
                                                 style={{
-                                                    width: '100%', padding: '10px 8px',
-                                                    border: '2px solid var(--ink)', borderRadius: 12,
-                                                    background: formData.animation === anim.id ? 'var(--lila)' : 'white',
-                                                    cursor: 'pointer', textAlign: 'left',
-                                                    boxShadow: formData.animation === anim.id ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
-                                                    opacity: !anim.free && !isPro ? 0.6 : 1, fontSize: 12,
+                                                    aspectRatio: '1', width: '100%',
+                                                    border: formData.animation === anim.id ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
+                                                    background: 'var(--paper)', cursor: 'pointer',
+                                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+                                                    opacity: !anim.free && !isPro ? 0.5 : 1,
                                                 }}
                                             >
-                                                <span style={{ fontSize: 20, display: 'block', marginBottom: 2 }}>{anim.emoji}</span>
-                                                {t.animations[anim.id as keyof typeof t.animations] || anim.name}
+                                                <span style={{ fontSize: 22, color: 'var(--ink-red)' }}>{anim.emoji}</span>
+                                                <span className="mono-eyebrow" style={{ fontSize: 8, color: 'var(--ink-soft)' }}>{anim.id}</span>
                                             </button>
                                         </div>
                                     ))}
                                 </div>
                             </DField>
 
-                            <DField label="música de fondo" hint={!isPro ? <ProBadge small /> : undefined}>
+                            <DField label={t.create.fieldMusic} hint={!isPro ? <ProBadge small /> : undefined}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     {BACKGROUND_MUSIC.map(music => (
                                         <button
                                             key={music.id}
                                             onClick={() => { if (!music.free && !isPro) { goToUpgrade(); return; } updateForm({ backgroundMusic: music.id }); }}
                                             style={{
-                                                padding: '10px 14px', border: '2px solid var(--ink)', borderRadius: 12,
-                                                background: formData.backgroundMusic === music.id ? 'var(--lila-soft)' : 'white',
-                                                cursor: 'pointer', textAlign: 'left', fontSize: 12,
-                                                boxShadow: formData.backgroundMusic === music.id ? '2px 2px 0 var(--ink)' : 'none',
+                                                padding: '10px 12px',
+                                                border: formData.backgroundMusic === music.id ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
+                                                background: 'var(--paper)',
+                                                cursor: 'pointer', textAlign: 'left', fontSize: 11, fontFamily: 'var(--mono)',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                opacity: !music.free && !isPro ? 0.6 : 1,
+                                                opacity: !music.free && !isPro ? 0.5 : 1,
                                             }}
                                         >
                                             <span>{t.music[music.id as keyof typeof t.music] || music.name}</span>
-                                            {formData.backgroundMusic === music.id && <CheckCircle2 style={{ width: 14, height: 14, color: 'var(--accent-hex)' }} />}
-                                            {!music.free && !isPro && <Lock style={{ width: 12, height: 12, color: '#f59e0b' }} />}
+                                            {formData.backgroundMusic === music.id && <CheckCircle2 style={{ width: 12, height: 12, color: 'var(--ink-red)' }} />}
+                                            {!music.free && !isPro && <Lock style={{ width: 10, height: 10, color: 'var(--ink-soft)' }} />}
                                         </button>
                                     ))}
                                 </div>
                             </DField>
 
-                            <DField label="video embed" hint={!isPro ? <ProBadge small /> : undefined}>
+                            <DField label={t.create.fieldVideo} hint={!isPro ? <ProBadge small /> : undefined}>
                                 {isPro ? (
                                     <input type="url" placeholder="https://youtube.com/..." value={formData.videoUrl} onChange={e => updateForm({ videoUrl: e.target.value })} style={dI} />
                                 ) : (
-                                    <button onClick={goToUpgrade} style={{ width: '100%', padding: '10px 14px', border: '2px dashed var(--lila-2)', borderRadius: 12, background: 'var(--lila-soft)', cursor: 'pointer', fontSize: 12, color: 'var(--ink-soft)', textAlign: 'center' }}>
-                                        YouTube / TikTok — solo PRO ✨
+                                    <button onClick={goToUpgrade} style={{ width: '100%', padding: '10px 12px', border: '1.5px dashed var(--ink-black)', background: 'var(--paper)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--ink-soft)', textAlign: 'center', letterSpacing: '0.04em' }}>
+                                        {t.create.videoHint}
                                     </button>
                                 )}
                             </DField>
@@ -1255,11 +1265,11 @@ export default function CreatePageEnhanced() {
 
                         {/* ── Tab: enlace ── */}
                         {currentStep === 'preview' && (<>
-                            <DField label="URL personalizada" hint={!isPro ? <span style={{ fontSize: 9, padding: '2px 8px', background: 'var(--butter)', border: '1px solid var(--ink)', borderRadius: 999, fontWeight: 700 }}>✨ pro</span> : undefined}>
-                                <div style={{ display: 'flex', alignItems: 'center', border: '2px solid var(--ink)', borderRadius: 12, background: 'white', overflow: 'hidden', boxShadow: '2px 2px 0 var(--ink)' }}>
-                                    <span style={{ padding: '10px 12px', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-soft)', borderRight: '2px solid var(--ink)', background: 'var(--lila-soft)', flexShrink: 0 }}>lovepages.ink/p/</span>
+                            <DField label={t.create.fieldUrlCustom} hint={!isPro ? <span style={{ padding: '2px 6px', fontSize: 9, background: 'var(--ink-black)', color: 'var(--ink-red)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>pro</span> : undefined}>
+                                <div style={{ display: 'flex', alignItems: 'stretch', border: '1.5px solid var(--ink-black)', background: 'var(--paper)', overflow: 'hidden' }}>
+                                    <span style={{ padding: '10px 12px', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-soft)', borderRight: '1.5px solid var(--ink-black)', background: 'var(--paper-3)', flexShrink: 0 }}>lovepages.ink/p/</span>
                                     {isPro ? (
-                                        <input value={formData.customSlug} onChange={e => updateForm({ customSlug: e.target.value })} style={{ border: 'none', flex: 1, fontFamily: 'var(--mono)', fontSize: 12, padding: '10px 12px', outline: 'none', color: 'var(--ink)' }} placeholder="tu-slug-aqui" />
+                                        <input value={formData.customSlug} onChange={e => updateForm({ customSlug: e.target.value })} style={{ ...dI, border: 'none', flex: 1, color: 'var(--ink-red)' }} placeholder="tu-slug-aqui" />
                                     ) : (
                                         <button onClick={goToUpgrade} style={{ flex: 1, padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-soft)', textAlign: 'left' }}>
                                             {formData.recipientName ? `para-${formData.recipientName.toLowerCase()}` : '—'}
@@ -1268,42 +1278,42 @@ export default function CreatePageEnhanced() {
                                 </div>
                             </DField>
 
-                            <DField label="privacidad">
+                            <DField label={t.create.fieldPrivacy}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {[['🔓', 'pública', 'cualquiera con el link'], ['🔒', 'con código', 'requiere PIN (pronto)']].map(([icon, title, hint], k) => (
-                                        <div key={title} style={{ padding: 12, border: '2px solid var(--ink)', borderRadius: 12, background: k === 0 ? 'var(--mint)' : 'white', display: 'flex', alignItems: 'center', gap: 12, boxShadow: k === 0 ? '2px 2px 0 var(--ink)' : 'none' }}>
+                                    {[['🔓', t.create.privacyPublic, t.create.privacyPublicDesc], ['🔒', t.create.privacyCode, t.create.privacyCodeDesc]].map(([icon, title, hint], k) => (
+                                        <label key={title} style={{ padding: 12, border: k === 0 ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)', background: 'var(--paper)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
                                             <span style={{ fontSize: 18 }}>{icon}</span>
                                             <div>
-                                                <div style={{ fontSize: 13, fontWeight: 600 }}>{title}</div>
-                                                <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{hint}</div>
+                                                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{title}</div>
+                                                <div style={{ fontSize: 10, color: 'var(--ink-soft)', fontFamily: 'var(--mono)' }}>{hint}</div>
                                             </div>
-                                        </div>
+                                        </label>
                                     ))}
                                 </div>
                             </DField>
 
-                            <div style={{ padding: 14, background: 'var(--paper)', border: '2px solid var(--ink)', borderRadius: 12, boxShadow: '2px 2px 0 var(--ink)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ padding: 14, background: 'var(--paper)', border: '1.5px solid var(--ink-black)', display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {[
-                                    ['Título', formData.title || '—'],
-                                    ['Para', formData.recipientName || '—'],
-                                    ['Tema', THEMES.find(th => th.id === formData.theme)?.name || '—'],
-                                    ['Animación', ANIMATIONS.find(a => a.id === formData.animation)?.name || '—'],
+                                    [t.create.summaryTitleKey, formData.title || '—'],
+                                    [t.create.summaryForKey, formData.recipientName || '—'],
+                                    [t.create.summaryThemeKey, THEMES.find(th => th.id === formData.theme) ? (t.themes[formData.theme as keyof typeof t.themes] || THEMES.find(th => th.id === formData.theme)?.name || '—') : '—'],
+                                    [t.create.summaryAnimKey, t.animations[formData.animation as keyof typeof t.animations] || ANIMATIONS.find(a => a.id === formData.animation)?.name || '—'],
                                 ].map(([k, v]) => (
-                                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                                        <span style={{ color: 'var(--ink-soft)' }}>{k}</span>
-                                        <span style={{ fontWeight: 600 }}>{v}</span>
+                                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--mono)' }}>
+                                        <span style={{ color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</span>
+                                        <span style={{ fontWeight: 700 }}>{v}</span>
                                     </div>
                                 ))}
                             </div>
 
                             {!isPro && (
-                                <div style={{ padding: 12, background: 'var(--lila-soft)', border: '1.5px solid var(--ink)', borderRadius: 12, fontSize: 12, color: 'var(--ink)' }}>
-                                    <span>Tu página: <strong className="mono-eyebrow" style={{ fontSize: 10 }}>lovepages.ink/p/xK9mP2</strong></span>
+                                <div style={{ padding: 12, background: 'var(--lila-soft)', border: '1.5px solid var(--ink)', borderRadius: 0, fontSize: 12, color: 'var(--ink)' }}>
+                                    <span>{t.create.proUrlYour} <strong className="mono-eyebrow" style={{ fontSize: 10 }}>lovepages.ink/p/xK9mP2</strong></span>
                                     <br />
-                                    <span style={{ color: 'var(--ink-soft)' }}>Con PRO: </span>
-                                    <strong style={{ color: 'var(--accent-deep-hex)', fontFamily: 'var(--mono)', fontSize: 11 }}>para-{(formData.recipientName || 'ella').toLowerCase()}</strong>
-                                    <button onClick={goToUpgrade} style={{ display: 'block', marginTop: 8, width: '100%', padding: '8px 14px', background: 'var(--accent-hex)', color: 'white', border: '2px solid var(--ink)', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, boxShadow: '2px 2px 0 var(--ink)' }}>
-                                        Hacerlo más especial — PRO ✨
+                                    <span style={{ color: 'var(--ink-soft)' }}>{t.create.proUrlWithPro} </span>
+                                    <strong style={{ color: 'var(--ink-blue)', fontFamily: 'var(--mono)', fontSize: 11 }}>para-{(formData.recipientName || 'ella').toLowerCase()}</strong>
+                                    <button onClick={goToUpgrade} style={{ display: 'block', marginTop: 8, width: '100%', padding: '8px 14px', background: 'var(--ink-red)', color: 'var(--paper)', border: '1.5px solid var(--ink-black)', borderRadius: 0, cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em', boxShadow: '2px 2px 0 var(--ink-black)' }}>
+                                        {t.create.proUrlUpgrade}
                                     </button>
                                 </div>
                             )}
@@ -1311,10 +1321,10 @@ export default function CreatePageEnhanced() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={loading || freeLimitReached}
-                                style={{ width: '100%', padding: '12px 20px', background: freeLimitReached ? '#ccc' : 'var(--accent-hex)', color: 'white', border: '2px solid var(--ink)', borderRadius: 12, cursor: freeLimitReached ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 700, boxShadow: '3px 3px 0 var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: freeLimitReached ? 0.5 : 1 }}
+                                style={{ width: '100%', padding: '12px 20px', background: freeLimitReached ? '#ccc' : 'var(--ink-red)', color: 'var(--paper)', border: '1.5px solid var(--ink-black)', borderRadius: 0, cursor: freeLimitReached ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em', boxShadow: '3px 3px 0 var(--ink-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: freeLimitReached ? 0.5 : 1 }}
                             >
                                 <Sparkles style={{ width: 16, height: 16 }} />
-                                {loading ? 'publicando...' : 'publicar página ✨'}
+                                {loading ? t.create.publishing : t.create.publishPageBtn}
                             </button>
                         </>)}
                     </div>
@@ -1340,7 +1350,7 @@ export default function CreatePageEnhanced() {
                             </Link>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-gray-900 truncate">
-                                    Paso {stepIndex + 1} de {steps.length}: {steps[stepIndex].label}
+                                    {stepIndex + 1}/{steps.length}: {steps[stepIndex].label}
                                     {isPro && (
                                         <span className="ml-2 inline-flex items-center gap-0.5 text-amber-600">
                                             <Crown className="w-3 h-3" />
@@ -1350,9 +1360,10 @@ export default function CreatePageEnhanced() {
                             </div>
                         </div>
                         {/* Progress bar */}
-                        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 overflow-hidden" style={{ background: 'var(--paper-2)', border: '1px solid var(--ink-black)' }}>
                             <motion.div
-                                className="h-full bg-gradient-to-r from-pink-500 to-rose-500 rounded-full"
+                                className="h-full"
+                                style={{ background: 'var(--ink-red)' }}
                                 initial={false}
                                 animate={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -1369,8 +1380,8 @@ export default function CreatePageEnhanced() {
                     {!isPro && showExpirationNotice && (
                         <div className="mb-4 flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: 'var(--butter)', border: '1.5px solid var(--ink)' }}>
                             <div className="flex-1 text-xs" style={{ color: 'var(--ink)' }}>
-                                <span className="font-semibold">Tu página expirará en 7 días.</span>{' '}
-                                <button type="button" onClick={goToUpgrade} className="font-semibold underline">Actualiza a PRO</button>
+                                <span className="font-semibold">{t.create.expirationMobile}</span>{' '}
+                                <button type="button" onClick={goToUpgrade} className="font-semibold underline">{t.create.expirationMobileUpgrade}</button>
                             </div>
                             <button type="button" onClick={dismissExpirationNotice} style={{ color: 'var(--ink-soft)' }}>
                                 <X className="w-4 h-4" />
@@ -2040,21 +2051,21 @@ export default function CreatePageEnhanced() {
                                     <CardContent className="space-y-4 px-4 lg:px-6">
                                         {/* Mobile preview snapshot inline */}
                                         <div className="lg:hidden">
-                                            <div className="max-w-[260px] mx-auto">
-                                                <PreviewContent />
+                                            <div className="max-w-[260px] mx-auto" style={{ height: 520 }}>
+                                                {previewContent()}
                                             </div>
                                         </div>
 
                                         {isPro && formData.customSlug && (
-                                            <div className="p-4 bg-gradient-to-r from-pink-50 to-rose-50 border-2 border-pink-300 rounded-xl">
+                                            <div className="p-4" style={{ background: 'var(--paper-soft)', border: '2px solid var(--ink-black)' }}>
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <Crown className="w-4 h-4 text-pink-600" />
-                                                    <p className="text-sm font-bold text-pink-700">
+                                                    <Crown className="w-4 h-4" style={{ color: 'var(--ink-blue)' }} />
+                                                    <p className="text-sm font-bold" style={{ color: 'var(--ink-black)', fontFamily: 'var(--mono)', letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: 11 }}>
                                                         URL Personalizada
                                                     </p>
                                                 </div>
-                                                <div className="bg-white rounded-lg p-3 border border-pink-200">
-                                                    <p className="font-mono text-sm text-pink-800 break-all">
+                                                <div className="bg-white p-3" style={{ border: '1.5px solid var(--ink-black)' }}>
+                                                    <p className="font-mono text-sm break-all" style={{ color: 'var(--ink-blue)' }}>
                                                         {window.location.origin}/p/{formData.customSlug}
                                                     </p>
                                                 </div>
@@ -2256,8 +2267,8 @@ export default function CreatePageEnhanced() {
             height="90vh"
         >
             <div className="p-4">
-                <div className="max-w-[300px] mx-auto">
-                    <PreviewContent />
+                <div className="max-w-[300px] mx-auto" style={{ height: 600 }}>
+                    {previewContent()}
                 </div>
                 <p className="text-center text-xs mt-4" style={{ color: 'var(--ink-soft)' }}>
                     Así se verá tu página

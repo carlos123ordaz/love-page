@@ -30,7 +30,7 @@ export default function UpgradePage() {
     const freeLimitReached = !!user && !user.isPro && user.canCreatePage === false;
 
     useEffect(() => { if (!authLoading && !user) router.push('/'); }, [user, authLoading, router]);
-    useEffect(() => { if (user?.isPro) { toast.success('¡Ya eres usuario PRO!'); router.push('/dashboard'); } }, [user, router]);
+    useEffect(() => { if (user?.isPro) { toast.success(t.upgrade.alreadyPro); router.push('/dashboard'); } }, [user, router, t]);
 
     const handlePayment = async () => {
         setLoading(true);
@@ -47,7 +47,7 @@ export default function UpgradePage() {
                 if (!w) window.location.href = url;
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Error al procesar el pago');
+            toast.error(error.response?.data?.message || t.upgrade.paymentError);
         } finally {
             setLoading(false);
         }
@@ -56,7 +56,7 @@ export default function UpgradePage() {
     if (authLoading) {
         return (
             <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 999, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite' }} />
+                <div style={{ width: 48, height: 48, borderRadius: 0, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite' }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
             </div>
         );
@@ -72,10 +72,10 @@ export default function UpgradePage() {
                 {/* Hero */}
                 <section style={{ textAlign: 'center', marginBottom: 48 }}>
                     <span className="sticker-badge" style={{ background: 'var(--butter)', marginBottom: 20 }}>
-                        <Crown style={{ width: 14, height: 14 }} /> upgrade
+                        <Crown style={{ width: 14, height: 14 }} /> {t.upgrade.badge}
                     </span>
                     <h1 className="serif-display" style={{ fontSize: 'clamp(40px, 6vw, 72px)', margin: '16px 0 12px', color: 'var(--ink)', lineHeight: 0.95 }}>
-                        un precio justo,<br /><em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>para siempre</em> 💸
+                        {t.upgrade.heroTitle}
                     </h1>
                     <p style={{ fontSize: 18, color: 'var(--ink-2)', lineHeight: 1.55 }}>{t.upgrade.subtitle}</p>
                     {freeLimitReached && (
@@ -88,7 +88,7 @@ export default function UpgradePage() {
                 {/* Main pricing card */}
                 <div style={{ marginBottom: 32 }} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {/* Free */}
-                    <div style={{ border: '2px solid var(--ink)', borderRadius: 28, background: 'white', boxShadow: '5px 5px 0 var(--ink)' }} className="p-5 sm:p-8">
+                    <div style={{ border: '2px solid var(--ink)', borderRadius: 0, background: 'white', boxShadow: '5px 5px 0 var(--ink)' }} className="p-5 sm:p-8">
                         <div className="mono-eyebrow" style={{ color: 'var(--ink-soft)', marginBottom: 12 }}>free</div>
                         <div className="serif-display" style={{ fontSize: 56, color: 'var(--ink)', marginBottom: 8 }}>$0</div>
                         <p style={{ fontSize: 15, color: 'var(--ink-2)', marginBottom: 24 }}>{t.upgrade.currentPlan}</p>
@@ -107,14 +107,14 @@ export default function UpgradePage() {
                     </div>
 
                     {/* Pro */}
-                    <div style={{ border: '2px solid var(--ink)', borderRadius: 28, background: 'var(--ink)', color: 'white', position: 'relative', boxShadow: '6px 6px 0 var(--ink)' }} className="p-5 sm:p-8">
+                    <div style={{ border: '2px solid var(--ink)', borderRadius: 0, background: 'var(--ink)', color: 'white', position: 'relative', boxShadow: '6px 6px 0 var(--ink)' }} className="p-5 sm:p-8">
                         <div className="sticker-badge" style={{ position: 'absolute', top: -16, right: 24, background: 'var(--butter)', color: 'var(--ink)' }}>
-                            <span>⭐</span><span>recomendado</span>
+                            <span>⭐</span><span>{t.upgrade.recommended}</span>
                         </div>
                         <div className="mono-eyebrow" style={{ color: 'var(--melocoton)', marginBottom: 12 }}>pro</div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
                             <span className="serif-display" style={{ fontSize: 56, color: 'white' }}>$1.75</span>
-                            <span style={{ fontSize: 13, opacity: 0.7 }}>USD · una vez</span>
+                            <span style={{ fontSize: 13, opacity: 0.7 }}>{t.upgrade.oncePayment}</span>
                         </div>
                         <p style={{ fontSize: 15, marginBottom: 24, opacity: 0.85 }}>{t.upgrade.permanentAccess}</p>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
@@ -128,7 +128,7 @@ export default function UpgradePage() {
                 </div>
 
                 {/* Payment section */}
-                <div style={{ border: '2px solid var(--ink)', borderRadius: 28, background: 'white', boxShadow: '5px 5px 0 var(--ink)' }} className="p-5 sm:p-8">
+                <div style={{ border: '2px solid var(--ink)', borderRadius: 0, background: 'white', boxShadow: '5px 5px 0 var(--ink)' }} className="p-5 sm:p-8">
                     <div className="mono-eyebrow" style={{ marginBottom: 16 }}>{t.upgrade.selectPayment}</div>
 
                     <div style={{ marginBottom: 24 }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -148,9 +148,9 @@ export default function UpgradePage() {
                     </div>
 
                     <button onClick={handlePayment} disabled={loading}
-                        style={{ width: '100%', padding: '16px 24px', border: '2px solid var(--ink)', borderRadius: 999, background: loading ? 'var(--lila)' : 'var(--accent-hex)', color: 'white', fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '4px 4px 0 var(--accent-deep-hex)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        style={{ width: '100%', padding: '16px 24px', border: '2px solid var(--ink)', borderRadius: 0, background: loading ? 'var(--lila)' : 'var(--accent-hex)', color: 'white', fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '4px 4px 0 var(--accent-deep-hex)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                         <Crown style={{ width: 18, height: 18 }} />
-                        {loading ? 'procesando...' : t.upgrade.unlockProPrice}
+                        {loading ? t.upgrade.processing : t.upgrade.unlockProPrice}
                     </button>
 
                     <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--ink-soft)', marginTop: 12 }}>
@@ -160,7 +160,7 @@ export default function UpgradePage() {
 
                 {/* Features detail */}
                 <section style={{ marginTop: 40 }}>
-                    <div className="mono-eyebrow" style={{ marginBottom: 20 }}>qué incluye pro</div>
+                    <div className="mono-eyebrow" style={{ marginBottom: 20 }}>{t.upgrade.proIncludesLabel}</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
                         {FEATURES.map(({ icon: Icon, key }) => {
                             const titleKey = `${key}Title` as keyof typeof t.upgrade;

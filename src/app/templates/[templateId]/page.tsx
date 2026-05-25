@@ -301,7 +301,7 @@ export default function TemplateDetailPage() {
     if (authLoading || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
+                <div className="animate-spin h-12 w-12" style={{ border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -311,12 +311,12 @@ export default function TemplateDetailPage() {
     const fieldCounts = getFieldTypeCounts();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
             <Header />
 
             <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
                 {freeLimitReached && (
-                    <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <div className="mb-6" style={{ border: '1.5px solid var(--ink-black)', background: 'var(--paper-2)', padding: '10px 14px', fontSize: 13, color: 'var(--ink-black)' }}>
                         El plan gratuito permite crear solo 1 pagina. Actualiza a PRO para paginas ilimitadas.
                     </div>
                 )}
@@ -332,8 +332,8 @@ export default function TemplateDetailPage() {
                         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
                             {template.name}
                             {template.isPro && (
-                                <span className="px-2 py-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                                    <Crown className="w-3 h-3" />
+                                <span style={{ padding: '2px 8px', background: 'var(--ink-blue)', color: 'var(--paper)', fontSize: 10, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', border: '1.5px solid var(--ink-black)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    <Crown style={{ width: 10, height: 10 }} />
                                     PRO
                                 </span>
                             )}
@@ -499,19 +499,19 @@ export default function TemplateDetailPage() {
                                             </Button>
                                         ) : (
                                             <div className="space-y-3">
-                                                <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-xl text-center">
-                                                    <Lock className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-                                                    <p className="font-semibold text-gray-900 mb-1">
+                                                <div style={{ padding: '24px', border: '2px solid var(--ink-black)', background: 'var(--paper-soft)', textAlign: 'center', boxShadow: '3px 3px 0 var(--ink-black)' }}>
+                                                    <Lock style={{ width: 24, height: 24, color: 'var(--ink-blue)', margin: '0 auto 10px' }} />
+                                                    <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, fontFamily: 'var(--display)', textTransform: 'uppercase', color: 'var(--ink-black)' }}>
                                                         Plantilla exclusiva PRO
                                                     </p>
-                                                    <p className="text-sm text-gray-600 mb-3">
+                                                    <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginBottom: 16 }}>
                                                         Actualiza a PRO para usar plantillas premium
                                                     </p>
                                                     <Link href="/upgrade">
-                                                        <Button className="gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white">
-                                                            <Crown className="w-4 h-4" />
+                                                        <button className="btn-accent" style={{ padding: '10px 20px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                                            <Crown style={{ width: 13, height: 13 }} />
                                                             Obtener PRO — $1.75 USD
-                                                        </Button>
+                                                        </button>
                                                     </Link>
                                                 </div>
                                             </div>

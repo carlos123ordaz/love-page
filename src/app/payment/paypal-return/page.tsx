@@ -53,9 +53,9 @@ function PayPalReturnContent() {
     }, [token, router, user, authLoading]);
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
             <div className="text-center space-y-4">
-                <Loader2 className="w-16 h-16 text-pink-600 animate-spin mx-auto" />
+                <Loader2 className="w-16 h-16 animate-spin mx-auto" style={{ color: 'var(--ink-red)' }} />
                 <h1 className="text-2xl font-bold text-gray-900">
                     Procesando tu pago...
                 </h1>
@@ -74,8 +74,8 @@ function PayPalReturnContent() {
 export default function PayPalReturnPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
-                <Loader2 className="w-16 h-16 text-pink-600 animate-spin" />
+            <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
+                <Loader2 className="w-16 h-16 animate-spin" style={{ color: 'var(--ink-red)' }} />
             </div>
         }>
             <PayPalReturnContent />

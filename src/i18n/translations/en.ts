@@ -33,6 +33,8 @@ const en: Translations = {
   // ============================================================
   nav: {
     myPages: 'My Pages',
+    createPage: 'create page →',
+    createPageFree: 'create page for free →',
     createNew: 'Create New',
     templates: 'Templates',
     games: 'Games',
@@ -172,6 +174,90 @@ const en: Translations = {
     defaultMessage: 'Every day by your side is a gift... 💕',
     defaultYesText: 'Yes, I do! 💖',
     defaultNoText: 'Let me think about it',
+
+    // Riso redesign — masthead
+    mastheadVol: 'vol. 02 · spring 2026',
+    mastheadPrice: '$0.00 · free',
+    mastheadEdition: '★ special edition ★',
+
+    // Riso redesign — hero
+    heroBadge: '✦ new · 2.4M pages created',
+    heroLine1: 'love letters',
+    heroLine2: 'that',
+    heroLine2Italic: 'respond',
+    heroDesc: 'design an unforgettable page, share the link, and discover in real time what the other person answers.',
+    heroDescAccent: 'romantic. cheesy. inevitable.',
+    ctaCreateRiso: 'create my page · free →',
+    ctaDemoRiso: 'see demo →',
+    livePreviewAnnotation: 'live preview',
+    noEscapesAnnotation: 'the "no" escapes →',
+    statsPagesLabel: 'pages created',
+    statsSiLabel: 'say yes',
+    statsProLabel: 'pro · one time',
+
+    // Riso redesign — DemoPhone
+    demoCardBadge: '✦ a letter for you',
+    demoCardTitle1: 'will you be',
+    demoCardTitle2Italic: 'my girlfriend?',
+    demoCardSubtitle: 'after 247 coffees and 31 movies...',
+    demoYesBtn: 'yes ♥',
+    demoNoBtn: 'no',
+    demoAnsweredYes: 'yes!',
+    demoReset: 'back',
+
+    // Riso redesign — pillars
+    pillar1Title: 'design without knowing design',
+    pillar1Body: 'curated templates, editorial typography, paper-inspired palette, smooth animations.',
+    pillar2Title: 'share a link, get a response',
+    pillar2Body: 'every page lives at its own URL. your partner opens it, answers yes or no, and you see it instantly.',
+    pillar3Title: 'stats that matter',
+    pillar3Body: 'visits, time spent, and the response. push notifications when you get a visit.',
+
+    // Riso redesign — testimonial
+    testimonialBadge: 'testimonial · ana p., guadalajara',
+    testimonialLine1: '"I said yes',
+    testimonialLine2: 'before reading',
+    testimonialLine3Italic: 'the last paragraph."',
+    testimonialName: 'ana patricia m.',
+    testimonialDate: 'received a proposal · feb 2026',
+
+    // Riso redesign — demo section
+    demoSectionLine1: 'try it',
+    demoSectionLine2: 'yourself, now',
+    demoSectionBadge: '03 · demo',
+    demoCtaBtn: 'create my page free →',
+
+    // Riso redesign — pricing section
+    pricingLine1: 'a fair price,',
+    pricingLine2: 'forever',
+    pricingBadge: '04 · pricing',
+    pricingRecommended: 'recommended ★',
+    freePlanPitch: 'enough for that important letter',
+    freePlanFeature1: '2 active pages',
+    freePlanFeature2: 'basic animations',
+    freePlanFeature3: 'URL lovepages.ink/p/xxxx',
+    freePlanFeature4: 'subtle watermark',
+    freePlanCtaLabel: 'start free',
+    proPlanSub: 'once · lifetime',
+    proPlanPitch: 'for those who fall in love often',
+    proPlanFeature1: 'unlimited pages',
+    proPlanFeature2: 'AI design ✦',
+    proPlanFeature3: 'custom URL',
+    proPlanFeature4: 'no watermark',
+    proPlanFeature5: 'unlimited music',
+    proPlanFeature6: 'advanced stats',
+    proPlanCtaLabel: 'upgrade ✦',
+
+    // Riso redesign — final CTA
+    finalLine1: 'and you,',
+    finalLine2Italic: 'who are you writing to?',
+    finalCtaUser: 'go to my pages →',
+    finalCtaGuest: 'start my page →',
+
+    // Riso redesign — footer
+    footerAbout: 'About',
+    footerPrivacy: 'Privacy',
+    footerTerms: 'Terms',
   },
 
   // ============================================================
@@ -179,6 +265,23 @@ const en: Translations = {
   // ============================================================
   dashboard: {
     hello: 'Hello, {name}! 👋',
+    goodMorning: '🌤️ good morning',
+    goodAfternoon: '☀️ good afternoon',
+    goodEvening: '🌙 good evening',
+    yourLetters: 'your letters.',
+    sectionTitle: '—— your pages',
+    viewPage: 'view →',
+    continuePage: 'continue →',
+    draft: 'draft',
+    copyBtn: '📋 copy',
+    statsViews: 'visits',
+    statsSi: 'yes',
+    statsNo: 'no',
+    noPublished: 'unpublished',
+    limitModalTitle: "you've used your free page",
+    limitModalDesc: 'The free plan includes 1 page. Go PRO for $1.75 just once and create unlimited pages, add music, effects and more.',
+    limitModalCta: 'see PRO plan ✨',
+    limitModalDecline: 'not now',
     proUser: 'PRO User - Premium features unlocked',
     pagesCreated: 'You\'ve created {count} page{plural}',
     createPage: 'Create Page',
@@ -366,6 +469,81 @@ const en: Translations = {
     viewProPlans: 'View PRO plans',
     stayFree: 'Stay with free plan',
     unlockProBadge: 'Unlock PRO',
+
+    // Desktop builder — top bar
+    backToPages: '← my pages',
+    newLetter: 'new letter',
+    draftBadge: 'draft',
+    limitReached: 'limit reached',
+    unsaved: 'unsaved ·',
+    previewBtn: 'preview',
+    publishing: 'publishing...',
+    publishBtn: 'publish →',
+
+    // Panel tabs
+    tabContent: 'content',
+    tabDesign: 'theme',
+    tabMedia: 'media',
+    tabEffects: 'effects',
+    tabLink: 'link',
+
+    // DField labels
+    fieldTitle: 'title',
+    fieldRecipient: 'for who',
+    fieldMessage: 'your message',
+    fieldYesBtn: 'yes button',
+    fieldNoBtn: 'no button',
+    fieldPalette: 'palette',
+    fieldColors: 'custom colors',
+    fieldFont: 'typography',
+    fieldBgImage: 'background image',
+    fieldStickers: 'stickers',
+    fieldDecorative: 'decorative images',
+    fieldParticles: 'particles',
+    fieldMusic: 'music',
+    fieldVideo: 'video embed',
+    fieldUrlCustom: 'custom URL',
+    fieldPrivacy: 'privacy',
+
+    // Preview panel
+    previewForLabel: 'a letter for',
+    previewMessagePlaceholder: 'Write your special message here for the person you love most…',
+    previewFrom: '— with love',
+    previewFooter: 'printed with ♥',
+    previewBadge: 'preview · iphone 15',
+    previewDefaultTitle: 'my letter for you',
+    previewDefaultRecipient: 'you',
+
+    // Expiration notice
+    expirationDays: '7 days',
+    expirationUpgradeLink: 'upgrade to PRO',
+    expirationMobile: 'Your page will expire in 7 days.',
+    expirationMobileUpgrade: 'Upgrade to PRO',
+
+    // Privacy options
+    privacyPublic: 'public',
+    privacyPublicDesc: 'anyone with the link',
+    privacyCode: 'with code',
+    privacyCodeDesc: 'requires PIN (coming soon)',
+
+    // Summary labels (publish tab)
+    summaryTitleKey: 'title',
+    summaryForKey: 'for',
+    summaryThemeKey: 'theme',
+    summaryAnimKey: 'animation',
+
+    // PRO URL upsell
+    proUrlYour: 'Your page:',
+    proUrlWithPro: 'With PRO:',
+    proUrlUpgrade: 'make it more special — PRO →',
+
+    // Submit buttons
+    publishPageBtn: 'publish page ✨',
+
+    // Hints
+    decorativeHintFree: '1 free',
+    decorativeHintPro: '5 pro',
+    videoHint: 'youtube / tiktok — PRO only',
   },
 
   // ============================================================
@@ -413,6 +591,10 @@ const en: Translations = {
   // ============================================================
   templates: {
     title: 'Templates',
+    badgeLabel: '📚 curated templates',
+    heroTitle: 'find your letter 💌',
+    useBtn: 'use →',
+    usesLabel: '{count} uses',
     searchPlaceholder: 'Search templates...',
     categoryAll: 'All',
     categoryValentine: "Valentine's Day",
@@ -440,6 +622,8 @@ const en: Translations = {
   games: {
     title: 'Games',
     subtitle: 'Have fun with your friends and partner 🎉',
+    badgeLabel: 'games',
+    heroTitle: 'play with who you love 🎮',
     gameCount: '{count} game{plural}',
     gridView: 'Grid view',
     listView: 'List view',
@@ -475,6 +659,13 @@ const en: Translations = {
   // ============================================================
   upgrade: {
     title: 'Unlock PRO Features',
+    badge: 'upgrade',
+    heroTitle: 'a fair price, forever 💸',
+    processing: 'processing...',
+    oncePayment: 'USD · one time',
+    proIncludesLabel: 'what pro includes',
+    alreadyPro: "You're already a PRO user!",
+    paymentError: 'Error processing payment',
     subtitle: 'Take your pages to the next level with premium tools',
     specialOffer: 'Special Offer!',
     oneTimePayment: 'One-time payment',

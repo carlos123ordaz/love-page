@@ -1,12 +1,17 @@
 'use client';
 
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'next/navigation';
+import { api } from '@/lib/api';
+import toast from 'react-hot-toast';
+import { ProPageRenderer } from '@/components/ProPageRenderer';
+import { createPortal } from 'react-dom';
+import { useTranslation } from '@/i18n';
 
-/** Convierte una URL de YouTube o TikTok a su URL de embed. Devuelve null si no es soportada. */
+// ── Embed URL helper ──────────────────────────────────────────
 function getEmbedUrl(url: string): string | null {
     try {
         const u = new URL(url);
-        // YouTube: youtube.com/watch?v=ID  |  youtu.be/ID  |  youtube.com/shorts/ID
         if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
             let videoId = u.searchParams.get('v');
             if (!videoId) {
@@ -15,7 +20,6 @@ function getEmbedUrl(url: string): string | null {
             }
             return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : null;
         }
-        // TikTok: tiktok.com/@user/video/ID
         if (u.hostname.includes('tiktok.com')) {
             const match = u.pathname.match(/\/video\/(\d+)/);
             return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : null;
@@ -25,17 +29,8 @@ function getEmbedUrl(url: string): string | null {
         return null;
     }
 }
-import { useParams } from 'next/navigation';
-import { api } from '@/lib/api';
-import { Heart, Volume2, VolumeX } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { ProPageRenderer } from '@/components/ProPageRenderer';
-import { createPortal } from 'react-dom';
-import { useTranslation } from '@/i18n';
 
-// ============================================================
-// STICKER MAP (mismo que en create-page-enhanced)
-// ============================================================
+// ── Sticker map ───────────────────────────────────────────────
 const STICKER_MAP: Record<string, string> = {
     'heart-big': '❤️',
     'heart-sparkling': '💖',
@@ -55,9 +50,7 @@ const STICKER_MAP: Record<string, string> = {
     'rainbow': '🌈',
 };
 
-// ============================================================
-// MUSIC URLs (reemplaza con tus URLs reales de audio)
-// ============================================================
+// ── Music URLs ────────────────────────────────────────────────
 const MUSIC_URLS: Record<string, string> = {
     'romantic-piano': '/audio/romantic-piano.mp3',
     'acoustic-guitar': '/audio/acoustic-guitar.mp3',
@@ -66,272 +59,193 @@ const MUSIC_URLS: Record<string, string> = {
     'orchestra': '/audio/orchestra.mp3',
 };
 
-// ============================================================
-// COMPONENTE: Animación de fondo
-// ============================================================
-function BackgroundAnimation({ type, color }: { type: string; color: string }) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const animationRef = useRef<number>(0);
+// Map existing animation ids → particle kinds
+function animToKind(anim: string): string {
+    if (anim === 'hearts-falling' || anim === 'float-up' || anim === 'bubbles' || anim === 'particles') return 'hearts';
+    if (anim === 'confetti' || anim === 'fireworks') return 'confetti';
+    if (anim === 'petals' || anim === 'snow') return 'petals';
+    return 'hearts';
+}
+
+// ── ParticleCanvas — riso two-ink, multiply blend ─────────────
+function ParticleCanvas({ kind = 'hearts', density = 1 }: { kind?: string; density?: number }) {
+    const ref = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas || type === 'none') return;
-
+        const canvas = ref.current;
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        let raf: number;
+        let particles: any[] = [];
+        let w = 0, h = 0;
+
         const resize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const r = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            w = r.width; h = r.height;
+            canvas.width = w * dpr; canvas.height = h * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         };
         resize();
-        window.addEventListener('resize', resize);
+        const ro = new ResizeObserver(resize);
+        ro.observe(canvas);
 
-        // Partículas
-        interface Particle {
-            x: number;
-            y: number;
-            size: number;
-            speedX: number;
-            speedY: number;
-            opacity: number;
-            rotation: number;
-            rotationSpeed: number;
-            emoji?: string;
-        }
-
-        const particles: Particle[] = [];
-        const particleCount = type === 'particles' ? 60 : 30;
-
-        const getEmoji = (): string => {
-            switch (type) {
-                case 'hearts-falling': return ['❤️', '💕', '💖', '💗'][Math.floor(Math.random() * 4)];
-                case 'snow': return '❄️';
-                case 'petals': return ['🌸', '🩷', '💮'][Math.floor(Math.random() * 3)];
-                case 'confetti': return ['🎊', '✨', '🎉', '⭐'][Math.floor(Math.random() * 4)];
-                case 'fireworks': return ['✨', '💫', '⭐', '🌟'][Math.floor(Math.random() * 4)];
-                case 'bubbles': return '🫧';
-                default: return '✨';
-            }
+        const heartPath = (cx: number, cy: number, s: number) => {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + s * 0.3);
+            ctx.bezierCurveTo(cx, cy, cx - s, cy, cx - s, cy + s * 0.3);
+            ctx.bezierCurveTo(cx - s, cy + s * 0.7, cx, cy + s * 0.9, cx, cy + s * 1.2);
+            ctx.bezierCurveTo(cx, cy + s * 0.9, cx + s, cy + s * 0.7, cx + s, cy + s * 0.3);
+            ctx.bezierCurveTo(cx + s, cy, cx, cy, cx, cy + s * 0.3);
+            ctx.fill();
         };
 
-        // Inicializar partículas
-        for (let i = 0; i < particleCount; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height - canvas.height,
-                size: Math.random() * 20 + 12,
-                speedX: (Math.random() - 0.5) * 2,
-                speedY: Math.random() * 2 + 0.5,
-                opacity: Math.random() * 0.7 + 0.3,
-                rotation: Math.random() * 360,
-                rotationSpeed: (Math.random() - 0.5) * 4,
-                emoji: getEmoji(),
-            });
-        }
+        const readInks = () => {
+            const cs = getComputedStyle(document.documentElement);
+            return [
+                cs.getPropertyValue('--ink-red').trim() || '#e8378a',
+                cs.getPropertyValue('--ink-blue').trim() || '#1a1410',
+            ];
+        };
 
-        // Ajustar velocidades según tipo
-        if (type === 'snow') {
-            particles.forEach(p => {
-                p.speedY = Math.random() * 1 + 0.3;
-                p.speedX = (Math.random() - 0.5) * 0.8;
-            });
-        } else if (type === 'float-up') {
-            particles.forEach(p => {
-                p.speedY = -(Math.random() * 1.5 + 0.5);
-                p.y = canvas.height + Math.random() * 100;
-                p.emoji = ['✨', '💕', '⭐'][Math.floor(Math.random() * 3)];
-            });
-        } else if (type === 'bubbles') {
-            particles.forEach(p => {
-                p.speedY = -(Math.random() * 1 + 0.3);
-                p.y = canvas.height + Math.random() * 100;
-                p.speedX = (Math.random() - 0.5) * 0.5;
-            });
-        }
+        const spawn = () => {
+            const inks = readInks();
+            const p: any = {
+                x: Math.random() * w, y: -10,
+                vx: (Math.random() - 0.5) * 0.6,
+                vy: 0.6 + Math.random() * 1.2,
+                rot: Math.random() * Math.PI * 2,
+                vr: (Math.random() - 0.5) * 0.04,
+                life: 0,
+                size: 10 + Math.random() * 16,
+                color: Math.random() < 0.6 ? inks[0] : inks[1],
+                kind,
+            };
+            if (kind === 'confetti') p.size = 8 + Math.random() * 8;
+            if (kind === 'petals') { p.size = 11 + Math.random() * 10; p.vy = 0.3 + Math.random() * 0.6; }
+            particles.push(p);
+        };
 
-        const animate = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let last = performance.now();
+        let acc = 0;
+        const target = 28 * density;
 
-            particles.forEach(p => {
-                p.x += p.speedX;
-                p.y += p.speedY;
-                p.rotation += p.rotationSpeed;
-
-                // Reset cuando sale de pantalla
-                if (type === 'float-up' || type === 'bubbles') {
-                    if (p.y < -50) {
-                        p.y = canvas.height + 20;
-                        p.x = Math.random() * canvas.width;
-                    }
-                } else {
-                    if (p.y > canvas.height + 50) {
-                        p.y = -20;
-                        p.x = Math.random() * canvas.width;
-                    }
-                }
-
-                if (p.x < -50) p.x = canvas.width + 20;
-                if (p.x > canvas.width + 50) p.x = -20;
-
+        const tick = (t: number) => {
+            const dt = Math.min(50, t - last); last = t;
+            acc += dt;
+            while (particles.length < target && acc > 30) { spawn(); acc -= 30; }
+            ctx.clearRect(0, 0, w, h);
+            ctx.globalCompositeOperation = 'multiply';
+            particles = particles.filter(p => {
+                p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life += dt;
+                if (p.kind === 'petals') p.x += Math.sin(p.life / 600) * 0.6;
+                if (p.kind === 'confetti') p.vy += 0.005;
+                const alive = p.y < h + 30 && p.x > -30 && p.x < w + 30;
+                if (!alive) return false;
                 ctx.save();
                 ctx.translate(p.x, p.y);
-                ctx.rotate((p.rotation * Math.PI) / 180);
-                ctx.globalAlpha = p.opacity;
-                ctx.font = `${p.size}px serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(p.emoji || '✨', 0, 0);
+                ctx.rotate(p.rot);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = 0.78;
+                if (p.kind === 'hearts') heartPath(0, -p.size / 2, p.size / 2);
+                else if (p.kind === 'confetti') ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                else if (p.kind === 'petals') {
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, p.size, p.size * 0.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
                 ctx.restore();
+                return true;
             });
-
-            animationRef.current = requestAnimationFrame(animate);
+            raf = requestAnimationFrame(tick);
         };
+        raf = requestAnimationFrame(tick);
 
-        animate();
-
-        return () => {
-            window.removeEventListener('resize', resize);
-            cancelAnimationFrame(animationRef.current);
-        };
-    }, [type, color]);
-
-    if (type === 'none' || type === 'fade-in') return null;
+        return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+    }, [kind, density]);
 
     return (
         <canvas
-            ref={canvasRef}
-            className="fixed inset-0 pointer-events-none z-10"
-            style={{ width: '100%', height: '100%' }}
+            ref={ref}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', mixBlendMode: 'multiply', zIndex: 2 }}
         />
     );
 }
 
-// ============================================================
-// COMPONENTE: Reproductor de música
-// ============================================================
-function MusicPlayer({ musicId }: { musicId: string }) {
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [playing, setPlaying] = useState(false);
-    const [userInteracted, setUserInteracted] = useState(false);
+// ── EscapeNoButton — riso flat, blue outline ──────────────────
+function clamp(v: number, a: number, b: number) { return Math.max(a, Math.min(b, v)); }
 
-    const musicUrl = MUSIC_URLS[musicId];
+function EscapeNoButton({
+    label,
+    containerRef,
+    noButtonEscapes,
+    onAnswer,
+    answered,
+}: {
+    label: string;
+    containerRef: React.RefObject<HTMLDivElement | null>;
+    noButtonEscapes: boolean;
+    onAnswer: () => void;
+    answered: boolean;
+}) {
+    const [pos, setPos] = useState({ x: 0, y: 0 });
+    const ref = useRef<HTMLButtonElement>(null);
 
-    useEffect(() => {
-        if (!musicUrl) return;
-
-        // Intentar autoplay después de interacción del usuario
-        const handleInteraction = () => {
-            if (!userInteracted) {
-                setUserInteracted(true);
-                if (audioRef.current) {
-                    audioRef.current.volume = 0.3;
-                    audioRef.current.play().then(() => {
-                        setPlaying(true);
-                    }).catch(() => {
-                        // Autoplay bloqueado, el usuario puede dar click
-                    });
-                }
-            }
-        };
-
-        document.addEventListener('click', handleInteraction, { once: true });
-        document.addEventListener('touchstart', handleInteraction, { once: true });
-
-        return () => {
-            document.removeEventListener('click', handleInteraction);
-            document.removeEventListener('touchstart', handleInteraction);
-        };
-    }, [musicUrl, userInteracted]);
-
-    const toggleMusic = () => {
-        if (!audioRef.current) return;
-
-        if (playing) {
-            audioRef.current.pause();
-            setPlaying(false);
-        } else {
-            audioRef.current.volume = 0.3;
-            audioRef.current.play().then(() => setPlaying(true)).catch(() => { });
-        }
+    const bump = () => {
+        if (!noButtonEscapes || answered) return;
+        const c = containerRef.current;
+        const btn = ref.current;
+        if (!c || !btn) return;
+        const cr = c.getBoundingClientRect();
+        const br = btn.getBoundingClientRect();
+        const maxX = cr.width - br.width - 24;
+        const maxY = cr.height - br.height - 24;
+        setPos({
+            x: (Math.random() - 0.5) * Math.min(maxX, 320),
+            y: (Math.random() - 0.5) * Math.min(maxY, 200),
+        });
     };
 
-    if (!musicUrl) return null;
-
     return (
-        <>
-            <audio ref={audioRef} src={musicUrl} loop preload="auto" />
-            <button
-                onClick={toggleMusic}
-                className="fixed top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/30 transition-all"
-                aria-label={playing ? 'Pausar música' : 'Reproducir música'}
-            >
-                {playing ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-            </button>
-        </>
+        <button
+            ref={ref}
+            onMouseEnter={bump}
+            onFocus={bump}
+            onClick={() => { if (!noButtonEscapes) onAnswer(); }}
+            style={{
+                position: 'relative',
+                transform: `translate(${pos.x}px, ${pos.y}px)`,
+                transition: 'transform 320ms cubic-bezier(.2,.9,.3,1.1)',
+                background: 'transparent',
+                color: 'var(--ink-blue)',
+                border: '2px solid var(--ink-blue)',
+                padding: '12px 28px',
+                borderRadius: 0,
+                fontFamily: 'var(--sans)',
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+            }}
+        >
+            {label}
+        </button>
     );
 }
 
-// ============================================================
-// COMPONENTE: Stickers flotantes
-// ============================================================
-function FloatingStickers({ stickerIds }: { stickerIds: string[] }) {
-    if (!stickerIds || stickerIds.length === 0) return null;
-
-    return (
-        <div className="flex flex-wrap justify-center gap-3 mb-6">
-            {stickerIds.map((id, index) => (
-                <span
-                    key={id}
-                    className="text-4xl"
-                    style={{
-                        animation: `bounce 2s ease-in-out ${index * 0.2}s infinite`,
-                        display: 'inline-block',
-                    }}
-                >
-                    {STICKER_MAP[id] || '💖'}
-                </span>
-            ))}
-        </div>
-    );
-}
-
-// ============================================================
-// COMPONENTE: Imágenes decorativas
-// ============================================================
-function DecorativeImages({ urls }: { urls: string[] }) {
-    if (!urls || urls.length === 0) return null;
-
-    return (
-        <div className="flex flex-wrap justify-center gap-3 my-6">
-            {urls.map((url, i) => (
-                <img
-                    key={i}
-                    src={url}
-                    alt=""
-                    className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-xl border-2 border-white/30 shadow-lg"
-                    style={{
-                        animation: `fadeInUp 0.6s ease-out ${i * 0.15}s both`,
-                    }}
-                />
-            ))}
-        </div>
-    );
-}
-
-// ============================================================
-// COMPONENTE: Video embed
-// ============================================================
+// ── VideoEmbed ─────────────────────────────────────────────────
 function VideoEmbed({ url }: { url: string }) {
     const embedUrl = getEmbedUrl(url);
     if (!embedUrl) return null;
-
     return (
-        <div className="w-full max-w-lg mx-auto my-6 rounded-xl overflow-hidden shadow-lg">
-            <div className="relative" style={{ paddingBottom: '56.25%' }}>
+        <div style={{ width: '100%', maxWidth: 480, margin: '20px auto', border: '2px solid var(--ink-black)' }}>
+            <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
                 <iframe
                     src={embedUrl}
-                    className="absolute inset-0 w-full h-full"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     loading="lazy"
@@ -342,9 +256,42 @@ function VideoEmbed({ url }: { url: string }) {
     );
 }
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
+function renderMsg(text: string): React.ReactNode {
+    if (!text || !text.includes('*')) return text;
+    return text.split(/(\*[^*]+\*)/g).map((part, i) =>
+        part.startsWith('*') && part.endsWith('*') && part.length > 2
+            ? <em key={i} style={{ fontFamily: 'var(--serif-italic)', fontStyle: 'italic' }}>{part.slice(1, -1)}</em>
+            : part
+    );
+}
+
+// ── YesScene ──────────────────────────────────────────────────
+function YesScene({ recipient, sender, onReset }: { recipient: string; sender?: string; onReset: () => void }) {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', animation: 'fadeUp .6s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
+                <span className="mono-eyebrow" style={{ fontSize: 10 }}>respuesta registrada</span>
+                <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
+            </div>
+            <h1 className="serif-display mis-red" style={{ fontSize: 'clamp(96px, 26vw, 140px)', margin: 0, lineHeight: 0.86 }}>
+                sí.
+            </h1>
+            <div style={{ marginTop: 24, fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 18, color: 'var(--ink-black)', maxWidth: 340, lineHeight: 1.5 }}>
+                {recipient} ya recibió la noticia.
+            </div>
+            <button
+                onClick={onReset}
+                style={{ marginTop: 28, background: 'transparent', border: '1.5px solid var(--ink-blue)', padding: '8px 16px', borderRadius: 0, cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-blue)', textTransform: 'uppercase', letterSpacing: '0.15em' }}
+            >
+                ← ver carta otra vez
+            </button>
+            <style>{`@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }`}</style>
+        </div>
+    );
+}
+
+// ── Main component ────────────────────────────────────────────
 export default function PublicPageView() {
     const params = useParams();
     const shortId = params.shortId as string;
@@ -353,184 +300,113 @@ export default function PublicPageView() {
     const [pageExpired, setPageExpired] = useState(false);
     const [answered, setAnswered] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState<'yes' | 'no' | null>(null);
-    const noButtonRef = useRef<HTMLButtonElement>(null);
+    const [musicOn, setMusicOn] = useState(false);
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const pageLoadedRef = useRef(false);
     const { t } = useTranslation();
 
     useEffect(() => {
         if (pageLoadedRef.current) return;
         pageLoadedRef.current = true;
-        loadPage();
+        api.pages.getByShortId(shortId)
+            .then(({ data }) => setPage(data.data))
+            .catch((err: any) => {
+                if (err.response?.status === 410 || err.response?.data?.code === 'PAGE_EXPIRED') {
+                    setPageExpired(true);
+                } else {
+                    toast.error(t.publicPage.pageNotFound);
+                }
+            })
+            .finally(() => setLoading(false));
     }, [shortId]);
-
-    // Cargar Google Fonts dinámicamente según la página
-    useEffect(() => {
-        if (!page) return;
-        const fonts = [page.titleFont, page.bodyFont].filter(Boolean);
-        if (fonts.length === 0) return;
-
-        const fontsParam = fonts.map((f: string) => f.replace(/ /g, '+')).join('&family=');
-        const link = document.createElement('link');
-        link.href = `https://fonts.googleapis.com/css2?family=${fontsParam}&display=swap`;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-
-        return () => {
-            document.head.removeChild(link);
-        };
-    }, [page?.titleFont, page?.bodyFont]);
-
-    const loadPage = async () => {
-        try {
-            const { data } = await api.pages.getByShortId(shortId);
-            setPage(data.data);
-        } catch (error: any) {
-            if (error.response?.status === 410 || error.response?.data?.code === 'PAGE_EXPIRED') {
-                setPageExpired(true);
-            } else {
-                toast.error(t.publicPage.pageNotFound);
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleAnswer = async (answer: 'yes' | 'no') => {
         if (answered) return;
-
         try {
             await api.pages.respond(shortId, answer);
             setAnswered(true);
             setSelectedAnswer(answer);
-
-            if (answer === 'yes') {
-                toast.success(t.publicPage.joyResponse, {
-                    duration: 4000,
-                    icon: '💖',
-                });
-            } else {
-                toast(t.publicPage.responseRegistered, {
-                    duration: 3000,
-                    icon: '😊',
-                });
-            }
-        } catch (error) {
+        } catch {
             toast.error(t.publicPage.responseError);
         }
     };
-    const pageLoadedRef = useRef(false);
-    const [noButtonPos, setNoButtonPos] = useState<{ x: number; y: number } | null>(null);
-    const [noButtonInitialized, setNoButtonInitialized] = useState(false);
 
-    const handleNoButtonMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (!page?.noButtonEscapes || answered) return;
-
-        const button = e.currentTarget;
-        const bw = button.offsetWidth;
-        const bh = button.offsetHeight;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const margin = 20;
-
-        // Primera vez: capturar posición original
-        if (!noButtonInitialized) {
-            const rect = button.getBoundingClientRect();
-            setNoButtonInitialized(true);
-            // Generar primera posición aleatoria
-            const safeMaxX = vw - bw - margin;
-            const safeMaxY = vh - bh - margin;
-            setNoButtonPos({
-                x: margin + Math.random() * Math.max(0, safeMaxX - margin),
-                y: margin + Math.random() * Math.max(0, safeMaxY - margin),
-            });
-            return;
+    const toggleMusic = () => {
+        const audio = audioRef.current;
+        if (!audio) return;
+        if (musicOn) {
+            audio.pause();
+            setMusicOn(false);
+        } else {
+            audio.volume = 0.3;
+            audio.play().then(() => setMusicOn(true)).catch(() => { });
         }
-
-        const safeMaxX = vw - bw - margin;
-        const safeMaxY = vh - bh - margin;
-
-        setNoButtonPos({
-            x: margin + Math.random() * Math.max(0, safeMaxX - margin),
-            y: margin + Math.random() * Math.max(0, safeMaxY - margin),
-        });
     };
 
-    const handleNoButtonTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
-        if (!page?.noButtonEscapes || answered) return;
-        e.preventDefault();
-        handleNoButtonMouseEnter(e as any);
-    };
-
-    // ---- Loading ----
+    // ── Loading ───────────────────────────────────────────────
     if (loading) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 999, border: '3px solid #d9c7f5', borderTopColor: '#ff6b9d', animation: 'spin 1s linear infinite' }} />
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', animation: 'spin 1s linear infinite' }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
             </div>
         );
     }
 
-    // ---- Expired ----
+    // ── Expired ───────────────────────────────────────────────
     if (pageExpired) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)', padding: '24px' }}>
+            <div className="grain" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)', padding: 24, fontFamily: 'var(--mono)' }}>
                 <div style={{ textAlign: 'center', maxWidth: 400 }}>
-                    <div style={{ fontSize: 72, marginBottom: 16 }}>⏰</div>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'white', border: '2px solid #2d1b3d', borderRadius: 999, boxShadow: '3px 3px 0 #2d1b3d', fontWeight: 600, fontSize: 12, marginBottom: 16 }}>
-                        <span>😔</span><span>página expirada</span>
-                    </div>
-                    <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 40, fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95, color: '#2d1b3d', margin: '0 0 12px' }}>
-                        esta <em style={{ fontStyle: 'italic', color: '#ff6b9d' }}>página</em> ya no está activa
+                    <div className="mono-eyebrow" style={{ marginBottom: 16, color: 'var(--ink-red)' }}>— página expirada —</div>
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(48px, 10vw, 72px)', lineHeight: 0.88, color: 'var(--ink-black)', marginBottom: 16 }}>
+                        <span className="mis-red">esta</span> <span className="mis-blue">página</span> ya no está activa
                     </h1>
-                    <p style={{ fontSize: 16, color: '#4d3361', lineHeight: 1.55, marginBottom: 28 }}>
+                    <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.6, marginBottom: 28 }}>
                         Las páginas del plan gratuito están disponibles por 7 días.
                     </p>
-                    <a href="/upgrade" style={{ display: 'inline-block', background: '#ff6b9d', color: 'white', border: '2px solid #2d1b3d', padding: '14px 24px', borderRadius: 999, fontSize: 14, fontWeight: 700, textDecoration: 'none', boxShadow: '3px 3px 0 #2d1b3d' }}>
-                        crear con plan PRO · sin vencimiento ✨
+                    <a href="/upgrade" className="btn-accent" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                        crear con plan PRO
                     </a>
                 </div>
             </div>
         );
     }
 
-    // ---- Not found ----
+    // ── Not found ─────────────────────────────────────────────
     if (!page) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)', padding: '24px' }}>
+            <div className="grain" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)', padding: 24, fontFamily: 'var(--mono)' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 72, marginBottom: 16 }}>💔</div>
-                    <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 40, fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95, color: '#2d1b3d', margin: '0 0 12px' }}>
+                    <div className="mono-eyebrow" style={{ marginBottom: 16, color: 'var(--ink-blue)' }}>— 404 —</div>
+                    <h1 className="serif-display mis-red" style={{ fontSize: 'clamp(48px, 10vw, 72px)', lineHeight: 0.88, marginBottom: 12 }}>
                         {t.publicPage.pageNotFound}
                     </h1>
-                    <p style={{ fontSize: 16, color: '#4d3361' }}>{t.publicPage.pageNotFoundDesc}</p>
+                    <p style={{ fontSize: 14, color: 'var(--ink-soft)' }}>{t.publicPage.pageNotFoundDesc}</p>
                 </div>
             </div>
         );
     }
 
-    // ---- PRO page with custom AI HTML ----
+    // ── PRO page — custom AI HTML ─────────────────────────────
     if (page.pageType === 'pro' && page.customHTML && page.customCSS) {
         return (
             <>
                 {answered && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-                        <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl animate-bounce-soft">
-                            <div className="text-6xl mb-4">
-                                {selectedAnswer === 'yes' ? '💕' : '😊'}
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div style={{ background: 'var(--paper)', border: '2px solid var(--ink-black)', padding: '32px 40px', textAlign: 'center', maxWidth: 400 }}>
+                            <div style={{ fontSize: 48, marginBottom: 12 }}>{selectedAnswer === 'yes' ? '💕' : '😊'}</div>
+                            <h2 className="serif-display" style={{ fontSize: 36, color: 'var(--ink-black)', marginBottom: 8 }}>
                                 {selectedAnswer === 'yes' ? t.publicPage.thanks : t.publicPage.understood}
                             </h2>
-                            <p className="text-gray-600">{t.publicPage.responseRecorded}</p>
+                            <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--mono)', fontSize: 13 }}>{t.publicPage.responseRecorded}</p>
                         </div>
                     </div>
                 )}
-
-                {/* Música de fondo (también para PRO) */}
                 {page.backgroundMusic && page.backgroundMusic !== 'none' && (
-                    <MusicPlayer musicId={page.backgroundMusic} />
+                    <audio ref={audioRef} src={MUSIC_URLS[page.backgroundMusic]} loop preload="auto" />
                 )}
-
                 <ProPageRenderer
                     html={page.customHTML}
                     css={page.customCSS}
@@ -542,151 +418,152 @@ export default function PublicPageView() {
         );
     }
 
-    // ---- FREE page — Pastel Gen-Z aesthetic ----
-    const stickers = (page.selectedStickers || []).map((id: string) => STICKER_MAP[id] || '💖').slice(0, 3);
-    const titleFont = page.titleFont;
-    const bodyFont = page.bodyFont;
+    // ── FREE page — Risograph zine aesthetic ──────────────────
+    const stickers = (page.selectedStickers || []).map((id: string) => STICKER_MAP[id] || '💖');
+    const words = (page.title || '').trim().split(/\s+/);
+    const hasMusic = page.backgroundMusic && page.backgroundMusic !== 'none';
+    const hasAnimation = page.animation && page.animation !== 'none' && page.animation !== 'fade-in';
 
     return (
         <div
+            ref={containerRef}
+            className="grain"
             style={{
                 position: 'relative',
                 minHeight: '100vh',
                 width: '100%',
-                background: page.backgroundColor || 'linear-gradient(160deg, #ede4fa 0%, #fde5dd 50%, #ffd4d4 100%)',
+                background: 'var(--paper)',
+                backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.3  0 0 0 0 0.1  0 0 0 0 0 0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>\")",
                 overflow: 'hidden',
-                fontFamily: 'Bricolage Grotesque, system-ui, sans-serif',
-                color: page.textColor || '#2d1b3d',
+                fontFamily: 'var(--mono)',
+                color: 'var(--ink-black)',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
             }}
         >
-            {/* Soft blob shapes */}
-            <div style={{ position: 'absolute', top: '-10%', left: '-15%', width: '60%', aspectRatio: '1', borderRadius: '50%', background: 'radial-gradient(circle, rgba(217,199,245,0.6), transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: '-15%', right: '-15%', width: '70%', aspectRatio: '1', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,181,154,0.5), transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+            {/* Particle canvas */}
+            {hasAnimation && <ParticleCanvas kind={animToKind(page.animation)} />}
 
-            {/* Background image */}
-            {page.backgroundImageUrl && (
-                <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${page.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.2, pointerEvents: 'none' }} />
+            {/* Riso circles — top right */}
+            <svg style={{ position: 'absolute', top: -60, right: -80, width: 320, height: 320, mixBlendMode: 'multiply', opacity: 0.78, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="90" fill="var(--ink-red)" />
+            </svg>
+            <svg style={{ position: 'absolute', top: -40, right: -100, width: 320, height: 320, mixBlendMode: 'multiply', opacity: 0.7, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="86" fill="var(--ink-blue)" />
+            </svg>
+
+            {/* Audio */}
+            {hasMusic && <audio ref={audioRef} src={MUSIC_URLS[page.backgroundMusic]} loop preload="auto" />}
+
+            {/* Top chrome — music toggle only */}
+            {hasMusic && (
+                <div style={{ position: 'absolute', top: 14, right: 20, zIndex: 5 }}>
+                    <button
+                        onClick={toggleMusic}
+                        aria-label="música"
+                        style={{ width: 34, height: 34, borderRadius: 0, border: '2px solid var(--ink-blue)', background: musicOn ? 'var(--ink-blue)' : 'transparent', color: musicOn ? 'var(--paper)' : 'var(--ink-blue)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontFamily: 'var(--mono)' }}
+                    >
+                        ♪
+                    </button>
+                </div>
             )}
 
-            {/* Particle animation */}
-            <BackgroundAnimation type={page.animation || 'none'} color={page.textColor || '#ff6b9d'} />
+            {/* Main */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '70px 24px 100px', textAlign: 'center', zIndex: 3, position: 'relative' }}>
 
-            {/* Music */}
-            {page.backgroundMusic && page.backgroundMusic !== 'none' && (
-                <MusicPlayer musicId={page.backgroundMusic} />
-            )}
-
-
-            {/* Main composition */}
-            <div style={{ position: 'relative', zIndex: 3, padding: '80px 24px 100px', textAlign: 'center', maxWidth: 560, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {!answered ? (
                     <>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(237,228,250,0.9)', border: '2px solid #2d1b3d', borderRadius: 999, boxShadow: '3px 3px 0 #2d1b3d', fontWeight: 600, fontSize: 12, marginBottom: 22 }}>
-                            <span>💌</span><span>una carta para {page.recipientName?.toLowerCase()}</span>
+                        {/* Eyebrow */}
+                        <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
+                            <span className="mono-eyebrow" style={{ fontSize: 10 }}>una carta para {(page.recipientName || '').toLowerCase()}</span>
+                            <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
                         </div>
 
-                        {/* Floating stickers + title */}
-                        <div style={{ position: 'relative', marginBottom: 4 }}>
-                            {stickers[0] && <span style={{ position: 'absolute', left: -36, top: -10, fontSize: 32, transform: 'rotate(-18deg)', filter: 'drop-shadow(2px 2px 0 rgba(45,27,61,0.15))' }}>{stickers[0]}</span>}
-                            {stickers[1] && <span style={{ position: 'absolute', right: -32, top: -20, fontSize: 28, transform: 'rotate(20deg)', filter: 'drop-shadow(2px 2px 0 rgba(45,27,61,0.15))' }}>{stickers[1]}</span>}
-
-                            <h1 style={{
-                                fontFamily: titleFont ? `'${titleFont}', Fraunces, Georgia, serif` : 'Fraunces, Georgia, serif',
-                                fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95,
-                                fontSize: 'clamp(40px, 10vw, 60px)', margin: 0, color: page.textColor || '#2d1b3d',
-                            }}>
-                                {page.title}
+                        {/* Stickers + title */}
+                        <div style={{ position: 'relative' }}>
+                            {stickers[0] && (
+                                <span style={{ position: 'absolute', left: -28, top: 4, fontSize: 26, color: 'var(--ink-red)', transform: 'rotate(-18deg)' }}>{stickers[0]}</span>
+                            )}
+                            {stickers[1] && (
+                                <span style={{ position: 'absolute', right: -24, top: -10, fontSize: 22, color: 'var(--ink-blue)', transform: 'rotate(14deg)' }}>{stickers[1]}</span>
+                            )}
+                            <h1
+                                className="serif-display"
+                                style={{ fontSize: 'clamp(54px, 13vw, 80px)', margin: 0, maxWidth: 360, lineHeight: 0.86 }}
+                            >
+                                {words.map((w: string, i: number) => (
+                                    <span
+                                        key={i}
+                                        className={i % 2 === 0 ? 'mis-red' : 'mis-blue'}
+                                        style={{ display: 'inline-block', marginRight: '0.18em' }}
+                                    >
+                                        {w}
+                                    </span>
+                                ))}
                             </h1>
                         </div>
 
-                        {/* Message */}
-                        {page.message && (
-                            <p style={{ marginTop: 24, fontFamily: bodyFont ? `'${bodyFont}', sans-serif` : 'inherit', fontSize: 16, color: page.textColor || '#4d3361', maxWidth: 320, lineHeight: 1.55, fontWeight: 400, opacity: 0.9 }}>
-                                {page.message}
-                            </p>
+                        {/* Background image (subtle) */}
+                        {page.backgroundImageUrl && (
+                            <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${page.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.08, pointerEvents: 'none', mixBlendMode: 'multiply' }} />
                         )}
 
-                        {/* Images & video */}
-                        <DecorativeImages urls={page.decorativeImageUrls || []} />
+                        {/* Message */}
+                        {page.message && (
+                            <div style={{ marginTop: 26, fontFamily: 'var(--serif)', fontSize: 17, fontStyle: 'italic', color: 'var(--ink-black)', maxWidth: 320, lineHeight: 1.55 }}>
+                                {renderMsg(page.message)}
+                            </div>
+                        )}
+
+                        {/* Decorative images */}
+                        {(page.decorativeImageUrls || []).length > 0 && (
+                            <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                {page.decorativeImageUrls.slice(0, 3).map((url: string, i: number) => (
+                                    <img key={i} src={url} alt="" style={{ width: 80, height: 80, objectFit: 'cover', border: '2px solid var(--ink-black)' }} />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Video */}
                         {page.videoUrl && <VideoEmbed url={page.videoUrl} />}
 
-                        {/* Sender signature */}
-                        <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 18px', background: 'white', borderRadius: 999, border: '2px solid #2d1b3d', boxShadow: '3px 3px 0 #2d1b3d' }}>
-                            <span style={{ fontFamily: 'Caveat, cursive', fontWeight: 600, fontSize: 22, color: '#ff6b9d' }}>
-                                con amor ♥
-                            </span>
-                            {stickers[2] && <span style={{ fontSize: 18 }}>{stickers[2]}</span>}
+                        {/* Sender */}
+                        <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span style={{ width: 18, height: 1, background: 'var(--ink-red)' }} />
+                            <span style={{ fontSize: 24, color: 'var(--ink-red)', fontFamily: 'var(--hand)' }}>— con amor</span>
+                            {stickers[2] && <span style={{ fontSize: 18, color: 'var(--ink-red)' }}>{stickers[2]}</span>}
                         </div>
 
-                        {/* CTA buttons */}
-                        <div style={{ marginTop: 44, display: 'flex', gap: 16, alignItems: 'center', position: 'relative' }}>
+                        {/* CTA */}
+                        <div style={{ marginTop: 40, display: 'flex', gap: 16, alignItems: 'center', position: 'relative' }}>
                             <button
                                 onClick={() => handleAnswer('yes')}
-                                style={{ background: page.accentColor || '#ff6b9d', color: 'white', border: '2px solid #2d1b3d', padding: '14px 32px', borderRadius: 999, fontWeight: 700, fontSize: 16, cursor: 'pointer', boxShadow: '3px 3px 0 #2d1b3d' }}
+                                className="btn-accent"
+                                style={{ padding: '14px 32px', fontSize: 15 }}
                             >
                                 {page.yesButtonText}
                             </button>
-
-                            {!noButtonInitialized && (
-                                <button
-                                    ref={noButtonRef}
-                                    onMouseEnter={handleNoButtonMouseEnter}
-                                    onTouchStart={handleNoButtonTouchStart}
-                                    onClick={() => !page.noButtonEscapes && handleAnswer('no')}
-                                    style={{ background: 'white', color: '#2d1b3d', border: '2px solid #2d1b3d', padding: '14px 30px', borderRadius: 999, fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '3px 3px 0 #2d1b3d' }}
-                                >
-                                    {page.noButtonText}
-                                </button>
-                            )}
-
-                            {noButtonInitialized && noButtonPos && typeof document !== 'undefined' &&
-                                createPortal(
-                                    <button
-                                        onMouseEnter={handleNoButtonMouseEnter}
-                                        onTouchStart={handleNoButtonTouchStart}
-                                        onClick={() => { if (!page.noButtonEscapes) handleAnswer('no'); }}
-                                        style={{ position: 'fixed', left: `${noButtonPos.x}px`, top: `${noButtonPos.y}px`, zIndex: 9999, background: 'white', color: '#2d1b3d', border: '2px solid #2d1b3d', padding: '14px 30px', borderRadius: 999, fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '3px 3px 0 #2d1b3d', transition: 'left 0.25s cubic-bezier(.2,.9,.3,1.1), top 0.25s cubic-bezier(.2,.9,.3,1.1)', margin: 0 }}
-                                    >
-                                        {page.noButtonText}
-                                    </button>,
-                                    document.body
-                                )
-                            }
+                            <EscapeNoButton
+                                label={page.noButtonText}
+                                containerRef={containerRef}
+                                noButtonEscapes={!!page.noButtonEscapes}
+                                onAnswer={() => handleAnswer('no')}
+                                answered={answered}
+                            />
                         </div>
 
-                        {/* Watermark */}
-                        {page.showWatermark && (
-                            <div style={{ position: 'absolute', bottom: 18, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
-                                <span style={{ fontSize: 10, color: 'rgba(45,27,61,0.4)', fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 600, letterSpacing: '0.06em' }}>
-                                    made with 💗 on lovepages
-                                </span>
-                            </div>
-                        )}
+                        {/* Footer */}
+                        <div style={{ position: 'absolute', bottom: 16, left: 24, right: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-soft)' }}>
+                            <span>printed with ♥</span>
+                            <span>lovepages · mx</span>
+                        </div>
                     </>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', animation: 'fadeUp .6s ease' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: '#b8e6d2', border: '2px solid #2d1b3d', borderRadius: 999, boxShadow: '3px 3px 0 #2d1b3d', fontWeight: 600, fontSize: 12, marginBottom: 18 }}>
-                            <span>✨</span><span>{selectedAnswer === 'yes' ? 'respondiste que sí 💖' : 'respuesta registrada'}</span>
-                        </div>
-                        <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.95, fontSize: 'clamp(64px, 18vw, 100px)', margin: 0, color: '#2d1b3d' }}>
-                            {selectedAnswer === 'yes'
-                                ? <><em style={{ fontStyle: 'italic', color: '#ff6b9d' }}>¡sí!</em><span style={{ fontSize: 56, marginLeft: 8 }}>💖</span></>
-                                : <em style={{ fontStyle: 'italic', color: '#8a7099' }}>entendido</em>
-                            }
-                        </h1>
-                        <div style={{ marginTop: 20, fontSize: 16, color: '#4d3361', maxWidth: 300, lineHeight: 1.55 }}>
-                            {t.publicPage.responseRecorded}
-                        </div>
-                        <button onClick={() => { setAnswered(false); setSelectedAnswer(null); setNoButtonPos(null); setNoButtonInitialized(false); }}
-                            style={{ marginTop: 28, background: 'white', border: '2px solid #2d1b3d', padding: '8px 16px', borderRadius: 999, cursor: 'pointer', fontSize: 11, boxShadow: '2px 2px 0 #2d1b3d', color: '#8a7099', fontWeight: 600, letterSpacing: '0.06em' }}>
-                            ← ver carta otra vez
-                        </button>
-                        <style>{`@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }`}</style>
-                    </div>
+                    <YesScene
+                        recipient={page.recipientName || ''}
+                        onReset={() => { setAnswered(false); setSelectedAnswer(null); }}
+                    />
                 )}
             </div>
         </div>

@@ -35,13 +35,13 @@ interface NotificationItem {
 }
 
 const TYPE_STYLES: Record<string, { bg: string; border: string; label: string }> = {
-    info: { bg: 'bg-blue-50', border: 'border-blue-200', label: 'Info' },
-    success: { bg: 'bg-green-50', border: 'border-green-200', label: 'Éxito' },
-    warning: { bg: 'bg-amber-50', border: 'border-amber-200', label: 'Aviso' },
-    promo: { bg: 'bg-purple-50', border: 'border-purple-200', label: 'Promo' },
-    update: { bg: 'bg-cyan-50', border: 'border-cyan-200', label: 'Update' },
-    response: { bg: 'bg-pink-50', border: 'border-pink-200', label: 'Respuesta' },
-    system: { bg: 'bg-gray-50', border: 'border-gray-200', label: 'Sistema' },
+    info: { bg: 'bg-[var(--lila-soft)]', border: 'border-[var(--ink-black)]', label: 'Info' },
+    success: { bg: 'bg-[var(--paper-soft)]', border: 'border-[var(--ink-black)]', label: 'Éxito' },
+    warning: { bg: 'bg-[var(--paper-2)]', border: 'border-[var(--ink-black)]', label: 'Aviso' },
+    promo: { bg: 'bg-[var(--lila)]', border: 'border-[var(--ink-black)]', label: 'Promo' },
+    update: { bg: 'bg-[var(--paper-soft)]', border: 'border-[var(--ink-black)]', label: 'Update' },
+    response: { bg: 'bg-[var(--melocoton)]', border: 'border-[var(--ink-black)]', label: 'Respuesta' },
+    system: { bg: 'bg-[var(--paper)]', border: 'border-[var(--ink-black)]', label: 'Sistema' },
 };
 
 const FILTERS = [
@@ -165,13 +165,13 @@ export default function NotificationsPage() {
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
+                <div className="animate-spin h-12 w-12" style={{ border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', borderRadius: '50%' }} />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
             <Header />
 
             <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-3xl mx-auto">
@@ -184,11 +184,11 @@ export default function NotificationsPage() {
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                                <Bell className="w-6 h-6 text-pink-600" />
-                                Notificaciones
+                            <h1 className="serif-display flex items-center gap-2" style={{ fontSize: 32, color: 'var(--ink-black)' }}>
+                                <Bell className="w-5 h-5" style={{ color: 'var(--ink-red)' }} />
+                                notificaciones
                                 {unreadCount > 0 && (
-                                    <span className="px-2 py-0.5 bg-pink-100 text-pink-600 text-sm font-bold rounded-full">
+                                    <span style={{ padding: '2px 8px', background: 'var(--ink-red)', color: 'var(--paper)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
                                         {unreadCount}
                                     </span>
                                 )}
@@ -201,7 +201,7 @@ export default function NotificationsPage() {
                             onClick={handleMarkAllAsRead}
                             variant="ghost"
                             size="sm"
-                            className="text-pink-600 hover:text-pink-700 gap-1"
+                            className="gap-1" style={{ color: 'var(--ink-blue)' }}
                         >
                             <CheckCheck className="w-4 h-4" />
                             <span className="hidden sm:inline">Marcar todas como leídas</span>
@@ -216,10 +216,13 @@ export default function NotificationsPage() {
                         <button
                             key={filter.id}
                             onClick={() => setActiveFilter(filter.id)}
-                            className={`px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeFilter === filter.id
-                                    ? 'bg-pink-600 text-white shadow-md shadow-pink-600/20'
-                                    : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-200'
-                                }`}
+                            style={{
+                                padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 120ms',
+                                background: activeFilter === filter.id ? 'var(--ink-black)' : 'var(--paper-soft)',
+                                color: activeFilter === filter.id ? 'var(--paper)' : 'var(--ink-black)',
+                                border: '2px solid var(--ink-black)',
+                                fontFamily: 'var(--mono)', letterSpacing: '0.06em',
+                            }}
                         >
                             {filter.label}
                             {filter.id === 'unread' && unreadCount > 0 && (
@@ -234,7 +237,7 @@ export default function NotificationsPage() {
                 {/* Notification list */}
                 {loading ? (
                     <div className="flex justify-center py-16">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-600" />
+                        <div className="animate-spin h-10 w-10" style={{ border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', borderRadius: '50%' }} />
                     </div>
                 ) : filteredNotifications.length === 0 ? (
                     <div className="text-center py-16">
@@ -258,10 +261,12 @@ export default function NotificationsPage() {
                             return (
                                 <Card
                                     key={notification._id}
-                                    className={`overflow-hidden cursor-pointer transition-all hover:shadow-md border ${!notification.isRead
-                                            ? 'bg-white border-pink-200 shadow-sm'
-                                            : 'bg-white/70 border-gray-100'
-                                        }`}
+                                    style={{
+                                        overflow: 'hidden', cursor: 'pointer', transition: 'all 120ms',
+                                        background: !notification.isRead ? 'var(--paper-soft)' : 'var(--paper)',
+                                        border: `2px solid ${!notification.isRead ? 'var(--ink-black)' : 'var(--rule)'}`,
+                                        boxShadow: !notification.isRead ? '3px 3px 0 var(--ink-black)' : 'none',
+                                    }}
                                     onClick={() => handleNotificationClick(notification)}
                                 >
                                     <CardContent className="p-4">
@@ -304,11 +309,11 @@ export default function NotificationsPage() {
                                                                 e.stopPropagation();
                                                                 handleMarkAsRead(notification._id);
                                                             }}
-                                                            className="flex-shrink-0 p-1 rounded-full hover:bg-pink-100 transition-colors group"
+                                                            style={{ flexShrink: 0, padding: 4, cursor: 'pointer', background: 'none', border: 'none' }}
                                                             title="Marcar como leída"
                                                         >
-                                                            <div className="w-2.5 h-2.5 bg-pink-500 rounded-full group-hover:hidden" />
-                                                            <Check className="w-3.5 h-3.5 text-pink-500 hidden group-hover:block" />
+                                                            <div style={{ width: 10, height: 10, background: 'var(--ink-red)', borderRadius: '50%' }} />
+                                                            <Check style={{ width: 14, height: 14, color: 'var(--ink-blue)', display: 'none' }} />
                                                         </button>
                                                     )}
                                                 </div>
@@ -320,7 +325,7 @@ export default function NotificationsPage() {
                                                     </span>
                                                     {notification.actionUrl &&
                                                         notification.actionText && (
-                                                            <span className="text-xs text-pink-500 font-medium flex items-center gap-1 hover:text-pink-600">
+                                                            <span style={{ fontSize: 11, color: 'var(--ink-blue)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
                                                                 {notification.actionText}
                                                                 <ExternalLink className="w-3 h-3" />
                                                             </span>
@@ -340,7 +345,7 @@ export default function NotificationsPage() {
                                     onClick={handleLoadMore}
                                     variant="ghost"
                                     disabled={loadingMore}
-                                    className="text-pink-600"
+                                    style={{ color: 'var(--ink-blue)' }}
                                 >
                                     {loadingMore ? (
                                         <>

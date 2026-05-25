@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/layout/header';
-import { Heart, Clock, ArrowLeft, ArrowRight, BookOpen } from 'lucide-react';
+import { Clock, ArrowLeft, ArrowRight, BookOpen } from 'lucide-react';
 import { getBlogPost, getAllSlugs, blogPosts } from '@/lib/blog';
 
 interface Props {
@@ -16,13 +16,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const post = getBlogPost(params.slug);
     if (!post) return {};
-
     return {
         title: `${post.title} — Love Pages Blog`,
         description: post.description,
-        alternates: {
-            canonical: `https://lovepages.ink/blog/${post.slug}`,
-        },
+        alternates: { canonical: `https://lovepages.ink/blog/${post.slug}` },
         openGraph: {
             title: post.title,
             description: post.description,
@@ -34,17 +31,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-    'San Valentín': 'bg-red-100 text-red-700',
-    'Consejos': 'bg-purple-100 text-purple-700',
-    'Juegos': 'bg-blue-100 text-blue-700',
-    'Relación a Distancia': 'bg-amber-100 text-amber-700',
-    'Aniversario': 'bg-pink-100 text-pink-700',
+const CATEGORY_STYLE: Record<string, { bg: string; color: string }> = {
+    'San Valentín': { bg: 'var(--ink-red)', color: 'var(--paper)' },
+    'Consejos': { bg: 'var(--ink-blue)', color: 'var(--paper)' },
+    'Juegos': { bg: 'var(--ink-overlap)', color: 'var(--paper)' },
+    'Relación a Distancia': { bg: 'var(--paper-2)', color: 'var(--ink-black)' },
+    'Aniversario': { bg: 'var(--ink-red)', color: 'var(--paper)' },
 };
 
 function formatDate(dateStr: string) {
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function CategoryBadge({ category }: { category: string }) {
+    const style = CATEGORY_STYLE[category] ?? { bg: 'var(--paper-2)', color: 'var(--ink-black)' };
+    return (
+        <span style={{ display: 'inline-block', padding: '3px 10px', background: style.bg, color: style.color, border: '1.5px solid var(--ink-black)', fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            {category}
+        </span>
+    );
 }
 
 export default function BlogPostPage({ params }: Props) {
@@ -67,10 +73,9 @@ export default function BlogPostPage({ params }: Props) {
     const relatedPosts = [...related, ...otherRelated].slice(0, 2);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
             <Header />
 
-            {/* JSON-LD Article structured data */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -80,157 +85,141 @@ export default function BlogPostPage({ params }: Props) {
                         headline: post.title,
                         description: post.description,
                         datePublished: post.publishedAt,
-                        author: {
-                            '@type': 'Organization',
-                            name: 'Love Pages',
-                            url: 'https://lovepages.ink',
-                        },
-                        publisher: {
-                            '@type': 'Organization',
-                            name: 'Love Pages',
-                            url: 'https://lovepages.ink',
-                        },
-                        mainEntityOfPage: {
-                            '@type': 'WebPage',
-                            '@id': `https://lovepages.ink/blog/${post.slug}`,
-                        },
+                        author: { '@type': 'Organization', name: 'Love Pages', url: 'https://lovepages.ink' },
+                        publisher: { '@type': 'Organization', name: 'Love Pages', url: 'https://lovepages.ink' },
+                        mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lovepages.ink/blog/${post.slug}` },
                     }),
                 }}
             />
 
-            <main className="container max-w-3xl mx-auto px-4 py-10 sm:py-16">
-                {/* Breadcrumb */}
-                <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-                    <Link href="/" className="hover:text-pink-600 transition-colors">Inicio</Link>
-                    <span>/</span>
-                    <Link href="/blog" className="hover:text-pink-600 transition-colors">Blog</Link>
-                    <span>/</span>
-                    <span className="text-gray-700 truncate max-w-[200px]">{post.title}</span>
-                </nav>
+            <main style={{ maxWidth: 760, margin: '0 auto' }} className="px-5 py-12 sm:px-12 sm:py-16">
+
+                {/* Masthead */}
+                <div style={{ borderBottom: '3px double var(--ink-black)', paddingBottom: 10, marginBottom: 40, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                    <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-soft)' }}>
+                        <Link href="/" style={{ color: 'var(--ink-soft)', textDecoration: 'none' }}>inicio</Link>
+                        <span>/</span>
+                        <Link href="/blog" style={{ color: 'var(--ink-soft)', textDecoration: 'none' }}>blog</Link>
+                        <span>/</span>
+                        <span style={{ color: 'var(--ink-black)' }}>artículo</span>
+                    </nav>
+                    <span className="mono-eyebrow" style={{ color: 'var(--ink-red)' }}>★ love pages</span>
+                </div>
 
                 {/* Article header */}
-                <header className="mb-10">
-                    <div className="flex items-center gap-3 mb-4">
-                        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${CATEGORY_COLORS[post.category] ?? 'bg-gray-100 text-gray-700'}`}>
-                            {post.category}
-                        </span>
-                        <span className="text-sm text-gray-400 flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
+                <header style={{ marginBottom: 40 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <CategoryBadge category={post.category} />
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                            <Clock style={{ width: 11, height: 11 }} />
                             {post.readingTime} min de lectura
                         </span>
-                        <span className="text-sm text-gray-400">{formatDate(post.publishedAt)}</span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--mono)' }}>{formatDate(post.publishedAt)}</span>
                     </div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-snug mb-4">
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(28px, 5vw, 52px)', color: 'var(--ink-black)', margin: '0 0 16px', lineHeight: 0.9 }}>
                         {post.title}
                     </h1>
-                    <p className="text-lg text-gray-600 leading-relaxed">
+                    <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 16, color: 'var(--ink-soft)', lineHeight: 1.65 }}>
                         {post.description}
                     </p>
                 </header>
 
                 {/* Article content */}
                 <article
+                    style={{ border: '1.5px solid var(--ink-black)', padding: '32px', background: 'var(--paper-soft)', marginBottom: 32 }}
                     className="
-                        bg-white rounded-2xl border border-pink-100 shadow-sm p-6 sm:p-10 mb-10
-                        prose prose-gray max-w-none
-                        prose-headings:font-bold prose-headings:text-gray-900
+                        prose max-w-none
+                        prose-headings:font-black prose-headings:text-[var(--ink-black)] prose-headings:font-[var(--display)] prose-headings:uppercase
                         prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-3
                         prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-2
-                        prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
-                        prose-ul:pl-6 prose-ul:space-y-2 prose-li:text-gray-700
+                        prose-p:text-[var(--ink-soft)] prose-p:leading-relaxed prose-p:mb-4 prose-p:font-[var(--serif)] prose-p:italic
+                        prose-ul:pl-6 prose-ul:space-y-2 prose-li:text-[var(--ink-soft)]
                         prose-ol:pl-6 prose-ol:space-y-2
-                        prose-a:text-pink-600 prose-a:no-underline hover:prose-a:underline
-                        prose-blockquote:border-l-4 prose-blockquote:border-pink-300
-                        prose-blockquote:bg-pink-50 prose-blockquote:px-5 prose-blockquote:py-3
-                        prose-blockquote:rounded-r-xl prose-blockquote:not-italic
-                        prose-strong:text-gray-900
+                        prose-a:text-[var(--ink-blue)] prose-a:no-underline hover:prose-a:underline
+                        prose-blockquote:border-l-4 prose-blockquote:border-[var(--ink-red)]
+                        prose-blockquote:bg-[var(--paper-2)] prose-blockquote:px-5 prose-blockquote:py-3
+                        prose-blockquote:not-italic
+                        prose-strong:text-[var(--ink-black)] prose-strong:font-[var(--sans)] prose-strong:not-italic
                     "
                     dangerouslySetInnerHTML={{ __html: post.content }}
                 />
 
                 {/* CTA box */}
-                <div className="bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl p-6 sm:p-8 text-white text-center mb-10">
-                    <Heart className="w-8 h-8 fill-white mx-auto mb-3" />
-                    <h2 className="text-xl font-bold mb-2">
-                        ¿Listo para crear algo especial?
+                <div style={{ background: 'var(--ink-red)', border: '1.5px solid var(--ink-black)', padding: '32px', textAlign: 'center', marginBottom: 32, position: 'relative', overflow: 'hidden' }}>
+                    <svg style={{ position: 'absolute', right: -20, top: -20, width: 120, height: 120, mixBlendMode: 'multiply', opacity: 0.4 }} viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="56" fill="var(--ink-blue)" />
+                    </svg>
+                    <h2 className="serif-display" style={{ fontSize: 'clamp(20px, 3vw, 32px)', color: 'var(--paper)', marginBottom: 12, position: 'relative', zIndex: 1 }}>
+                        ¿listo para crear algo especial?
                     </h2>
-                    <p className="text-pink-100 mb-5">
+                    <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'rgba(248,241,222,0.85)', marginBottom: 24, position: 'relative', zIndex: 1 }}>
                         Crea una página personalizada gratis para esa persona especial en menos de 5 minutos.
                     </p>
-                    <Link
-                        href="/create"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-white text-pink-600 font-semibold rounded-xl hover:bg-pink-50 transition-all"
-                    >
-                        <Heart className="w-4 h-4" />
-                        Crear mi página ahora
+                    <Link href="/create" style={{ position: 'relative', zIndex: 1 }}>
+                        <button className="btn-ink" style={{ padding: '12px 24px', fontSize: 12 }}>
+                            crear mi página ahora →
+                        </button>
                     </Link>
                 </div>
 
                 {/* Prev / Next navigation */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                <div style={{ display: 'grid', gap: 12, marginBottom: 40 }} className="grid-cols-1 sm:grid-cols-2">
                     {prevPost && (
-                        <Link
-                            href={`/blog/${prevPost.slug}`}
-                            className="flex items-center gap-3 bg-white rounded-xl border border-pink-100 p-4 hover:shadow-sm transition-shadow group"
-                        >
-                            <ArrowLeft className="w-5 h-5 text-pink-400 flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
-                            <div className="min-w-0">
-                                <p className="text-xs text-gray-400 mb-1">Anterior</p>
-                                <p className="text-sm font-semibold text-gray-800 line-clamp-2 leading-snug">{prevPost.title}</p>
+                        <Link href={`/blog/${prevPost.slug}`}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px solid var(--ink-black)', padding: '14px 18px', background: 'var(--paper-soft)', textDecoration: 'none' }}>
+                            <ArrowLeft style={{ width: 16, height: 16, color: 'var(--ink-red)', flexShrink: 0 }} />
+                            <div style={{ minWidth: 0 }}>
+                                <p style={{ fontSize: 10, color: 'var(--ink-soft)', marginBottom: 4, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>anterior</p>
+                                <p style={{ fontSize: 13, fontFamily: 'var(--display)', textTransform: 'uppercase', color: 'var(--ink-black)', lineHeight: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{prevPost.title}</p>
                             </div>
                         </Link>
                     )}
                     {nextPost && (
-                        <Link
-                            href={`/blog/${nextPost.slug}`}
-                            className="flex items-center gap-3 bg-white rounded-xl border border-pink-100 p-4 hover:shadow-sm transition-shadow group sm:ml-auto text-right"
-                        >
-                            <div className="min-w-0">
-                                <p className="text-xs text-gray-400 mb-1">Siguiente</p>
-                                <p className="text-sm font-semibold text-gray-800 line-clamp-2 leading-snug">{nextPost.title}</p>
+                        <Link href={`/blog/${nextPost.slug}`}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px solid var(--ink-black)', padding: '14px 18px', background: 'var(--paper-soft)', textDecoration: 'none' }}>
+                            <div style={{ minWidth: 0, flex: 1, textAlign: 'right' }}>
+                                <p style={{ fontSize: 10, color: 'var(--ink-soft)', marginBottom: 4, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>siguiente</p>
+                                <p style={{ fontSize: 13, fontFamily: 'var(--display)', textTransform: 'uppercase', color: 'var(--ink-black)', lineHeight: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{nextPost.title}</p>
                             </div>
-                            <ArrowRight className="w-5 h-5 text-pink-400 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight style={{ width: 16, height: 16, color: 'var(--ink-red)', flexShrink: 0 }} />
                         </Link>
                     )}
                 </div>
 
                 {/* Related articles */}
                 {relatedPosts.length > 0 && (
-                    <section>
-                        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <BookOpen className="w-5 h-5 text-pink-500" />
-                            Artículos relacionados
-                        </h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {relatedPosts.map((p) => (
-                                <Link key={p.slug} href={`/blog/${p.slug}`} className="block group">
-                                    <article className="bg-white rounded-xl border border-pink-100 p-5 hover:shadow-sm transition-shadow h-full">
-                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[p.category] ?? 'bg-gray-100 text-gray-700'}`}>
-                                            {p.category}
-                                        </span>
-                                        <h3 className="font-semibold text-gray-900 mt-2 mb-1 group-hover:text-pink-600 transition-colors text-sm leading-snug">
-                                            {p.title}
-                                        </h3>
-                                        <p className="text-xs text-gray-500 line-clamp-2">{p.description}</p>
-                                    </article>
+                    <section style={{ marginBottom: 40 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 10, borderBottom: '1.5px solid var(--ink-black)' }}>
+                            <BookOpen style={{ width: 14, height: 14, color: 'var(--ink-red)' }} />
+                            <span className="mono-eyebrow" style={{ color: 'var(--ink-black)' }}>artículos relacionados</span>
+                        </div>
+                        <div style={{ display: 'grid', gap: 0 }} className="grid-cols-1 sm:grid-cols-2">
+                            {relatedPosts.map((p, i) => (
+                                <Link key={p.slug} href={`/blog/${p.slug}`}
+                                    style={{ display: 'block', border: '1.5px solid var(--ink-black)', borderRight: i === 0 ? 'none' : '1.5px solid var(--ink-black)', padding: '18px 20px', background: i % 2 === 0 ? 'var(--paper)' : 'var(--paper-soft)', textDecoration: 'none' }}>
+                                    <CategoryBadge category={p.category} />
+                                    <h3 className="serif-display" style={{ fontSize: 15, color: 'var(--ink-black)', margin: '8px 0 6px', lineHeight: 0.96 }}>
+                                        {p.title}
+                                    </h3>
+                                    <p style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--serif)', fontStyle: 'italic', lineHeight: 1.6, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.description}</p>
                                 </Link>
                             ))}
                         </div>
                     </section>
                 )}
 
-                <div className="mt-10 pt-8 border-t border-pink-100 flex flex-wrap gap-4 text-sm text-gray-500">
-                    <Link href="/blog" className="text-pink-600 hover:underline">← Ver todos los artículos</Link>
-                    <Link href="/" className="text-pink-600 hover:underline">Inicio</Link>
-                    <Link href="/create" className="text-pink-600 hover:underline">Crear página</Link>
+                {/* Footer links */}
+                <div style={{ paddingTop: 24, borderTop: '1.5px solid var(--rule)', display: 'flex', flexWrap: 'wrap', gap: 0 }}>
+                    {[{ href: '/blog', label: '← todos los artículos' }, { href: '/', label: 'inicio' }, { href: '/create', label: 'crear página' }].map(({ href, label }, i, arr) => (
+                        <Link key={href} href={href} style={{ fontSize: 11, color: 'var(--ink-soft)', textDecoration: 'none', fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px', borderRight: i < arr.length - 1 ? '1px solid var(--rule)' : 'none' }}>{label}</Link>
+                    ))}
                 </div>
             </main>
 
-            <footer className="py-6 px-4 border-t border-pink-100 bg-white/40 text-center text-sm text-gray-500">
-                <div className="flex items-center justify-center gap-2">
-                    <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
-                    <span>© {new Date().getFullYear()} Love Pages. Hecho con amor.</span>
-                </div>
+            <footer style={{ borderTop: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)', padding: '14px 0', textAlign: 'center' }}>
+                <span style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                    © {new Date().getFullYear()} love pages.
+                </span>
             </footer>
         </div>
     );

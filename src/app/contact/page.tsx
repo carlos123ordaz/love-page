@@ -62,7 +62,7 @@ export default function ContactPage() {
                             <button className="btn-accent" style={{ padding: '14px 24px', fontSize: 14 }}>{t.contact.goToDashboard}</button>
                         </Link>
                         <button onClick={() => setSuccess(false)}
-                            style={{ background: 'white', border: '2px solid var(--ink)', color: 'var(--ink)', padding: '12px 22px', borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }}>
+                            style={{ background: 'white', border: '2px solid var(--ink)', color: 'var(--ink)', padding: '12px 22px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '3px 3px 0 var(--ink)' }}>
                             {t.contact.sendAnother}
                         </button>
                     </div>
@@ -103,7 +103,7 @@ export default function ContactPage() {
                 </div>
 
                 {/* Form */}
-                <div style={{ border: '2px solid var(--ink)', borderRadius: 28, background: 'white', padding: 32, boxShadow: '5px 5px 0 var(--ink)' }}>
+                <div style={{ border: '2px solid var(--ink)', background: 'white', padding: 32, boxShadow: '5px 5px 0 var(--ink)' }}>
                     <div className="mono-eyebrow" style={{ marginBottom: 20 }}>{t.contact.formTitle}</div>
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }} className="max-sm:grid-cols-1">

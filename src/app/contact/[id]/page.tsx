@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import {
     ArrowLeft,
@@ -35,11 +33,11 @@ interface ContactDetail {
     createdAt: string;
 }
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-    pending: { label: 'Pendiente', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
-    in_progress: { label: 'En progreso', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
-    resolved: { label: 'Respondido', color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
-    closed: { label: 'Cerrado', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' },
+const STATUS_STYLE: Record<string, { label: string; bg: string; color: string }> = {
+    pending: { label: 'Pendiente', bg: 'var(--paper-2)', color: 'var(--ink-black)' },
+    in_progress: { label: 'En progreso', bg: 'var(--lila-2)', color: 'var(--ink-black)' },
+    resolved: { label: 'Respondido', bg: 'var(--ink-blue)', color: 'var(--paper)' },
+    closed: { label: 'Cerrado', bg: 'var(--ink-black)', color: 'var(--paper)' },
 };
 
 const TYPE_MAP: Record<string, string> = {
@@ -60,11 +58,8 @@ function timeAgo(date: string) {
 function formatDate(date: string) {
     try {
         return new Date(date).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit',
         });
     } catch {
         return '';
@@ -81,11 +76,7 @@ export default function ContactDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
-    useEffect(() => {
-        if (contactId) {
-            loadContact();
-        }
-    }, [contactId]);
+    useEffect(() => { if (contactId) loadContact(); }, [contactId]);
 
     const loadContact = async () => {
         try {
@@ -93,15 +84,10 @@ export default function ContactDetailPage() {
             const { data } = await api.contact.getMyMessage(contactId);
             setContact(data.data);
         } catch (err: any) {
-            console.error('Error loading contact:', err);
             setError(true);
-            if (err.response?.status === 404) {
-                toast.error('Mensaje no encontrado');
-            } else if (err.response?.status === 403) {
-                toast.error('No tienes permiso para ver este mensaje');
-            } else {
-                toast.error('Error al cargar el mensaje');
-            }
+            if (err.response?.status === 404) toast.error('Mensaje no encontrado');
+            else if (err.response?.status === 403) toast.error('No tienes permiso para ver este mensaje');
+            else toast.error('Error al cargar el mensaje');
         } finally {
             setLoading(false);
         }
@@ -109,12 +95,11 @@ export default function ContactDetailPage() {
 
     if (authLoading || loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+            <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
                 <Header />
-                <main className="container px-4 sm:px-6 lg:px-8 py-8 max-w-2xl mx-auto">
-                    <div className="flex justify-center py-16">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-600" />
-                    </div>
+                <main style={{ maxWidth: 640, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+                    <div style={{ width: 40, height: 40, border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+                    <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
                 </main>
             </div>
         );
@@ -122,165 +107,117 @@ export default function ContactDetailPage() {
 
     if (error || !contact) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+            <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
                 <Header />
-                <main className="container px-4 sm:px-6 lg:px-8 py-8 max-w-2xl mx-auto">
-                    <div className="text-center py-16">
-                        <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                            Mensaje no encontrado
-                        </h2>
-                        <p className="text-gray-500 text-sm mb-6">
-                            El mensaje que buscas no existe o no tienes permiso para verlo.
-                        </p>
-                        <Link href="/notifications">
-                            <Button>Volver a notificaciones</Button>
-                        </Link>
-                    </div>
+                <main style={{ maxWidth: 640, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+                    <AlertCircle style={{ width: 48, height: 48, color: 'var(--ink-soft)', margin: '0 auto 16px' }} />
+                    <h2 className="serif-display" style={{ fontSize: 28, marginBottom: 8 }}>mensaje no encontrado</h2>
+                    <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 24 }}>
+                        El mensaje que buscas no existe o no tienes permiso para verlo.
+                    </p>
+                    <Link href="/notifications">
+                        <button className="btn-ink" style={{ padding: '10px 20px', fontSize: 12 }}>volver a notificaciones</button>
+                    </Link>
                 </main>
             </div>
         );
     }
 
-    const status = STATUS_MAP[contact.status] || STATUS_MAP.pending;
+    const statusStyle = STATUS_STYLE[contact.status] || STATUS_STYLE.pending;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
             <Header />
 
-            <main className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-2xl mx-auto">
-                {/* Back + title */}
-                <div className="flex items-center gap-3 mb-6">
-                    <Link href="/notifications">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Button>
+            <main style={{ maxWidth: 640, margin: '0 auto' }} className="px-5 py-10 sm:px-10">
+
+                {/* Masthead */}
+                <div style={{ borderBottom: '3px double var(--ink-black)', paddingBottom: 10, marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                    <Link href="/notifications" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--ink-soft)', textDecoration: 'none', fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                        <ArrowLeft style={{ width: 12, height: 12 }} /> notificaciones
                     </Link>
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900">
-                            Detalle del mensaje
-                        </h1>
-                        <p className="text-sm text-gray-500">Conversación de soporte</p>
+                    <span className="mono-eyebrow" style={{ color: 'var(--ink-red)' }}>★ soporte</span>
+                </div>
+
+                {/* Header */}
+                <div style={{ marginBottom: 24 }}>
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(24px, 4vw, 40px)', margin: '0 0 12px', lineHeight: 0.9 }}>
+                        <span className="mis-red">detalle del</span>{' '}
+                        <span className="mis-blue">mensaje</span>
+                    </h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', background: statusStyle.bg, color: statusStyle.color, border: '1.5px solid var(--ink-black)', fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                            {contact.status === 'resolved' ? <CheckCircle2 style={{ width: 10, height: 10 }} /> : <Clock style={{ width: 10, height: 10 }} />}
+                            {statusStyle.label}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{TYPE_MAP[contact.type] || contact.type}</span>
                     </div>
                 </div>
 
-                {/* Status */}
-                <div className="mb-4">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${status.bg} ${status.color}`}>
-                        {contact.status === 'resolved' ? (
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                        ) : (
-                            <Clock className="w-3.5 h-3.5" />
-                        )}
-                        {status.label}
-                    </span>
-                    <span className="ml-2 text-xs text-gray-400">
-                        {TYPE_MAP[contact.type] || contact.type}
-                    </span>
+                {/* Tu mensaje */}
+                <div style={{ border: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)', marginBottom: 0 }}>
+                    <div style={{ padding: '10px 16px', borderBottom: '1.5px solid var(--ink-black)', display: 'flex', alignItems: 'center', gap: 8, background: 'var(--paper-2)' }}>
+                        <User style={{ width: 12, height: 12, color: 'var(--ink-red)' }} />
+                        <span style={{ fontSize: 11, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700 }}>{contact.name}</span>
+                        <span style={{ fontSize: 10, color: 'var(--ink-soft)' }}>(tú) · {timeAgo(contact.createdAt)}</span>
+                    </div>
+                    <div style={{ padding: '20px 24px' }}>
+                        <h3 style={{ fontFamily: 'var(--display)', fontSize: 18, textTransform: 'uppercase', color: 'var(--ink-black)', marginBottom: 12, letterSpacing: '0.02em' }}>
+                            {contact.subject}
+                        </h3>
+                        <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.75, whiteSpace: 'pre-wrap' }}>
+                            {contact.message}
+                        </p>
+                        <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px dashed var(--rule)', fontSize: 11, color: 'var(--ink-soft)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <Mail style={{ width: 11, height: 11 }} />
+                            {contact.email} · {formatDate(contact.createdAt)}
+                        </div>
+                    </div>
                 </div>
 
-                {/* Conversation */}
-                <div className="space-y-4">
-                    {/* Tu mensaje original */}
-                    <Card className="border-0 shadow-md">
-                        <CardContent className="p-5">
-                            <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-pink-100 flex items-center justify-center">
-                                    <User className="w-4 h-4 text-pink-600" />
+                {/* Respuesta del admin */}
+                {contact.adminReply ? (
+                    <div style={{ border: '1.5px solid var(--ink-black)', borderTop: 'none', background: 'var(--paper)', marginBottom: 32 }}>
+                        <div style={{ padding: '10px 16px', borderBottom: '1.5px solid var(--ink-black)', display: 'flex', alignItems: 'center', gap: 8, background: 'var(--ink-blue)' }}>
+                            <Reply style={{ width: 12, height: 12, color: 'var(--paper)' }} />
+                            <span style={{ fontSize: 11, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, color: 'var(--paper)' }}>Love Pages — Soporte</span>
+                            <span style={{ padding: '1px 6px', background: 'rgba(248,241,222,0.2)', border: '1px solid rgba(248,241,222,0.4)', fontSize: 9, fontWeight: 700, color: 'var(--paper)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>EQUIPO</span>
+                        </div>
+                        <div style={{ padding: '20px 24px' }}>
+                            {contact.adminRepliedAt && (
+                                <p style={{ fontSize: 10, color: 'var(--ink-soft)', marginBottom: 12, fontFamily: 'var(--mono)' }}>{timeAgo(contact.adminRepliedAt)}</p>
+                            )}
+                            <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.75, whiteSpace: 'pre-wrap' }}>
+                                {contact.adminReply}
+                            </p>
+                            {contact.adminRepliedAt && (
+                                <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px dashed var(--rule)', fontSize: 11, color: 'var(--ink-soft)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <CheckCircle2 style={{ width: 11, height: 11, color: 'var(--ink-blue)' }} />
+                                    Respondido el {formatDate(contact.adminRepliedAt)}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-sm font-semibold text-gray-900">
-                                            {contact.name}
-                                        </span>
-                                        <span className="text-xs text-gray-400">(Tú)</span>
-                                    </div>
-                                    <span className="text-xs text-gray-400">
-                                        {timeAgo(contact.createdAt)}
-                                    </span>
-
-                                    <h3 className="text-base font-bold text-gray-900 mt-3">
-                                        {contact.subject}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap leading-relaxed">
-                                        {contact.message}
-                                    </p>
-
-                                    <div className="mt-3 pt-3 border-t border-gray-100">
-                                        <p className="text-xs text-gray-400">
-                                            <Mail className="w-3 h-3 inline mr-1" />
-                                            {contact.email} · {formatDate(contact.createdAt)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Respuesta del admin */}
-                    {contact.adminReply ? (
-                        <Card className="border-0 shadow-md bg-gradient-to-br from-green-50/50 to-emerald-50/50">
-                            <CardContent className="p-5">
-                                <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
-                                        <Reply className="w-4 h-4 text-green-600" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold text-gray-900">
-                                                Love Pages — Soporte
-                                            </span>
-                                            <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">
-                                                EQUIPO
-                                            </span>
-                                        </div>
-                                        {contact.adminRepliedAt && (
-                                            <span className="text-xs text-gray-400">
-                                                {timeAgo(contact.adminRepliedAt)}
-                                            </span>
-                                        )}
-
-                                        <p className="text-sm text-gray-700 mt-3 whitespace-pre-wrap leading-relaxed">
-                                            {contact.adminReply}
-                                        </p>
-
-                                        {contact.adminRepliedAt && (
-                                            <div className="mt-3 pt-3 border-t border-green-100">
-                                                <p className="text-xs text-gray-400">
-                                                    <CheckCircle2 className="w-3 h-3 inline mr-1 text-green-500" />
-                                                    Respondido el {formatDate(contact.adminRepliedAt)}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <Card className="border border-dashed border-gray-200 shadow-none">
-                            <CardContent className="p-5 text-center">
-                                <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                                <p className="text-sm text-gray-500">
-                                    Tu mensaje está siendo revisado. Te notificaremos cuando tengamos una respuesta.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ border: '1.5px dashed var(--ink-black)', borderTop: 'none', padding: '24px', textAlign: 'center', background: 'var(--paper-soft)', marginBottom: 32 }}>
+                        <Clock style={{ width: 24, height: 24, color: 'var(--ink-soft)', margin: '0 auto 10px' }} />
+                        <p style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                            Tu mensaje está siendo revisado. Te notificaremos cuando tengamos una respuesta.
+                        </p>
+                    </div>
+                )}
 
                 {/* Actions */}
-                <div className="flex gap-3 mt-6">
-                    <Link href="/notifications" className="flex-1">
-                        <Button variant="ghost" className="w-full">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Notificaciones
-                        </Button>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <Link href="/notifications" style={{ flex: 1 }}>
+                        <button className="btn-ink" style={{ width: '100%', padding: '12px 16px', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <ArrowLeft style={{ width: 13, height: 13 }} /> notificaciones
+                        </button>
                     </Link>
-                    <Link href="/contact" className="flex-1">
-                        <Button className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600">
-                            <MessageCircle className="w-4 h-4 mr-2" />
-                            Nuevo mensaje
-                        </Button>
+                    <Link href="/contact" style={{ flex: 1 }}>
+                        <button className="btn-accent" style={{ width: '100%', padding: '12px 16px', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <MessageCircle style={{ width: 13, height: 13 }} /> nuevo mensaje
+                        </button>
                     </Link>
                 </div>
             </main>

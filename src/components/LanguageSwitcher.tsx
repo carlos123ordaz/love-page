@@ -1,12 +1,11 @@
 'use client';
 
 import { useTranslation, type Locale } from '@/i18n';
-import { Globe } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
-const LANGUAGES: { code: Locale; label: string; flag: string }[] = [
-  { code: 'es', label: 'Español', flag: '🇪🇸' },
-  { code: 'en', label: 'English', flag: '🇺🇸' },
+const LANGUAGES: { code: Locale; label: string; abbr: string }[] = [
+  { code: 'es', label: 'Español', abbr: 'ES' },
+  { code: 'en', label: 'English', abbr: 'EN' },
 ];
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
@@ -29,36 +28,62 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const current = LANGUAGES.find((l) => l.code === locale)!;
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors ${
-          compact ? 'px-2 py-1.5 text-xs' : 'px-3 py-1.5 text-sm'
-        }`}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          border: '1.5px solid var(--ink-black)',
+          background: open ? 'var(--ink-blue)' : 'transparent',
+          color: open ? 'var(--paper)' : 'var(--ink-black)',
+          padding: compact ? '4px 8px' : '6px 12px',
+          fontFamily: 'var(--mono)',
+          fontSize: 11,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+          cursor: 'pointer',
+          borderRadius: 0,
+          transition: 'background 120ms, color 120ms',
+        }}
         aria-label="Change language"
       >
-        <Globe className={compact ? 'w-3.5 h-3.5 text-gray-500' : 'w-4 h-4 text-gray-500'} />
-        <span className="font-medium text-gray-700">{current.flag}</span>
-        {!compact && <span className="text-gray-600 hidden sm:inline">{current.label}</span>}
+        <span>{current.abbr}</span>
+        <span style={{ fontSize: 7, opacity: 0.7 }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[140px]">
-          {LANGUAGES.map((lang) => (
+        <div style={{
+          position: 'absolute', right: 0, top: '100%',
+          background: 'var(--paper-soft)',
+          border: '1.5px solid var(--ink-black)',
+          borderTop: 'none',
+          zIndex: 50,
+          minWidth: 120,
+        }}>
+          {LANGUAGES.map((lang, i) => (
             <button
               key={lang.code}
-              onClick={() => {
-                setLocale(lang.code);
-                setOpen(false);
+              onClick={() => { setLocale(lang.code); setOpen(false); }}
+              style={{
+                width: '100%',
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 12px',
+                fontFamily: 'var(--mono)',
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                background: locale === lang.code ? 'var(--ink-red)' : 'transparent',
+                color: locale === lang.code ? 'var(--paper)' : 'var(--ink-black)',
+                border: 'none',
+                borderBottom: i < LANGUAGES.length - 1 ? '1px solid var(--rule)' : 'none',
+                cursor: 'pointer',
+                fontWeight: locale === lang.code ? 700 : 400,
+                textAlign: 'left',
               }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
-                locale === lang.code
-                  ? 'bg-pink-50 text-pink-700 font-medium'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
             >
-              <span>{lang.flag}</span>
-              <span>{lang.label}</span>
+              <span>{lang.abbr}</span>
+              <span style={{ opacity: 0.55, fontSize: 10 }}>{lang.label}</span>
             </button>
           ))}
         </div>

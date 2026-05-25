@@ -1,36 +1,42 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '@/components/layout/header';
-import { Heart, Clock, ArrowRight, BookOpen } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 import { blogPosts } from '@/lib/blog';
 
 export const metadata: Metadata = {
     title: 'Blog — Love Pages | Consejos de Amor y Relaciones',
     description:
         'Artículos con ideas románticas, consejos para parejas, juegos, aniversarios y más. Todo lo que necesitas para expresar el amor de forma única.',
-    alternates: {
-        canonical: 'https://lovepages.ink/blog',
-    },
+    alternates: { canonical: 'https://lovepages.ink/blog' },
     openGraph: {
         title: 'Blog — Love Pages | Consejos de Amor y Relaciones',
-        description:
-            'Artículos con ideas románticas, consejos para parejas, juegos y más.',
+        description: 'Artículos con ideas románticas, consejos para parejas, juegos y más.',
         url: 'https://lovepages.ink/blog',
         type: 'website',
     },
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-    'San Valentín': 'bg-red-100 text-red-700',
-    'Consejos': 'bg-purple-100 text-purple-700',
-    'Juegos': 'bg-blue-100 text-blue-700',
-    'Relación a Distancia': 'bg-amber-100 text-amber-700',
-    'Aniversario': 'bg-pink-100 text-pink-700',
+const CATEGORY_STYLE: Record<string, { bg: string; color: string }> = {
+    'San Valentín': { bg: 'var(--ink-red)', color: 'var(--paper)' },
+    'Consejos': { bg: 'var(--ink-blue)', color: 'var(--paper)' },
+    'Juegos': { bg: 'var(--ink-overlap)', color: 'var(--paper)' },
+    'Relación a Distancia': { bg: 'var(--paper-2)', color: 'var(--ink-black)' },
+    'Aniversario': { bg: 'var(--ink-red)', color: 'var(--paper)' },
 };
 
 function formatDate(dateStr: string) {
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function CategoryBadge({ category }: { category: string }) {
+    const style = CATEGORY_STYLE[category] ?? { bg: 'var(--paper-2)', color: 'var(--ink-black)' };
+    return (
+        <span style={{ display: 'inline-block', padding: '3px 10px', background: style.bg, color: style.color, border: '1.5px solid var(--ink-black)', fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            {category}
+        </span>
+    );
 }
 
 export default function BlogPage() {
@@ -40,118 +46,120 @@ export default function BlogPage() {
     const [featured, ...rest] = sorted;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
             <Header />
 
-            <main className="container max-w-4xl mx-auto px-4 py-10 sm:py-16">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl mb-4 shadow-lg">
-                        <BookOpen className="w-7 h-7 text-white" />
-                    </div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-                        Blog de Love Pages
+            <main style={{ maxWidth: 860, margin: '0 auto' }} className="px-5 py-12 sm:px-12 sm:py-16">
+
+                {/* Masthead */}
+                <div style={{ borderBottom: '3px double var(--ink-black)', paddingBottom: 10, marginBottom: 48, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                    <span className="mono-eyebrow" style={{ color: 'var(--ink-black)' }}>redacción · amor</span>
+                    <span className="mono-eyebrow" style={{ color: 'var(--ink-red)' }}>★ love pages blog</span>
+                </div>
+
+                {/* Hero */}
+                <div style={{ marginBottom: 48 }}>
+                    <div className="sticker-badge" style={{ marginBottom: 20 }}>✦ artículos</div>
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(40px, 6vw, 80px)', margin: 0, lineHeight: 0.86 }}>
+                        <span className="mis-red" style={{ display: 'block' }}>blog de</span>
+                        <span className="mis-blue" style={{ display: 'block' }}>love pages</span>
                     </h1>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                    <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 'clamp(14px, 2vw, 17px)', lineHeight: 1.65, color: 'var(--ink-soft)', marginTop: 20, maxWidth: 560 }}>
                         Ideas románticas, consejos para parejas, juegos y todo lo que necesitas
                         para expresar el amor de forma única.
                     </p>
                 </div>
 
                 {/* Featured article */}
-                <Link href={`/blog/${featured.slug}`} className="block mb-10 group">
-                    <article className="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="bg-gradient-to-br from-pink-500 to-rose-500 px-6 py-10 sm:py-14 text-white">
-                            <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                                Destacado
-                            </span>
-                            <h2 className="text-2xl sm:text-3xl font-bold mb-3 group-hover:underline underline-offset-2">
+                <Link href={`/blog/${featured.slug}`} style={{ textDecoration: 'none', display: 'block', marginBottom: 0 }}>
+                    <article style={{ border: '1.5px solid var(--ink-black)', overflow: 'hidden', position: 'relative' }}>
+                        {/* Red header */}
+                        <div style={{ background: 'var(--ink-red)', padding: '32px 36px', position: 'relative', overflow: 'hidden' }}>
+                            <svg style={{ position: 'absolute', right: -20, top: -20, width: 140, height: 140, mixBlendMode: 'multiply', opacity: 0.4 }} viewBox="0 0 140 140">
+                                <circle cx="70" cy="70" r="65" fill="var(--ink-blue)" />
+                            </svg>
+                            <div style={{ display: 'inline-block', padding: '3px 10px', background: 'rgba(248,241,222,0.2)', border: '1.5px solid rgba(248,241,222,0.5)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--paper)', marginBottom: 16 }}>
+                                ★ destacado
+                            </div>
+                            <h2 className="serif-display" style={{ fontSize: 'clamp(22px, 3.5vw, 36px)', color: 'var(--paper)', margin: '0 0 12px', lineHeight: 0.92, position: 'relative', zIndex: 1 }}>
                                 {featured.title}
                             </h2>
-                            <p className="text-pink-100 text-base sm:text-lg leading-relaxed mb-4">
+                            <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'rgba(248,241,222,0.85)', lineHeight: 1.6, marginBottom: 20, position: 'relative', zIndex: 1, maxWidth: 600 }}>
                                 {featured.description}
                             </p>
-                            <div className="flex items-center gap-4 text-pink-200 text-sm">
-                                <span className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
-                                    {featured.readingTime} min de lectura
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 11, color: 'rgba(248,241,222,0.7)', fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', position: 'relative', zIndex: 1 }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <Clock style={{ width: 11, height: 11 }} />
+                                    {featured.readingTime} min
                                 </span>
                                 <span>{formatDate(featured.publishedAt)}</span>
                             </div>
                         </div>
-                        <div className="px-6 py-4 flex items-center justify-between">
-                            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${CATEGORY_COLORS[featured.category] ?? 'bg-gray-100 text-gray-700'}`}>
-                                {featured.category}
-                            </span>
-                            <span className="flex items-center gap-1 text-pink-600 text-sm font-medium group-hover:gap-2 transition-all">
-                                Leer artículo <ArrowRight className="w-4 h-4" />
+                        <div style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--paper-soft)', borderTop: '1.5px solid var(--ink-black)' }}>
+                            <CategoryBadge category={featured.category} />
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-black)', fontWeight: 700 }}>
+                                leer artículo <ArrowRight style={{ width: 12, height: 12 }} />
                             </span>
                         </div>
                     </article>
                 </Link>
 
                 {/* Rest of articles */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {rest.map((post) => (
-                        <Link key={post.slug} href={`/blog/${post.slug}`} className="block group">
-                            <article className="bg-white rounded-2xl border border-pink-100 shadow-sm p-6 h-full flex flex-col hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_COLORS[post.category] ?? 'bg-gray-100 text-gray-700'}`}>
-                                        {post.category}
-                                    </span>
-                                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
-                                        {post.readingTime} min
-                                    </span>
-                                </div>
-                                <h2 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-pink-600 transition-colors leading-snug">
-                                    {post.title}
-                                </h2>
-                                <p className="text-sm text-gray-600 leading-relaxed flex-1">
-                                    {post.description}
-                                </p>
-                                <div className="mt-4 flex items-center justify-between">
-                                    <span className="text-xs text-gray-400">{formatDate(post.publishedAt)}</span>
-                                    <span className="flex items-center gap-1 text-pink-600 text-sm font-medium group-hover:gap-2 transition-all">
-                                        Leer <ArrowRight className="w-3.5 h-3.5" />
-                                    </span>
-                                </div>
-                            </article>
+                <div style={{ border: '1.5px solid var(--ink-black)', borderTop: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }} className="sm:grid-cols-2">
+                    {rest.map((post, i) => (
+                        <Link key={post.slug} href={`/blog/${post.slug}`}
+                            style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', padding: '20px 24px', borderBottom: '1.5px solid var(--ink-black)', borderRight: i % 2 === 0 ? '1.5px solid var(--ink-black)' : 'none', background: i % 3 === 0 ? 'var(--paper)' : i % 3 === 1 ? 'var(--paper-soft)' : 'var(--paper-2)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                                <CategoryBadge category={post.category} />
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                                    <Clock style={{ width: 9, height: 9 }} />
+                                    {post.readingTime} min
+                                </span>
+                            </div>
+                            <h2 className="serif-display" style={{ fontSize: 18, color: 'var(--ink-black)', margin: '0 0 8px', lineHeight: 0.96 }}>
+                                {post.title}
+                            </h2>
+                            <p style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.7, flex: 1, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
+                                {post.description}
+                            </p>
+                            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: 10, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>{formatDate(post.publishedAt)}</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-black)', fontWeight: 700 }}>
+                                    leer <ArrowRight style={{ width: 11, height: 11 }} />
+                                </span>
+                            </div>
                         </Link>
                     ))}
                 </div>
 
                 {/* CTA */}
-                <div className="mt-14 text-center bg-white rounded-2xl border border-pink-100 p-8 shadow-sm">
-                    <Heart className="w-8 h-8 text-pink-500 fill-pink-500 mx-auto mb-3" />
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">
-                        ¿Listo para sorprender a alguien especial?
+                <section style={{ border: '1.5px solid var(--ink-black)', borderTop: 'none', padding: '32px', textAlign: 'center', background: 'var(--paper)' }}>
+                    <h2 className="serif-display" style={{ fontSize: 'clamp(24px, 4vw, 40px)', marginBottom: 12 }}>
+                        <span className="mis-red" style={{ display: 'block' }}>¿listo para</span>
+                        <span className="mis-blue" style={{ display: 'block' }}>sorprender?</span>
                     </h2>
-                    <p className="text-gray-600 mb-5">
+                    <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginBottom: 24 }}>
                         Crea tu página personalizada gratis en menos de 5 minutos.
                     </p>
-                    <Link
-                        href="/create"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all"
-                    >
-                        <Heart className="w-4 h-4" />
-                        Crear mi página ahora
+                    <Link href="/create">
+                        <button className="btn-accent" style={{ padding: '12px 24px', fontSize: 12 }}>
+                            crear mi página gratis →
+                        </button>
                     </Link>
-                </div>
+                </section>
 
-                <div className="mt-10 pt-8 border-t border-pink-100 flex flex-wrap gap-4 text-sm text-gray-500">
-                    <Link href="/" className="text-pink-600 hover:underline">Inicio</Link>
-                    <Link href="/templates" className="text-pink-600 hover:underline">Plantillas</Link>
-                    <Link href="/about" className="text-pink-600 hover:underline">Acerca de</Link>
-                    <Link href="/privacy-policy" className="text-pink-600 hover:underline">Privacidad</Link>
+                {/* Footer links */}
+                <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1.5px solid var(--rule)', display: 'flex', flexWrap: 'wrap', gap: 0 }}>
+                    {[{ href: '/', label: 'Inicio' }, { href: '/templates', label: 'Plantillas' }, { href: '/about', label: 'Acerca de' }, { href: '/privacy-policy', label: 'Privacidad' }].map(({ href, label }, i, arr) => (
+                        <Link key={href} href={href} style={{ fontSize: 11, color: 'var(--ink-soft)', textDecoration: 'none', fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px', borderRight: i < arr.length - 1 ? '1px solid var(--rule)' : 'none' }}>{label}</Link>
+                    ))}
                 </div>
             </main>
 
-            <footer className="py-6 px-4 border-t border-pink-100 bg-white/40 text-center text-sm text-gray-500">
-                <div className="flex items-center justify-center gap-2">
-                    <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
-                    <span>© {new Date().getFullYear()} Love Pages. Hecho con amor.</span>
-                </div>
+            <footer style={{ borderTop: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)', padding: '14px 0', textAlign: 'center' }}>
+                <span style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                    © {new Date().getFullYear()} love pages.
+                </span>
             </footer>
         </div>
     );

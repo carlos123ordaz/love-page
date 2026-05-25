@@ -1,87 +1,83 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, Crown, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@/hooks/use-window-size';
 
 export default function PaymentSuccessPage() {
-    const router = useRouter();
     const { width, height } = useWindowSize();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
-            <Confetti
-                width={width}
-                height={height}
-                recycle={false}
-                numberOfPieces={500}
-            />
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
+            <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />
             <Header />
 
-            <main className="container py-12">
-                <div className="max-w-2xl mx-auto">
-                    <Card className="text-center border-2 border-green-200">
-                        <CardContent className="pt-12 pb-12">
-                            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-                                <CheckCircle2 className="w-12 h-12 text-green-600" />
-                            </div>
+            <main style={{ maxWidth: 600, margin: '0 auto' }} className="px-5 py-16 sm:px-10">
 
-                            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                                ¡Pago Exitoso! 🎉
-                            </h1>
+                {/* Masthead */}
+                <div style={{ borderBottom: '3px double var(--ink-black)', paddingBottom: 10, marginBottom: 40, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                    <span className="mono-eyebrow" style={{ color: 'var(--ink-black)' }}>pago completado</span>
+                    <span className="mono-eyebrow" style={{ color: 'var(--ink-red)' }}>★ love pages pro</span>
+                </div>
 
-                            <p className="text-lg text-gray-600 mb-8">
-                                Ahora eres miembro <span className="font-bold text-amber-600">PRO</span>
-                            </p>
+                {/* Success card */}
+                <div style={{ border: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)', textAlign: 'center' }}>
+                    {/* Header */}
+                    <div style={{ background: 'var(--ink-blue)', padding: '40px 32px', borderBottom: '1.5px solid var(--ink-black)', position: 'relative', overflow: 'hidden' }}>
+                        <svg style={{ position: 'absolute', right: -20, top: -20, width: 120, height: 120, mixBlendMode: 'multiply', opacity: 0.4 }} viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="56" fill="var(--ink-red)" />
+                        </svg>
+                        <div style={{ width: 64, height: 64, background: 'rgba(248,241,222,0.2)', border: '2px solid rgba(248,241,222,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', position: 'relative', zIndex: 1 }}>
+                            <CheckCircle2 style={{ width: 32, height: 32, color: 'var(--paper)' }} />
+                        </div>
+                        <h1 className="serif-display" style={{ fontSize: 'clamp(28px, 5vw, 48px)', color: 'var(--paper)', marginBottom: 8, position: 'relative', zIndex: 1 }}>
+                            ¡pago exitoso!
+                        </h1>
+                        <p style={{ fontSize: 15, color: 'rgba(248,241,222,0.85)', fontFamily: 'var(--serif)', fontStyle: 'italic', position: 'relative', zIndex: 1 }}>
+                            Ahora eres miembro <strong style={{ fontStyle: 'normal', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>PRO</strong>
+                        </p>
+                    </div>
 
-                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-6 mb-8">
-                                <div className="flex items-center justify-center gap-2 mb-4">
-                                    <Crown className="w-6 h-6 text-amber-600" />
-                                    <h2 className="text-xl font-bold text-gray-900">
-                                        Beneficios Activados
-                                    </h2>
-                                </div>
-                                <ul className="space-y-3 text-left max-w-md mx-auto">
-                                    <li className="flex items-center gap-3">
-                                        <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                                        <span>Páginas ilimitadas disponibles</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                                        <span>Diseño con IA activado</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                                        <span>Personalización total desbloqueada</span>
-                                    </li>
-                                </ul>
-                            </div>
+                    {/* Benefits */}
+                    <div style={{ padding: '28px 32px', borderBottom: '1.5px solid var(--ink-black)' }}>
+                        <div className="mono-eyebrow" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Crown style={{ width: 12, height: 12, color: 'var(--ink-blue)' }} />
+                            beneficios activados
+                        </div>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'left' }}>
+                            {[
+                                'Páginas ilimitadas disponibles',
+                                'Diseño con IA activado',
+                                'Personalización total desbloqueada',
+                            ].map((item) => (
+                                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--ink-soft)' }}>
+                                    <Sparkles style={{ width: 12, height: 12, color: 'var(--ink-red)', flexShrink: 0 }} />
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <Link href="/create">
-                                    <Button variant="gradient" size="lg">
-                                        <Crown className="w-5 h-5 mr-2" />
-                                        Crear Página PRO
-                                    </Button>
-                                </Link>
-                                <Link href="/dashboard">
-                                    <Button variant="outline" size="lg">
-                                        Ir al Dashboard
-                                    </Button>
-                                </Link>
-                            </div>
+                    {/* Actions */}
+                    <div style={{ padding: '24px 32px', display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <Link href="/create">
+                            <button className="btn-accent" style={{ padding: '12px 22px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <Crown style={{ width: 13, height: 13 }} />
+                                crear página pro →
+                            </button>
+                        </Link>
+                        <Link href="/dashboard">
+                            <button className="btn-ink" style={{ padding: '12px 22px', fontSize: 12 }}>
+                                ir al dashboard →
+                            </button>
+                        </Link>
+                    </div>
 
-                            <p className="text-sm text-gray-500 mt-8">
-                                Puedes cerrar esta ventana o continuar explorando
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <p style={{ fontSize: 11, color: 'var(--ink-soft)', paddingBottom: 20, fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                        Puedes cerrar esta ventana o continuar explorando
+                    </p>
                 </div>
             </main>
         </div>

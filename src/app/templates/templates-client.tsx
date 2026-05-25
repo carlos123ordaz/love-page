@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 import { Header } from '@/components/layout/header';
 import { api } from '@/lib/api';
-import { Crown, Sparkles, Eye, Users } from 'lucide-react';
+import { Crown, Eye, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/i18n';
 
 interface Template {
     _id: string;
@@ -20,17 +21,6 @@ interface Template {
     editableFields: { key: string; label: string; type: string; defaultValue: string }[];
 }
 
-const CATEGORIES = [
-    { id: 'all', name: 'Todas', emoji: '✨' },
-    { id: 'san-valentin', name: 'San Valentín', emoji: '💕' },
-    { id: 'declaracion', name: 'Declaración', emoji: '💘' },
-    { id: 'cumpleanos', name: 'Cumpleaños', emoji: '🎂' },
-    { id: 'aniversario', name: 'Aniversario', emoji: '💍' },
-    { id: 'amistad', name: 'Amistad', emoji: '🤝' },
-    { id: 'navidad', name: 'Navidad', emoji: '🎄' },
-    { id: 'otro', name: 'Otros', emoji: '🎁' },
-];
-
 const CAT_TONES: Record<string, string> = {
     all: 'var(--lila)', 'san-valentin': 'var(--accent-hex)', declaracion: 'var(--melocoton)',
     cumpleanos: 'var(--butter)', aniversario: 'var(--lila-2)', amistad: 'var(--mint)',
@@ -40,10 +30,22 @@ const CAT_TONES: Record<string, string> = {
 export default function TemplatesPage() {
     const router = useRouter();
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [templates, setTemplates] = useState<Template[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+
+    const CATEGORIES = [
+        { id: 'all', name: t.templates.categoryAll, emoji: '✨' },
+        { id: 'san-valentin', name: t.templates.categoryValentine, emoji: '💕' },
+        { id: 'declaracion', name: t.templates.categoryDeclaration, emoji: '💘' },
+        { id: 'cumpleanos', name: t.templates.categoryBirthday, emoji: '🎂' },
+        { id: 'aniversario', name: t.templates.categoryAnniversary, emoji: '💍' },
+        { id: 'amistad', name: t.templates.categoryFriendship, emoji: '🤝' },
+        { id: 'navidad', name: t.templates.categoryChristmas, emoji: '🎄' },
+        { id: 'otro', name: t.templates.categoryOther, emoji: '🎁' },
+    ];
 
     useEffect(() => { loadTemplates(); }, [activeCategory]);
 
@@ -53,7 +55,7 @@ export default function TemplatesPage() {
             const { data } = await api.templates.getAll(activeCategory !== 'all' ? activeCategory : undefined);
             setTemplates(data.data);
         } catch {
-            toast.error('Error al cargar plantillas');
+            toast.error(t.templates.loadError);
         } finally {
             setLoading(false);
         }
@@ -75,19 +77,19 @@ export default function TemplatesPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 32 }}>
                         <div>
                             <span className="sticker-badge" style={{ background: 'var(--lila)', marginBottom: 12 }}>
-                                📚 plantillas curadas
+                                {t.templates.badgeLabel}
                             </span>
                             <h1 className="serif-display" style={{ fontSize: 'clamp(36px, 5vw, 56px)', margin: '12px 0 0', color: 'var(--ink)', lineHeight: 0.95 }}>
-                                encuentra tu <em style={{ color: 'var(--accent-hex)', fontStyle: 'italic' }}>carta</em> 💌
+                                {t.templates.heroTitle}
                             </h1>
                         </div>
                         {/* Search */}
-                        <div style={{ display: 'flex', alignItems: 'center', border: '2px solid var(--ink)', borderRadius: 999, background: 'white', overflow: 'hidden', boxShadow: '3px 3px 0 var(--ink)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', border: '2px solid var(--ink)', borderRadius: 0, background: 'white', overflow: 'hidden', boxShadow: '3px 3px 0 var(--ink)' }}>
                             <span style={{ padding: '0 14px', fontSize: 16 }}>🔍</span>
                             <input
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="buscar plantillas..."
+                                placeholder={t.templates.searchPlaceholder}
                                 style={{ padding: '10px 16px 10px 0', border: 'none', background: 'transparent', fontSize: 14, color: 'var(--ink)', outline: 'none', width: 220 }}
                             />
                         </div>
@@ -99,7 +101,7 @@ export default function TemplatesPage() {
                             <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                                    borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                    borderRadius: 0, fontSize: 13, fontWeight: 600, cursor: 'pointer',
                                     border: '2px solid var(--ink)',
                                     background: activeCategory === cat.id ? CAT_TONES[cat.id] : 'white',
                                     boxShadow: activeCategory === cat.id ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
@@ -115,24 +117,24 @@ export default function TemplatesPage() {
                 {/* Count */}
                 {!loading && (
                     <div className="mono-eyebrow" style={{ marginBottom: 20, fontSize: 12 }}>
-                        {filtered.length} plantilla{filtered.length !== 1 ? 's' : ''}
+                        {t.templates.templateCount.replace('{count}', String(filtered.length)).replace('{plural}', filtered.length !== 1 ? 's' : '')}
                     </div>
                 )}
 
                 {/* Grid */}
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '80px 0' }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 999, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+                        <div style={{ width: 48, height: 48, borderRadius: 0, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
                         <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '80px 24px', border: '2px dashed var(--ink)', borderRadius: 24 }}>
+                    <div style={{ textAlign: 'center', padding: '80px 24px', border: '2px dashed var(--ink)', borderRadius: 0 }}>
                         <span style={{ fontSize: 64 }}>📭</span>
                         <h3 className="serif-display" style={{ fontSize: 32, margin: '16px 0 8px', fontStyle: 'italic', color: 'var(--ink)' }}>
-                            {searchQuery ? 'nada con esa búsqueda' : 'sin plantillas aún'}
+                            {searchQuery ? t.templates.tryOtherSearch : t.templates.noTemplates}
                         </h3>
                         <p style={{ color: 'var(--ink-soft)', fontSize: 15 }}>
-                            {searchQuery ? 'intenta con otra búsqueda' : 'pronto agregaremos más'}
+                            {searchQuery ? t.templates.tryOtherSearch : t.templates.moreComingSoon}
                         </p>
                     </div>
                 ) : (
@@ -142,7 +144,7 @@ export default function TemplatesPage() {
                             return (
                                 <div key={template._id}
                                     onClick={() => router.push(`/templates/${template._id}`)}
-                                    style={{ border: '2px solid var(--ink)', borderRadius: 24, background: 'white', overflow: 'hidden', boxShadow: '5px 5px 0 var(--ink)', cursor: 'pointer', transition: 'transform 120ms' }}
+                                    style={{ border: '2px solid var(--ink)', borderRadius: 0, background: 'white', overflow: 'hidden', boxShadow: '5px 5px 0 var(--ink)', cursor: 'pointer', transition: 'transform 120ms' }}
                                     className="hover:-translate-y-0.5 transition-transform">
 
                                     {/* Preview */}
@@ -157,12 +159,12 @@ export default function TemplatesPage() {
                                         )}
 
                                         {template.isPro && (
-                                            <span style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--butter)', border: '2px solid var(--ink)', borderRadius: 999, fontSize: 10, fontWeight: 700, color: 'var(--ink)', boxShadow: '2px 2px 0 var(--ink)' }}>
+                                            <span style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--butter)', border: '2px solid var(--ink)', borderRadius: 0, fontSize: 10, fontWeight: 700, color: 'var(--ink)', boxShadow: '2px 2px 0 var(--ink)' }}>
                                                 <Crown style={{ width: 10, height: 10 }} /> PRO
                                             </span>
                                         )}
 
-                                        <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 10px', background: 'rgba(255,255,255,0.85)', border: '1.5px solid var(--ink)', borderRadius: 999, fontSize: 10, fontWeight: 600, color: 'var(--ink)' }}>
+                                        <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 10px', background: 'rgba(255,255,255,0.85)', border: '1.5px solid var(--ink)', borderRadius: 0, fontSize: 10, fontWeight: 600, color: 'var(--ink)' }}>
                                             {CATEGORIES.find((c) => c.id === template.category)?.emoji}{' '}
                                             {CATEGORIES.find((c) => c.id === template.category)?.name}
                                         </span>
@@ -179,11 +181,11 @@ export default function TemplatesPage() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--ink-soft)' }}>
                                                 <Users style={{ width: 12, height: 12 }} />
-                                                {template.usageCount} usos
+                                                {t.templates.usesLabel.replace('{count}', String(template.usageCount))}
                                             </div>
-                                            <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '2px solid var(--ink)', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: template.isPro ? 'var(--butter)' : 'var(--mint)', boxShadow: '2px 2px 0 var(--ink)', color: 'var(--ink)' }}>
+                                            <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '2px solid var(--ink)', borderRadius: 0, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: template.isPro ? 'var(--butter)' : 'var(--mint)', boxShadow: '2px 2px 0 var(--ink)', color: 'var(--ink)' }}>
                                                 <Eye style={{ width: 12, height: 12 }} />
-                                                usar →
+                                                {t.templates.useBtn}
                                             </button>
                                         </div>
                                     </div>

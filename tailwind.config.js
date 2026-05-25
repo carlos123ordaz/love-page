@@ -86,10 +86,12 @@ module.exports = {
                 'ink-xs': '2px 2px 0 #2d1b3d',
             },
             fontFamily: {
-                sans: ['var(--font-bricolage)', 'system-ui', 'sans-serif'],
-                serif: ['var(--font-fraunces)', 'Georgia', 'serif'],
+                display: ['var(--font-anton)', 'Impact', 'sans-serif'],
+                sans: ['var(--font-antonio)', 'system-ui', 'sans-serif'],
+                serif: ['var(--font-newsreader)', 'Georgia', 'serif'],
+                'serif-italic': ['var(--font-fraunces)', 'Georgia', 'serif'],
+                mono: ['var(--font-dm-mono)', 'ui-monospace', 'monospace'],
                 hand: ['var(--font-caveat)', 'cursive'],
-                mono: ['var(--font-jetbrains)', 'ui-monospace', 'monospace'],
             },
             keyframes: {
                 'accordion-down': {

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Fraunces, Bricolage_Grotesque, Caveat, JetBrains_Mono } from 'next/font/google';
+import { Fraunces, Caveat, Anton, Antonio, DM_Mono, Newsreader } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { LanguageProvider } from '@/i18n';
@@ -11,22 +11,37 @@ const fraunces = Fraunces({
   display: 'swap',
   variable: '--font-fraunces',
   axes: ['SOFT', 'WONK', 'opsz'],
-});
-const bricolage = Bricolage_Grotesque({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-bricolage',
+  style: ['italic'],
 });
 const caveat = Caveat({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-caveat',
 });
-const jetbrains = JetBrains_Mono({
+const anton = Anton({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-jetbrains',
-  weight: ['400', '500', '700'],
+  variable: '--font-anton',
+  weight: '400',
+});
+const antonio = Antonio({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-antonio',
+  weight: ['400', '500', '600', '700'],
+});
+const dmMono = DM_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-dm-mono',
+  weight: ['300', '400', '500'],
+});
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-newsreader',
+  weight: ['400', '500'],
+  style: ['normal', 'italic'],
 });
 
 export const metadata: Metadata = {
@@ -51,10 +66,10 @@ export const metadata: Metadata = {
       'Crea páginas personalizadas con animaciones, stickers y el botón que escapa. Comparte un link único y ve su respuesta en tiempo real.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Love Pages - Páginas Personalizadas',
+        alt: 'Love Pages — cartas de amor que responden',
       },
     ],
   },
@@ -63,7 +78,7 @@ export const metadata: Metadata = {
     title: 'Love Pages - Dile lo que sientes de forma única',
     description:
       'Crea páginas personalizadas con animaciones, stickers y el botón que escapa.',
-    images: ['/og-image.png'],
+    images: ['/opengraph-image'],
   },
   verification: {
     google: 'mwNvWu95tNqWX41s2W-JVajup-JpiaR2wafataOmMdE',
@@ -87,7 +102,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className={`${fraunces.variable} ${caveat.variable} ${anton.variable} ${antonio.variable} ${dmMono.variable} ${newsreader.variable}`}>
       <head>
         {/* Preconnect to critical third-party origins */}
         <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
@@ -126,7 +141,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${bricolage.variable} ${fraunces.variable} ${caveat.variable} ${jetbrains.variable}`}>
+      <body>
         <LanguageProvider>
           <AuthProvider>
             {children}

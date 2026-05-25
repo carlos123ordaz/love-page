@@ -16,15 +16,16 @@ export default function TermsPage() {
     const lastUpdated = '9 de abril de 2025';
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
+        <div style={{ minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink-black)', fontFamily: 'var(--mono)' }}>
             <Header />
 
             <main className="container max-w-3xl mx-auto px-4 py-10 sm:py-16">
                 <div className="mb-8">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-                        Términos de Uso
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(28px, 5vw, 48px)', marginBottom: 8, lineHeight: 0.9 }}>
+                        <span className="mis-red">términos</span>{' '}
+                        <span className="mis-blue">de uso</span>
                     </h1>
-                    <p className="text-sm text-gray-500">Última actualización: {lastUpdated}</p>
+                    <p style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Última actualización: {lastUpdated}</p>
                 </div>
 
                 <div className="prose prose-gray max-w-none space-y-8 text-gray-700 leading-relaxed">

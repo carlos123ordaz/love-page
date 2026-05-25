@@ -31,6 +31,8 @@
   // ============================================================
   nav: {
     myPages: 'Mis Páginas',
+    createPage: 'crear página →',
+    createPageFree: 'crear página gratis →',
     createNew: 'Crear Nueva',
     templates: 'Plantillas',
     games: 'Juegos',
@@ -170,6 +172,90 @@
     defaultMessage: 'Cada día a tu lado es un regalo... 💕',
     defaultYesText: '¡Sí, quiero! 💖',
     defaultNoText: 'Déjame pensarlo',
+
+    // Riso redesign — masthead
+    mastheadVol: 'vol. 02 · primavera 2026',
+    mastheadPrice: '$0.00 · gratis',
+    mastheadEdition: '★ edición especial ★',
+
+    // Riso redesign — hero
+    heroBadge: '✦ nuevo · 2.4M páginas creadas',
+    heroLine1: 'cartas de amor',
+    heroLine2: 'que',
+    heroLine2Italic: 'responden',
+    heroDesc: 'diseña una página inolvidable, comparte el link, y descubre en tiempo real lo que la otra persona contesta.',
+    heroDescAccent: 'romántico. cursi. inevitable.',
+    ctaCreateRiso: 'crear mi página · gratis →',
+    ctaDemoRiso: 'ver demo →',
+    livePreviewAnnotation: 'vista previa en vivo',
+    noEscapesAnnotation: 'el "no" se escapa →',
+    statsPagesLabel: 'páginas creadas',
+    statsSiLabel: 'dicen sí',
+    statsProLabel: 'pro · una vez',
+
+    // Riso redesign — DemoPhone
+    demoCardBadge: '✦ una carta para ti',
+    demoCardTitle1: '¿quieres ser',
+    demoCardTitle2Italic: 'mi novia?',
+    demoCardSubtitle: 'después de 247 cafés y 31 películas...',
+    demoYesBtn: 'sí ♥',
+    demoNoBtn: 'no',
+    demoAnsweredYes: '¡sí!',
+    demoReset: 'volver',
+
+    // Riso redesign — pillars
+    pillar1Title: 'diseña sin saber diseñar',
+    pillar1Body: 'plantillas curadas, tipografía editorial, paleta heredada del papel, animaciones suaves.',
+    pillar2Title: 'comparte un link, recibe respuesta',
+    pillar2Body: 'cada página vive en su propia URL. tu pareja la abre, contesta sí o no, y tú lo ves al instante.',
+    pillar3Title: 'estadísticas que importan',
+    pillar3Body: 'visitas, tiempo dedicado, y la respuesta. notificaciones push cuando recibes una visita.',
+
+    // Riso redesign — testimonial
+    testimonialBadge: 'testimonio · ana p., guadalajara',
+    testimonialLine1: '"le dije que sí',
+    testimonialLine2: 'antes de leer',
+    testimonialLine3Italic: 'el último párrafo."',
+    testimonialName: 'ana patricia m.',
+    testimonialDate: 'recibió una pedida · feb 2026',
+
+    // Riso redesign — demo section
+    demoSectionLine1: 'pruébalo tú',
+    demoSectionLine2: 'mismo, ahora',
+    demoSectionBadge: '03 · demo',
+    demoCtaBtn: 'crear mi página gratis →',
+
+    // Riso redesign — pricing section
+    pricingLine1: 'un precio justo,',
+    pricingLine2: 'para siempre',
+    pricingBadge: '04 · precios',
+    pricingRecommended: 'recomendado ★',
+    freePlanPitch: 'suficiente para esa carta importante',
+    freePlanFeature1: '2 páginas activas',
+    freePlanFeature2: 'animaciones básicas',
+    freePlanFeature3: 'URL lovepages.ink/p/xxxx',
+    freePlanFeature4: 'marca de agua sutil',
+    freePlanCtaLabel: 'empezar gratis',
+    proPlanSub: 'una vez · de por vida',
+    proPlanPitch: 'para los que se enamoran seguido',
+    proPlanFeature1: 'páginas ilimitadas',
+    proPlanFeature2: 'diseño con IA ✦',
+    proPlanFeature3: 'URL personalizada',
+    proPlanFeature4: 'sin marca de agua',
+    proPlanFeature5: 'música ilimitada',
+    proPlanFeature6: 'estadísticas avanzadas',
+    proPlanCtaLabel: 'hacer upgrade ✦',
+
+    // Riso redesign — final CTA
+    finalLine1: '¿y tú,',
+    finalLine2Italic: 'a quién le escribes?',
+    finalCtaUser: 'ir a mis páginas →',
+    finalCtaGuest: 'empezar mi página →',
+
+    // Riso redesign — footer
+    footerAbout: 'Acerca de',
+    footerPrivacy: 'Privacidad',
+    footerTerms: 'Términos',
   },
 
   // ============================================================
@@ -177,6 +263,23 @@
   // ============================================================
   dashboard: {
     hello: '¡Hola, {name}! 👋',
+    goodMorning: '🌤️ buenos días',
+    goodAfternoon: '☀️ buenas tardes',
+    goodEvening: '🌙 buenas noches',
+    yourLetters: 'tus cartas.',
+    sectionTitle: '—— tus páginas',
+    viewPage: 'ver →',
+    continuePage: 'continuar →',
+    draft: 'borrador',
+    copyBtn: '📋 copiar',
+    statsViews: 'visitas',
+    statsSi: 'sí',
+    statsNo: 'no',
+    noPublished: 'sin publicar',
+    limitModalTitle: 'ya usaste tu página gratis',
+    limitModalDesc: 'El plan free incluye 1 página. Hazte PRO por $1.75 una sola vez y crea páginas ilimitadas, añade música, efectos y más.',
+    limitModalCta: 'ver plan PRO ✨',
+    limitModalDecline: 'ahora no',
     proUser: 'Usuario PRO - Features premium desbloqueadas',
     pagesCreated: 'Has creado {count} página{plural}',
     createPage: 'Crear Página',
@@ -364,6 +467,81 @@
     viewProPlans: 'Ver planes PRO',
     stayFree: 'Seguir con el plan gratuito',
     unlockProBadge: 'Desbloquear PRO',
+
+    // Desktop builder — top bar
+    backToPages: '← mis páginas',
+    newLetter: 'nueva carta',
+    draftBadge: 'borrador',
+    limitReached: 'límite alcanzado',
+    unsaved: 'sin guardar ·',
+    previewBtn: 'vista previa',
+    publishing: 'publicando...',
+    publishBtn: 'publicar →',
+
+    // Panel tabs
+    tabContent: 'contenido',
+    tabDesign: 'tema',
+    tabMedia: 'media',
+    tabEffects: 'efectos',
+    tabLink: 'enlace',
+
+    // DField labels
+    fieldTitle: 'título',
+    fieldRecipient: 'para quién',
+    fieldMessage: 'tu mensaje',
+    fieldYesBtn: 'botón sí',
+    fieldNoBtn: 'botón no',
+    fieldPalette: 'paleta',
+    fieldColors: 'colores personalizados',
+    fieldFont: 'tipografía',
+    fieldBgImage: 'imagen de fondo',
+    fieldStickers: 'stickers',
+    fieldDecorative: 'imágenes decorativas',
+    fieldParticles: 'partículas',
+    fieldMusic: 'música',
+    fieldVideo: 'video embed',
+    fieldUrlCustom: 'URL personalizada',
+    fieldPrivacy: 'privacidad',
+
+    // Preview panel
+    previewForLabel: 'una carta para',
+    previewMessagePlaceholder: 'Escribe aquí tu mensaje especial para la persona que más quieres…',
+    previewFrom: '— con amor',
+    previewFooter: 'printed with ♥',
+    previewBadge: 'vista previa · iphone 15',
+    previewDefaultTitle: 'mi carta para ti',
+    previewDefaultRecipient: 'tú',
+
+    // Expiration notice
+    expirationDays: '7 días',
+    expirationUpgradeLink: 'actualiza a PRO',
+    expirationMobile: 'Tu página expirará en 7 días.',
+    expirationMobileUpgrade: 'Actualiza a PRO',
+
+    // Privacy options
+    privacyPublic: 'pública',
+    privacyPublicDesc: 'cualquiera con el link',
+    privacyCode: 'con código',
+    privacyCodeDesc: 'requiere PIN (pronto)',
+
+    // Summary labels (publish tab)
+    summaryTitleKey: 'título',
+    summaryForKey: 'para',
+    summaryThemeKey: 'tema',
+    summaryAnimKey: 'animación',
+
+    // PRO URL upsell
+    proUrlYour: 'Tu página:',
+    proUrlWithPro: 'Con PRO:',
+    proUrlUpgrade: 'hacerlo más especial — PRO →',
+
+    // Submit buttons
+    publishPageBtn: 'publicar página ✨',
+
+    // Hints
+    decorativeHintFree: '1 gratis',
+    decorativeHintPro: '5 pro',
+    videoHint: 'youtube / tiktok — solo PRO',
   },
 
   // ============================================================
@@ -411,6 +589,10 @@
   // ============================================================
   templates: {
     title: 'Plantillas',
+    badgeLabel: '📚 plantillas curadas',
+    heroTitle: 'encuentra tu carta 💌',
+    useBtn: 'usar →',
+    usesLabel: '{count} usos',
     searchPlaceholder: 'Buscar plantillas...',
     categoryAll: 'Todas',
     categoryValentine: 'San Valentín',
@@ -438,6 +620,8 @@
   games: {
     title: 'Juegos',
     subtitle: 'Diviértete con tus amigos y tu pareja 🎉',
+    badgeLabel: 'juegos',
+    heroTitle: 'juega con quien amas 🎮',
     gameCount: '{count} juego{plural}',
     gridView: 'Vista mosaico',
     listView: 'Vista lista',
@@ -473,6 +657,13 @@
   // ============================================================
   upgrade: {
     title: 'Desbloquea Features PRO',
+    badge: 'upgrade',
+    heroTitle: 'un precio justo, para siempre 💸',
+    processing: 'procesando...',
+    oncePayment: 'USD · una vez',
+    proIncludesLabel: 'qué incluye pro',
+    alreadyPro: '¡Ya eres usuario PRO!',
+    paymentError: 'Error al procesar el pago',
     subtitle: 'Lleva tus páginas al siguiente nivel con herramientas premium',
     specialOffer: '¡Oferta Especial!',
     oneTimePayment: 'Pago único',
