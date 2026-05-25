@@ -1,7 +1,8 @@
 /**
- * Patch for @vercel/og Windows path bug in Next.js 14.1.0
- * Bug: uses path.join(import.meta.url, ...) which corrupts file:// URLs on Windows
- * Fix: replace with new URL(..., import.meta.url) which handles file:// correctly
+ * Patch for @vercel/og path bug in Next.js 14.1.0
+ * Bug: uses "../" relative paths which look in the parent @vercel/ directory,
+ *      but all assets (font, wasm) live in the same @vercel/og/ directory.
+ * Fix: replace "../" with "./" so paths resolve correctly.
  *
  * Re-run automatically via "postinstall" in package.json
  */
@@ -17,16 +18,10 @@ if (!fs.existsSync(filePath)) {
 
 let content = fs.readFileSync(filePath, 'utf8');
 
-const buggy = [
-    'var fontData = fs.readFileSync(fileURLToPath(join(import.meta.url, "../noto-sans-v27-latin-regular.ttf")));',
-    'var yoga_wasm = fs.readFileSync(fileURLToPath(join(import.meta.url, "../yoga.wasm")));',
-    'var resvg_wasm = fs.readFileSync(fileURLToPath(join(import.meta.url, "../resvg.wasm")));',
-].join('\n');
-
 const fixed = [
-    'var fontData = fs.readFileSync(fileURLToPath(new URL("../noto-sans-v27-latin-regular.ttf", import.meta.url)));',
-    'var yoga_wasm = fs.readFileSync(fileURLToPath(new URL("../yoga.wasm", import.meta.url)));',
-    'var resvg_wasm = fs.readFileSync(fileURLToPath(new URL("../resvg.wasm", import.meta.url)));',
+    'var fontData = fs.readFileSync(fileURLToPath(new URL("./noto-sans-v27-latin-regular.ttf", import.meta.url)));',
+    'var yoga_wasm = fs.readFileSync(fileURLToPath(new URL("./yoga.wasm", import.meta.url)));',
+    'var resvg_wasm = fs.readFileSync(fileURLToPath(new URL("./resvg.wasm", import.meta.url)));',
 ].join('\n');
 
 if (content.includes(fixed)) {
@@ -34,11 +29,14 @@ if (content.includes(fixed)) {
     process.exit(0);
 }
 
-if (!content.includes(buggy)) {
+// Match any variant (../  or ./) and replace with the correct ./
+const buggyPattern = /var fontData = fs\.readFileSync\(fileURLToPath\(new URL\("\.\.?\/noto-sans[^"]+", import\.meta\.url\)\)\);[\s\S]*?var yoga_wasm = fs\.readFileSync\(fileURLToPath\(new URL\("\.\.?\/yoga\.wasm", import\.meta\.url\)\)\);[\s\S]*?var resvg_wasm = fs\.readFileSync\(fileURLToPath\(new URL\("\.\.?\/resvg\.wasm", import\.meta\.url\)\)\);/;
+
+if (!buggyPattern.test(content)) {
     console.log('[patch-vercel-og] Pattern not found — may already be fixed in this version, skipping.');
     process.exit(0);
 }
 
-content = content.replace(buggy, fixed);
+content = content.replace(buggyPattern, fixed);
 fs.writeFileSync(filePath, content, 'utf8');
 console.log('[patch-vercel-og] Patched successfully.');
