@@ -7,7 +7,7 @@ export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
 
 const fontData = readFileSync(
-    path.join(process.cwd(), 'node_modules', 'next', 'dist', 'compiled', '@vercel', 'og', 'noto-sans-v27-latin-regular.ttf'),
+    path.join(process.cwd(), 'src', 'assets', 'fonts', 'noto-sans-v27-latin-regular.ttf'),
 );
 
 export default function AppleIcon() {

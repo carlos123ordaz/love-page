@@ -8,7 +8,7 @@ export const contentType = 'image/png';
 export const alt = 'Love Pages — cartas de amor que responden';
 
 const fontData = readFileSync(
-    path.join(process.cwd(), 'node_modules', 'next', 'dist', 'compiled', '@vercel', 'og', 'noto-sans-v27-latin-regular.ttf'),
+    path.join(process.cwd(), 'src', 'assets', 'fonts', 'noto-sans-v27-latin-regular.ttf'),
 );
 
 export default function OGImage() {
