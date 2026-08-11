@@ -193,7 +193,9 @@
 
   .btn-accent {
     background: var(--ink-red);
-    color: var(--paper);
+    /* --on-accent lo define la paleta de la carta; el resto de la app
+       (landing, modales) no lo declara y conserva --paper. */
+    color: var(--on-accent, var(--paper));
     border: 2px solid var(--ink-black);
     padding: 12px 22px;
     font-family: var(--sans);

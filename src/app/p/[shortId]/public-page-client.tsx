@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ProPageRenderer } from '@/components/ProPageRenderer';
+import { ParticleCanvas, animToKind, hasParticles } from '@/components/ParticleCanvas';
+import { pageThemeVars, titleFontFamily, bodyFontFamily, googleFontsHref, isDarkColor, RISO_FONT } from '@/lib/page-theme';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
 
@@ -58,121 +60,6 @@ const MUSIC_URLS: Record<string, string> = {
     'music-box': '/audio/music-box.mp3',
     'orchestra': '/audio/orchestra.mp3',
 };
-
-// Map existing animation ids → particle kinds
-function animToKind(anim: string): string {
-    if (anim === 'hearts-falling' || anim === 'float-up' || anim === 'bubbles' || anim === 'particles') return 'hearts';
-    if (anim === 'confetti' || anim === 'fireworks') return 'confetti';
-    if (anim === 'petals' || anim === 'snow') return 'petals';
-    return 'hearts';
-}
-
-// ── ParticleCanvas — riso two-ink, multiply blend ─────────────
-function ParticleCanvas({ kind = 'hearts', density = 1 }: { kind?: string; density?: number }) {
-    const ref = useRef<HTMLCanvasElement>(null);
-
-    useEffect(() => {
-        const canvas = ref.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        let raf: number;
-        let particles: any[] = [];
-        let w = 0, h = 0;
-
-        const resize = () => {
-            const r = canvas.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            w = r.width; h = r.height;
-            canvas.width = w * dpr; canvas.height = h * dpr;
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        };
-        resize();
-        const ro = new ResizeObserver(resize);
-        ro.observe(canvas);
-
-        const heartPath = (cx: number, cy: number, s: number) => {
-            ctx.beginPath();
-            ctx.moveTo(cx, cy + s * 0.3);
-            ctx.bezierCurveTo(cx, cy, cx - s, cy, cx - s, cy + s * 0.3);
-            ctx.bezierCurveTo(cx - s, cy + s * 0.7, cx, cy + s * 0.9, cx, cy + s * 1.2);
-            ctx.bezierCurveTo(cx, cy + s * 0.9, cx + s, cy + s * 0.7, cx + s, cy + s * 0.3);
-            ctx.bezierCurveTo(cx + s, cy, cx, cy, cx, cy + s * 0.3);
-            ctx.fill();
-        };
-
-        const readInks = () => {
-            const cs = getComputedStyle(document.documentElement);
-            return [
-                cs.getPropertyValue('--ink-red').trim() || '#e8378a',
-                cs.getPropertyValue('--ink-blue').trim() || '#1a1410',
-            ];
-        };
-
-        const spawn = () => {
-            const inks = readInks();
-            const p: any = {
-                x: Math.random() * w, y: -10,
-                vx: (Math.random() - 0.5) * 0.6,
-                vy: 0.6 + Math.random() * 1.2,
-                rot: Math.random() * Math.PI * 2,
-                vr: (Math.random() - 0.5) * 0.04,
-                life: 0,
-                size: 10 + Math.random() * 16,
-                color: Math.random() < 0.6 ? inks[0] : inks[1],
-                kind,
-            };
-            if (kind === 'confetti') p.size = 8 + Math.random() * 8;
-            if (kind === 'petals') { p.size = 11 + Math.random() * 10; p.vy = 0.3 + Math.random() * 0.6; }
-            particles.push(p);
-        };
-
-        let last = performance.now();
-        let acc = 0;
-        const target = 28 * density;
-
-        const tick = (t: number) => {
-            const dt = Math.min(50, t - last); last = t;
-            acc += dt;
-            while (particles.length < target && acc > 30) { spawn(); acc -= 30; }
-            ctx.clearRect(0, 0, w, h);
-            ctx.globalCompositeOperation = 'multiply';
-            particles = particles.filter(p => {
-                p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life += dt;
-                if (p.kind === 'petals') p.x += Math.sin(p.life / 600) * 0.6;
-                if (p.kind === 'confetti') p.vy += 0.005;
-                const alive = p.y < h + 30 && p.x > -30 && p.x < w + 30;
-                if (!alive) return false;
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rot);
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = 0.78;
-                if (p.kind === 'hearts') heartPath(0, -p.size / 2, p.size / 2);
-                else if (p.kind === 'confetti') ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-                else if (p.kind === 'petals') {
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, p.size, p.size * 0.5, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.restore();
-                return true;
-            });
-            raf = requestAnimationFrame(tick);
-        };
-        raf = requestAnimationFrame(tick);
-
-        return () => { cancelAnimationFrame(raf); ro.disconnect(); };
-    }, [kind, density]);
-
-    return (
-        <canvas
-            ref={ref}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', mixBlendMode: 'multiply', zIndex: 2 }}
-        />
-    );
-}
 
 // ── EscapeNoButton — riso flat, blue outline ──────────────────
 function clamp(v: number, a: number, b: number) { return Math.max(a, Math.min(b, v)); }
@@ -321,6 +208,17 @@ export default function PublicPageView() {
             .finally(() => setLoading(false));
     }, [shortId]);
 
+    // Sólo se pide a Google la tipografía que esta carta use de verdad.
+    useEffect(() => {
+        const href = googleFontsHref([page?.titleFont, page?.bodyFont]);
+        if (!href) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+        return () => { link.remove(); };
+    }, [page?.titleFont, page?.bodyFont]);
+
     const handleAnswer = async (answer: 'yes' | 'no') => {
         if (answered) return;
         try {
@@ -422,13 +320,20 @@ export default function PublicPageView() {
     const stickers = (page.selectedStickers || []).map((id: string) => STICKER_MAP[id] || '💖');
     const words = (page.title || '').trim().split(/\s+/);
     const hasMusic = page.backgroundMusic && page.backgroundMusic !== 'none';
-    const hasAnimation = page.animation && page.animation !== 'none' && page.animation !== 'fade-in';
+    const hasAnimation = hasParticles(page.animation);
+    const customTitleFont = Boolean(page.titleFont) && page.titleFont !== RISO_FONT;
+    const customBodyFont = Boolean(page.bodyFont) && page.bodyFont !== RISO_FONT;
+    // `multiply` desaparece sobre papel oscuro; ahí las tintas van en `screen`.
+    const inkBlend: 'multiply' | 'screen' = isDarkColor(page.backgroundColor) ? 'screen' : 'multiply';
 
     return (
         <div
             ref={containerRef}
             className="grain"
             style={{
+                // Misma traducción de paleta que usa el editor: lo que se ve en
+                // el preview es literalmente lo que se publica.
+                ...pageThemeVars(page),
                 position: 'relative',
                 minHeight: '100vh',
                 width: '100%',
@@ -441,14 +346,24 @@ export default function PublicPageView() {
                 flexDirection: 'column',
             }}
         >
+            {/* Imagen de fondo — cubre la página entera, no sólo el bloque de
+                texto donde estaba antes, y con un velo de papel que mantiene
+                legible la carta. */}
+            {page.backgroundImageUrl && (
+                <>
+                    <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${page.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', pointerEvents: 'none', zIndex: 0 }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'var(--paper)', opacity: 0.68, pointerEvents: 'none', zIndex: 0 }} />
+                </>
+            )}
+
             {/* Particle canvas */}
             {hasAnimation && <ParticleCanvas kind={animToKind(page.animation)} />}
 
             {/* Riso circles — top right */}
-            <svg style={{ position: 'absolute', top: -60, right: -80, width: 320, height: 320, mixBlendMode: 'multiply', opacity: 0.78, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
+            <svg style={{ position: 'absolute', top: -60, right: -80, width: 320, height: 320, mixBlendMode: inkBlend, opacity: 0.78, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
                 <circle cx="100" cy="100" r="90" fill="var(--ink-red)" />
             </svg>
-            <svg style={{ position: 'absolute', top: -40, right: -100, width: 320, height: 320, mixBlendMode: 'multiply', opacity: 0.7, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
+            <svg style={{ position: 'absolute', top: -40, right: -100, width: 320, height: 320, mixBlendMode: inkBlend, opacity: 0.7, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
                 <circle cx="100" cy="100" r="86" fill="var(--ink-blue)" />
             </svg>
 
@@ -490,7 +405,12 @@ export default function PublicPageView() {
                             )}
                             <h1
                                 className="serif-display"
-                                style={{ fontSize: 'clamp(54px, 13vw, 80px)', margin: 0, maxWidth: 360, lineHeight: 0.86 }}
+                                style={{
+                                    fontFamily: titleFontFamily(page.titleFont),
+                                    textTransform: customTitleFont ? 'none' : 'uppercase',
+                                    lineHeight: customTitleFont ? 1.04 : 0.86,
+                                    fontSize: 'clamp(54px, 13vw, 80px)', margin: 0, maxWidth: 360,
+                                }}
                             >
                                 {words.map((w: string, i: number) => (
                                     <span
@@ -504,14 +424,9 @@ export default function PublicPageView() {
                             </h1>
                         </div>
 
-                        {/* Background image (subtle) */}
-                        {page.backgroundImageUrl && (
-                            <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${page.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.08, pointerEvents: 'none', mixBlendMode: 'multiply' }} />
-                        )}
-
                         {/* Message */}
                         {page.message && (
-                            <div style={{ marginTop: 26, fontFamily: 'var(--serif)', fontSize: 17, fontStyle: 'italic', color: 'var(--ink-black)', maxWidth: 320, lineHeight: 1.55 }}>
+                            <div style={{ marginTop: 26, fontFamily: bodyFontFamily(page.bodyFont), fontSize: 17, fontStyle: customBodyFont ? 'normal' : 'italic', color: 'var(--ink-black)', maxWidth: 320, lineHeight: 1.55 }}>
                                 {renderMsg(page.message)}
                             </div>
                         )}
@@ -530,9 +445,9 @@ export default function PublicPageView() {
 
                         {/* Sender */}
                         <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <span style={{ width: 18, height: 1, background: 'var(--ink-red)' }} />
-                            <span style={{ fontSize: 24, color: 'var(--ink-red)', fontFamily: 'var(--hand)' }}>— con amor</span>
-                            {stickers[2] && <span style={{ fontSize: 18, color: 'var(--ink-red)' }}>{stickers[2]}</span>}
+                            <span style={{ width: 18, height: 1, background: 'var(--ink-red-ink)' }} />
+                            <span style={{ fontSize: 24, color: 'var(--ink-red-ink)', fontFamily: 'var(--hand)' }}>— con amor</span>
+                            {stickers[2] && <span style={{ fontSize: 18 }}>{stickers[2]}</span>}
                         </div>
 
                         {/* CTA */}

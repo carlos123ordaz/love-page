@@ -508,15 +508,46 @@
     previewMessagePlaceholder: 'Escribe aquí tu mensaje especial para la persona que más quieres…',
     previewFrom: '— con amor',
     previewFooter: 'printed with ♥',
-    previewBadge: 'vista previa · iphone 15',
+    previewBadge: 'vista previa',
     previewDefaultTitle: 'mi carta para ti',
-    previewDefaultRecipient: 'tú',
+    previewDefaultRecipient: 'ti',
 
     // Expiration notice
     expirationDays: '7 días',
     expirationUpgradeLink: 'actualiza a PRO',
     expirationMobile: 'Tu página expirará en 7 días.',
     expirationMobileUpgrade: 'Actualiza a PRO',
+    expirationLinkTitle: 'este enlace vive 7 días',
+    expirationLinkDesc: 'Pasada esa semana la carta deja de abrirse. Con PRO se queda para siempre.',
+    expirationLinkCta: 'hacerlo permanente · $1.75',
+
+    // Borrador local
+    draftSavedNow: 'guardado ahora',
+    draftSavedSeconds: 'guardado hace {n} s',
+    draftSavedMinutes: 'guardado hace {n} min',
+    draftRestored: 'Recuperamos tu borrador',
+    draftRestoredImages: 'Recuperamos tu borrador. Vuelve a subir las imágenes: no se pueden guardar en el navegador.',
+    draftDiscard: 'empezar de cero',
+    draftDiscarded: 'Borrador descartado',
+
+    // Validación
+    requiredMark: 'obligatorio',
+    missingOne: 'Falta {field}',
+    missingMany: 'Faltan: {fields}',
+    missingHint: 'falta {fields}',
+
+    // Prueba de opciones PRO
+    proTrialToast: 'Puedes probarlo aquí. Se desbloquea al publicar.',
+    proTrialBarOne: 'Estás probando 1 opción PRO',
+    proTrialBarMany: 'Estás probando {n} opciones PRO',
+    proTrialBarCta: 'ver cuáles',
+
+    // Login al publicar
+    loginGateTitle: 'Guarda tu carta.',
+    loginGateDesc: 'Entra con Google para publicarla y poder ver quién la abre y qué responde.',
+
+    // Lienzo (desktop)
+    canvasDevice: 'dispositivo',
 
     // Privacy options
     privacyPublic: 'pública',

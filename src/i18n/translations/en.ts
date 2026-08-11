@@ -510,7 +510,7 @@ const en: Translations = {
     previewMessagePlaceholder: 'Write your special message here for the person you love most…',
     previewFrom: '— with love',
     previewFooter: 'printed with ♥',
-    previewBadge: 'preview · iphone 15',
+    previewBadge: 'preview',
     previewDefaultTitle: 'my letter for you',
     previewDefaultRecipient: 'you',
 
@@ -519,6 +519,37 @@ const en: Translations = {
     expirationUpgradeLink: 'upgrade to PRO',
     expirationMobile: 'Your page will expire in 7 days.',
     expirationMobileUpgrade: 'Upgrade to PRO',
+    expirationLinkTitle: 'this link lives for 7 days',
+    expirationLinkDesc: 'After that week the letter stops opening. With PRO it stays forever.',
+    expirationLinkCta: 'make it permanent · $1.75',
+
+    // Local draft
+    draftSavedNow: 'saved just now',
+    draftSavedSeconds: 'saved {n}s ago',
+    draftSavedMinutes: 'saved {n} min ago',
+    draftRestored: 'We brought your draft back',
+    draftRestoredImages: 'We brought your draft back. Please re-upload your images: they cannot be stored in the browser.',
+    draftDiscard: 'start over',
+    draftDiscarded: 'Draft discarded',
+
+    // Validation
+    requiredMark: 'required',
+    missingOne: '{field} is missing',
+    missingMany: 'Missing: {fields}',
+    missingHint: 'missing {fields}',
+
+    // Trying PRO options
+    proTrialToast: 'Try it here. It unlocks when you publish.',
+    proTrialBarOne: "You're trying 1 PRO option",
+    proTrialBarMany: "You're trying {n} PRO options",
+    proTrialBarCta: 'see which',
+
+    // Login on publish
+    loginGateTitle: 'Save your letter.',
+    loginGateDesc: 'Sign in with Google to publish it and see who opens it and what they answer.',
+
+    // Canvas (desktop)
+    canvasDevice: 'device',
 
     // Privacy options
     privacyPublic: 'public',

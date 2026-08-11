@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 import { Header } from '@/components/layout/header';
@@ -9,6 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { CustomSlugInput } from '@/components/CustomSlugInput';
+import { ParticleCanvas, animToKind, hasParticles } from '@/components/ParticleCanvas';
+import { LoginGateModal } from '@/components/auth/login-gate-modal';
+import { saveDraft, loadDraft, clearDraft } from '@/lib/draft';
+import {
+    pageThemeVars,
+    titleFontFamily,
+    bodyFontFamily,
+    googleFontsHref,
+    isDarkColor,
+    RISO_THEME_ID,
+    RISO_FONT,
+} from '@/lib/page-theme';
 import { useTranslation } from '@/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -37,6 +49,13 @@ import {
     Flame,
     CloudRain,
     Clock,
+    Smartphone,
+    Tablet,
+    Monitor,
+    AlertCircle,
+    RotateCcw,
+    ChevronDown,
+    Check,
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -123,6 +142,9 @@ function BottomSheet({
 // ============================================================
 
 const GOOGLE_FONTS = [
+    // La display condensada del producto. Va primera y es la de fábrica, para
+    // que elegir tipografía sea una decisión y no un cambio por omisión.
+    { name: RISO_FONT, category: 'sans-serif', free: true },
     { name: 'Dancing Script', category: 'cursive', free: true },
     { name: 'Pacifico', category: 'cursive', free: true },
     { name: 'Lobster', category: 'cursive', free: true },
@@ -142,9 +164,15 @@ const GOOGLE_FONTS = [
     { name: 'Indie Flower', category: 'cursive', free: false },
 ];
 
-const EXPIRATION_NOTICE_DISMISSED_KEY = 'love-pages:create:expiration-notice-dismissed';
-
 const THEMES = [
+    {
+        id: RISO_THEME_ID,
+        name: 'Riso',
+        emoji: '🖨',
+        colors: { bg: '#f3ead4', text: '#1a1410', accent: '#e8378a' },
+        preview: 'bg-gradient-to-br from-amber-50 to-pink-200',
+        free: true,
+    },
     {
         id: 'romantic',
         name: 'Romántico',
@@ -411,8 +439,99 @@ function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 }
 
 // ============================================================
+// COMPONENTE: ProDecisionModal
+// Se abre al publicar con opciones PRO puestas y sin plan PRO.
+// El usuario ya vio esas opciones funcionando en su propia carta, así que
+// aquí sólo hay que decidir: publicar sin ellas o desbloquearlas.
+// ============================================================
+function ProDecisionModal({
+    isOpen,
+    onClose,
+    onPublishFree,
+    onUpgrade,
+    selections,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onPublishFree: () => void;
+    onUpgrade: () => void;
+    selections: { label: string; value: string }[];
+}) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
+            <div
+                className="relative w-full max-w-sm"
+                style={{ background: 'var(--paper-soft)', border: '2px solid var(--ink-black)', boxShadow: '6px 6px 0 var(--ink-black)' }}
+            >
+                <div style={{ padding: '28px 26px 26px' }}>
+                    <span className="mono-eyebrow" style={{ fontSize: 10, letterSpacing: '0.16em', color: 'var(--ink-red)', display: 'block', marginBottom: 12 }}>
+                        —— {selections.length === 1 ? 'una cosa es PRO' : `${selections.length} cosas son PRO`}
+                    </span>
+
+                    <h3 className="serif-display" style={{ fontSize: 28, lineHeight: 0.95, margin: 0, color: 'var(--ink-black)' }}>
+                        Casi listo.
+                    </h3>
+
+                    <p style={{ marginTop: 12, fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, lineHeight: 1.5, color: 'var(--ink-black)' }}>
+                        Esto es lo que estabas probando y no entra en el plan gratis:
+                    </p>
+
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '16px 0 0', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {selections.map((s) => (
+                            <li
+                                key={`${s.label}-${s.value}`}
+                                style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '9px 12px', background: 'var(--paper)', border: '1.5px solid var(--ink-black)', fontFamily: 'var(--mono)', fontSize: 11 }}
+                            >
+                                <span style={{ color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</span>
+                                <span style={{ fontWeight: 700, textAlign: 'right' }}>{s.value}</span>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <button
+                            onClick={onUpgrade}
+                            className="btn-accent"
+                            style={{ width: '100%', padding: '13px 18px', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--mono)', letterSpacing: '0.08em' }}
+                        >
+                            <Crown style={{ width: 14, height: 14 }} />
+                            Desbloquearlas · $1.75
+                        </button>
+                        <button
+                            onClick={onPublishFree}
+                            style={{ width: '100%', padding: '11px 18px', background: 'transparent', border: '1.5px solid var(--ink-black)', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-black)' }}
+                        >
+                            Publicar sin ellas
+                        </button>
+                        <button
+                            onClick={onClose}
+                            style={{ width: '100%', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-soft)', letterSpacing: '0.06em' }}
+                        >
+                            seguir editando
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
 // DESKTOP HELPERS — defined outside component to avoid remount on each render
 // ============================================================
+
+/** Tamaños del lienzo de vista previa (columna izquierda del editor desktop). */
+const PREVIEW_DEVICES = [
+    { id: 'phone', label: 'iPhone 15', icon: Smartphone, width: 320, height: 640, radius: 44, notch: true },
+    { id: 'tablet', label: 'Tablet', icon: Tablet, width: 480, height: 660, radius: 24, notch: false },
+    { id: 'wide', label: 'Escritorio', icon: Monitor, width: 720, height: 460, radius: 8, notch: false },
+] as const;
+
+type PreviewDeviceId = (typeof PREVIEW_DEVICES)[number]['id'];
 function DField({ label, hint, children }: { label: string; hint?: React.ReactNode; children: React.ReactNode }) {
     return (
         <div>
@@ -432,6 +551,30 @@ const dI: React.CSSProperties = {
     outline: 'none', fontFamily: 'var(--mono)',
 };
 
+/** Mismo campo, marcado en rojo tras un intento de publicar sin rellenarlo. */
+const dInvalid: React.CSSProperties = {
+    ...dI,
+    border: '2px solid var(--ink-red)',
+    background: 'var(--melocoton)',
+};
+
+/** Marca de campo obligatorio: visible desde el principio, no sólo al fallar. */
+function RequiredMark({ filled, label }: { filled: boolean; label: string }) {
+    return (
+        <span
+            style={{
+                display: 'inline-flex', alignItems: 'center', gap: 3,
+                fontSize: 9, fontFamily: 'var(--mono)', letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: filled ? 'var(--ink-soft)' : 'var(--ink-red)',
+            }}
+        >
+            {filled ? <Check style={{ width: 9, height: 9 }} /> : '*'}
+            {label}
+        </span>
+    );
+}
+
 const colorKeyMap = { bg: 'backgroundColor', text: 'textColor', accent: 'accentColor' } as const;
 
 function renderMsg(text: string): React.ReactNode {
@@ -450,7 +593,6 @@ export default function CreatePageEnhanced() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuthStore();
     const [currentStep, setCurrentStep] = useState<Step>('content');
-    const [showExpirationNotice, setShowExpirationNotice] = useState(false);
     const [loading, setLoading] = useState(false);
     const [bgImagePreview, setBgImagePreview] = useState<string | null>(null);
     const [decorativeImagePreviews, setDecorativeImagePreviews] = useState<string[]>([]);
@@ -458,10 +600,30 @@ export default function CreatePageEnhanced() {
     const [showColorPicker, setShowColorPicker] = useState<'bg' | 'text' | 'accent' | null>(null);
     const [fontsLoaded, setFontsLoaded] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const [showMobilePreview, setShowMobilePreview] = useState(false);
+    const [previewCollapsed, setPreviewCollapsed] = useState(false);
     const [showMobileColorPicker, setShowMobileColorPicker] = useState<'bg' | 'text' | 'accent' | null>(null);
     const isMobile = useMediaQuery('(max-width: 1023px)');
     const { t } = useTranslation();
+
+    // ── Borrador ──
+    const [savedAt, setSavedAt] = useState<number | null>(null);
+    const [restoredNotice, setRestoredNotice] = useState<{ hadImages: boolean } | null>(null);
+    const hydratedRef = useRef(false);
+
+    // ── Publicación ──
+    const [showLoginGate, setShowLoginGate] = useState(false);
+    const [showProDecision, setShowProDecision] = useState(false);
+    const pendingPublishRef = useRef(false);
+
+    // ── Validación ──
+    const [invalidField, setInvalidField] = useState<'title' | 'recipientName' | null>(null);
+    const titleRef = useRef<HTMLInputElement>(null);
+    const recipientRef = useRef<HTMLInputElement>(null);
+    const mTitleRef = useRef<HTMLInputElement>(null);
+    const mRecipientRef = useRef<HTMLInputElement>(null);
+
+    // ── Lienzo ──
+    const [previewDevice, setPreviewDevice] = useState<PreviewDeviceId>('phone');
 
     const isPro = user?.isPro || false;
     const freeLimitReached = !!user && !isPro && user.canCreatePage === false;
@@ -474,12 +636,12 @@ export default function CreatePageEnhanced() {
         noButtonText: t.landing.defaultNoText,
         noButtonEscapes: false,
         pageType: 'free',
-        theme: 'romantic',
-        backgroundColor: '#ff69b4',
-        textColor: '#ffffff',
-        accentColor: '#ff1493',
-        titleFont: 'Dancing Script',
-        bodyFont: 'Quicksand',
+        theme: RISO_THEME_ID,
+        backgroundColor: '#f3ead4',
+        textColor: '#1a1410',
+        accentColor: '#e8378a',
+        titleFont: RISO_FONT,
+        bodyFont: RISO_FONT,
         backgroundImage: null,
         decorativeImages: [],
         referenceImage: null,
@@ -491,11 +653,12 @@ export default function CreatePageEnhanced() {
         customSlug: '',
     });
 
-    // Cargar Google Fonts dinámicamente
+    // Cargar Google Fonts dinámicamente (todas, para poder previsualizar la lista)
     useEffect(() => {
-        const fontsToLoad = GOOGLE_FONTS.map((f) => f.name.replace(/ /g, '+')).join('&family=');
+        const href = googleFontsHref(GOOGLE_FONTS.map((f) => f.name));
+        if (!href) return;
         const link = document.createElement('link');
-        link.href = `https://fonts.googleapis.com/css2?family=${fontsToLoad}&display=swap`;
+        link.href = href;
         link.rel = 'stylesheet';
         document.head.appendChild(link);
         link.onload = () => setFontsLoaded(true);
@@ -505,10 +668,61 @@ export default function CreatePageEnhanced() {
         };
     }, []);
 
+    // ── Borrador: restaurar al montar ──────────────────────────
+    // Se ejecuta una sola vez y antes del primer autoguardado, para no pisar
+    // lo guardado con el formulario vacío del render inicial.
     useEffect(() => {
-        const isDismissed = localStorage.getItem(EXPIRATION_NOTICE_DISMISSED_KEY) === 'true';
-        setShowExpirationNotice(!isDismissed);
+        const draft = loadDraft();
+        if (draft) {
+            setFormData((prev) => ({ ...prev, ...(draft.values as Partial<PageFormData>) }));
+            setSavedAt(draft.savedAt);
+            setRestoredNotice({ hadImages: draft.hadImages });
+        }
+        hydratedRef.current = true;
     }, []);
+
+    // ── Borrador: autoguardar con debounce ─────────────────────
+    useEffect(() => {
+        if (!hydratedRef.current) return;
+        const id = setTimeout(() => {
+            const at = saveDraft(formData);
+            if (at) setSavedAt(at);
+        }, 600);
+        return () => clearTimeout(id);
+    }, [formData]);
+
+    // Refresca la etiqueta «guardado hace X» sin depender de nuevas ediciones.
+    const [savedTick, setSavedTick] = useState(0);
+    useEffect(() => {
+        if (!savedAt) return;
+        const id = setInterval(() => setSavedTick((n) => n + 1), 15000);
+        return () => clearInterval(id);
+    }, [savedAt]);
+
+    const savedLabel = (() => {
+        void savedTick; // fuerza el recálculo con el intervalo
+        if (!savedAt) return null;
+        const secs = Math.max(0, Math.round((Date.now() - savedAt) / 1000));
+        if (secs < 10) return t.create.draftSavedNow;
+        if (secs < 60) return t.create.draftSavedSeconds.replace('{n}', String(secs));
+        const mins = Math.round(secs / 60);
+        return t.create.draftSavedMinutes.replace('{n}', String(mins));
+    })();
+
+    const discardDraft = () => {
+        clearDraft();
+        setSavedAt(null);
+        setRestoredNotice(null);
+        setFormData((prev) => ({
+            ...prev,
+            title: '', recipientName: '', message: '',
+            yesButtonText: t.landing.defaultYesText,
+            noButtonText: t.landing.defaultNoText,
+            customSlug: '',
+        }));
+        setCurrentStep('content');
+        toast.success(t.create.draftDiscarded);
+    };
 
     // Auth no requerido - usuarios pueden diseñar sin login
     // Se pedirá login al momento de guardar si no están autenticados
@@ -521,16 +735,16 @@ export default function CreatePageEnhanced() {
         setShowUpgradeModal(true);
     };
 
-    const dismissExpirationNotice = () => {
-        localStorage.setItem(EXPIRATION_NOTICE_DISMISSED_KEY, 'true');
-        setShowExpirationNotice(false);
+    // Las opciones PRO se pueden elegir sin plan PRO: se aplican al preview para
+    // que la persona vea si le sirven. El cobro se plantea al publicar, cuando ya
+    // sabe qué está comprando (ver handleSubmit y ProDecisionModal).
+    const noteProTrial = () => {
+        if (isPro) return;
+        toast(t.create.proTrialToast, { icon: '👑', id: 'pro-trial' });
     };
 
     const selectTheme = (theme: (typeof THEMES)[0]) => {
-        if (!theme.free && !isPro) {
-            goToUpgrade();
-            return;
-        }
+        if (!theme.free && !isPro) noteProTrial();
         updateForm({
             theme: theme.id,
             backgroundColor: theme.colors.bg,
@@ -540,19 +754,13 @@ export default function CreatePageEnhanced() {
     };
 
     const selectFont = (font: (typeof GOOGLE_FONTS)[0], target: 'titleFont' | 'bodyFont') => {
-        if (!font.free && !isPro) {
-            goToUpgrade();
-            return;
-        }
+        if (!font.free && !isPro) noteProTrial();
         updateForm({ [target]: font.name });
     };
 
     const toggleSticker = (stickerId: string) => {
         const sticker = STICKERS.find((s) => s.id === stickerId);
-        if (sticker && !sticker.free && !isPro) {
-            goToUpgrade();
-            return;
-        }
+        if (sticker && !sticker.free && !isPro) noteProTrial();
 
         setFormData((prev) => {
             const exists = prev.selectedStickers.includes(stickerId);
@@ -653,74 +861,162 @@ export default function CreatePageEnhanced() {
         setDecorativeImagePreviews(newPreviews);
     };
 
-    // ---- Submit ----
-    const handleSubmit = async () => {
-        if (!user) {
-            toast.error(t.auth.loginToSave);
-            return;
-        }
-        if (freeLimitReached) {
-            toast.error(t.create.freeLimitReached);
-            router.push('/upgrade');
-            return;
-        }
-        if (!formData.title.trim()) {
-            toast.error(t.create.titleRequired);
-            return;
-        }
-        if (!formData.recipientName.trim()) {
-            toast.error(t.create.recipientRequired);
-            return;
+    // ---- Validación ----
+    // Una sola fuente de verdad, compartida por móvil y desktop: el botón de
+    // publicar dice qué falta y al pulsarlo lleva al campo, en vez de avisar
+    // desde una pestaña distinta a la del problema.
+    const missingFields: { key: 'title' | 'recipientName'; label: string; step: Step }[] = [];
+    if (!formData.title.trim()) missingFields.push({ key: 'title', label: t.create.fieldTitle, step: 'content' });
+    if (!formData.recipientName.trim()) missingFields.push({ key: 'recipientName', label: t.create.fieldRecipient, step: 'content' });
+
+    const focusMissing = () => {
+        const first = missingFields[0];
+        if (!first) return;
+        setCurrentStep(first.step);
+        setInvalidField(first.key);
+        // El panel acaba de cambiar de pestaña: el input aún no está montado.
+        setTimeout(() => {
+            const el = isMobile
+                ? (first.key === 'title' ? mTitleRef.current : mRecipientRef.current)
+                : (first.key === 'title' ? titleRef.current : recipientRef.current);
+            el?.focus();
+            el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 60);
+    };
+
+    // La marca roja desaparece en cuanto el campo deja de estar vacío.
+    useEffect(() => {
+        if (!invalidField) return;
+        if (formData[invalidField].trim()) setInvalidField(null);
+    }, [formData.title, formData.recipientName, invalidField]);
+
+    // ---- Opciones PRO en uso por alguien sin plan PRO ----
+    // Cada entrada sabe cómo quitarse, para poder publicar sin ella de un clic.
+    const proSelections: { label: string; value: string; strip: () => Partial<PageFormData> }[] = [];
+    if (!isPro) {
+        const theme = THEMES.find((th) => th.id === formData.theme);
+        if (theme && !theme.free) {
+            const fallback = THEMES[0];
+            proSelections.push({
+                label: t.create.summaryThemeKey,
+                value: t.themes[theme.id as keyof typeof t.themes] || theme.name,
+                strip: () => ({ theme: fallback.id, backgroundColor: fallback.colors.bg, textColor: fallback.colors.text, accentColor: fallback.colors.accent }),
+            });
         }
 
-        if (formData.pageType === 'pro' && !isPro) {
-            toast.error(t.create.needProPlan);
-            setShowUpgradeModal(true);
-            return;
+        // El backend valida titleFont y bodyFont por separado, así que aquí se
+        // miran los dos aunque hoy sólo el del título se pueda elegir.
+        const font = GOOGLE_FONTS.find((f) => f.name === formData.titleFont);
+        if (font && !font.free) {
+            proSelections.push({ label: t.create.fieldFont, value: font.name, strip: () => ({ titleFont: GOOGLE_FONTS[0].name }) });
+        }
+        const bFont = GOOGLE_FONTS.find((f) => f.name === formData.bodyFont);
+        if (bFont && !bFont.free) {
+            proSelections.push({ label: t.create.fieldFont, value: bFont.name, strip: () => ({ bodyFont: GOOGLE_FONTS[0].name }) });
         }
 
+        const anim = ANIMATIONS.find((a) => a.id === formData.animation);
+        if (anim && !anim.free) {
+            proSelections.push({
+                label: t.create.summaryAnimKey,
+                value: t.animations[anim.id as keyof typeof t.animations] || anim.name,
+                strip: () => ({ animation: 'hearts-falling' }),
+            });
+        }
+
+        const music = BACKGROUND_MUSIC.find((m) => m.id === formData.backgroundMusic);
+        if (music && !music.free) {
+            proSelections.push({
+                label: t.create.fieldMusic,
+                value: t.music[music.id as keyof typeof t.music] || music.name,
+                strip: () => ({ backgroundMusic: 'none' }),
+            });
+        }
+
+        const proStickers = formData.selectedStickers.filter((id) => STICKERS.find((s) => s.id === id)?.free === false);
+        if (proStickers.length > 0) {
+            proSelections.push({
+                label: t.create.fieldStickers,
+                value: proStickers.map((id) => STICKERS.find((s) => s.id === id)?.emoji).join(' '),
+                strip: () => ({ selectedStickers: formData.selectedStickers.filter((id) => STICKERS.find((s) => s.id === id)?.free !== false) }),
+            });
+        }
+
+        if (formData.videoUrl.trim()) {
+            proSelections.push({ label: t.create.fieldVideo, value: formData.videoUrl.trim(), strip: () => ({ videoUrl: '' }) });
+        }
+
+        if (formData.customSlug.trim()) {
+            proSelections.push({ label: t.create.fieldUrlCustom, value: `/p/${formData.customSlug.trim()}`, strip: () => ({ customSlug: '' }) });
+        }
+    }
+
+    // ---- Publicación ----
+    /**
+     * `theme` es un enum cerrado en el backend: un id desconocido rompe la
+     * validación de Mongoose. Cualquier id que esta lista no reconozca viaja
+     * como 'custom', que el aspecto no depende de él — lo definen
+     * backgroundColor / textColor / accentColor, que es lo que el renderizador
+     * lee de verdad.
+     *
+     * 'riso' se queda fuera a propósito: el backend ya lo acepta en el código,
+     * pero hasta que ese cambio esté desplegado enviarlo rompería la
+     * publicación. Una vez desplegado, añadirlo aquí es opcional y sólo cambia
+     * cómo queda guardado el id.
+     */
+    const API_THEME_IDS = new Set([
+        'romantic', 'sunset', 'ocean', 'garden', 'playful',
+        'elegant', 'minimal', 'dark',
+        'neon', 'vintage', 'aurora', 'cherry', 'custom',
+    ]);
+    const apiThemeId = (theme: string) => (API_THEME_IDS.has(theme) ? theme : 'custom');
+
+    const publish = async (values: PageFormData) => {
         setLoading(true);
         try {
             const data = new FormData();
 
             // Campos básicos
-            data.append('title', formData.title);
-            data.append('recipientName', formData.recipientName);
-            data.append('message', formData.message);
-            data.append('yesButtonText', formData.yesButtonText);
-            data.append('noButtonText', formData.noButtonText);
-            data.append('noButtonEscapes', formData.noButtonEscapes.toString());
-            data.append('pageType', formData.pageType);
-            data.append('theme', formData.theme);
-            data.append('backgroundColor', formData.backgroundColor);
-            data.append('textColor', formData.textColor);
-            data.append('accentColor', formData.accentColor);
+            data.append('title', values.title);
+            data.append('recipientName', values.recipientName);
+            data.append('message', values.message);
+            data.append('yesButtonText', values.yesButtonText);
+            data.append('noButtonText', values.noButtonText);
+            data.append('noButtonEscapes', values.noButtonEscapes.toString());
+            data.append('pageType', values.pageType);
+            data.append('theme', apiThemeId(values.theme));
+            data.append('backgroundColor', values.backgroundColor);
+            data.append('textColor', values.textColor);
+            data.append('accentColor', values.accentColor);
 
             // Nuevos campos
-            data.append('titleFont', formData.titleFont);
-            data.append('bodyFont', formData.bodyFont);
-            data.append('animation', formData.animation);
-            data.append('backgroundMusic', formData.backgroundMusic);
-            if (isPro && formData.videoUrl.trim()) {
-                data.append('videoUrl', formData.videoUrl.trim());
+            data.append('titleFont', values.titleFont);
+            data.append('bodyFont', values.bodyFont);
+            data.append('animation', values.animation);
+            data.append('backgroundMusic', values.backgroundMusic);
+            if (isPro && values.videoUrl.trim()) {
+                data.append('videoUrl', values.videoUrl.trim());
             }
-            data.append('selectedStickers', JSON.stringify(formData.selectedStickers));
-            data.append('showWatermark', formData.showWatermark.toString());
+            data.append('selectedStickers', JSON.stringify(values.selectedStickers));
+            data.append('showWatermark', values.showWatermark.toString());
 
             // Imágenes
-            if (formData.backgroundImage) {
-                data.append('backgroundImage', formData.backgroundImage);
+            if (values.backgroundImage) {
+                data.append('backgroundImage', values.backgroundImage);
             }
-            formData.decorativeImages.forEach((img, i) => {
+            values.decorativeImages.forEach((img, i) => {
                 data.append(`decorativeImage_${i}`, img);
             });
-            if (formData.referenceImage) {
-                data.append('referenceImage', formData.referenceImage);
+            if (values.referenceImage) {
+                data.append('referenceImage', values.referenceImage);
             }
-            if (isPro && formData.customSlug && formData.customSlug.trim()) {
-                data.append('customSlug', formData.customSlug.trim());
+            if (isPro && values.customSlug && values.customSlug.trim()) {
+                data.append('customSlug', values.customSlug.trim());
             }
             const response = await api.pages.create(data);
+            // La página ya vive en el servidor: el borrador local sobra y, si se
+            // quedara, reaparecería la próxima vez que alguien abra el editor.
+            clearDraft();
             toast.success(t.create.pageCreated);
             const identifier = response.data.data.customSlug || response.data.data.shortId;
             router.push(`/p/${identifier}`);
@@ -731,6 +1027,67 @@ export default function CreatePageEnhanced() {
             setLoading(false);
         }
     };
+
+    /** Quita las opciones PRO del formulario y publica lo que queda. */
+    const publishWithoutPro = () => {
+        const stripped = proSelections.reduce<PageFormData>(
+            (acc, sel) => ({ ...acc, ...sel.strip() }),
+            formData
+        );
+        setFormData(stripped);
+        setShowProDecision(false);
+        publish(stripped);
+    };
+
+    const handleSubmit = async () => {
+        // 1. Lo que falta se resuelve antes que nada, y llevando al campo.
+        if (missingFields.length > 0) {
+            focusMissing();
+            toast.error(
+                missingFields.length === 1
+                    ? t.create.missingOne.replace('{field}', missingFields[0].label)
+                    : t.create.missingMany.replace('{fields}', missingFields.map((f) => f.label).join(', '))
+            );
+            return;
+        }
+
+        // 2. Sin sesión: se pide aquí mismo y la publicación sigue al volver.
+        if (!user) {
+            pendingPublishRef.current = true;
+            setShowLoginGate(true);
+            return;
+        }
+
+        if (freeLimitReached) {
+            toast.error(t.create.freeLimitReached);
+            router.push('/upgrade');
+            return;
+        }
+
+        if (formData.pageType === 'pro' && !isPro) {
+            toast.error(t.create.needProPlan);
+            setShowUpgradeModal(true);
+            return;
+        }
+
+        // 3. Probó cosas PRO: ahora sabe qué son y decide.
+        if (proSelections.length > 0) {
+            setShowProDecision(true);
+            return;
+        }
+
+        publish(formData);
+    };
+
+    // Al volver del popup de Google, retomar la publicación que lo disparó.
+    useEffect(() => {
+        if (user && pendingPublishRef.current) {
+            pendingPublishRef.current = false;
+            setShowLoginGate(false);
+            handleSubmit();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
 
     // ---- Loading guard ----
     if (authLoading) {
@@ -752,13 +1109,18 @@ export default function CreatePageEnhanced() {
     const stepIndex = steps.findIndex((s) => s.key === currentStep);
 
     const canGoNext = () => {
-        if (currentStep === 'content') return formData.title.trim() && formData.recipientName.trim();
+        if (currentStep === 'content') return missingFields.length === 0;
         return true;
     };
 
     const goNext = () => {
         if (!canGoNext()) {
-            toast.error(t.create.requiredFields);
+            focusMissing();
+            toast.error(
+                missingFields.length === 1
+                    ? t.create.missingOne.replace('{field}', missingFields[0].label)
+                    : t.create.missingMany.replace('{fields}', missingFields.map((f) => f.label).join(', '))
+            );
             return;
         }
         const nextIndex = stepIndex + 1;
@@ -777,6 +1139,10 @@ export default function CreatePageEnhanced() {
     const previewContent = () => {
         const words = (formData.title || t.create.previewDefaultTitle).trim().split(/\s+/);
         const recipient = formData.recipientName || t.create.previewDefaultRecipient;
+        const customTitleFont = formData.titleFont !== RISO_FONT;
+        const customBodyFont = formData.bodyFont !== RISO_FONT;
+        // `multiply` desaparece sobre papel oscuro; ahí las tintas van en `screen`.
+        const inkBlend: 'multiply' | 'screen' = isDarkColor(formData.backgroundColor) ? 'screen' : 'multiply';
         const stk = formData.selectedStickers.slice(0, 3).map(
             (id) => STICKERS.find((s) => s.id === id)?.emoji ?? ''
         );
@@ -784,6 +1150,9 @@ export default function CreatePageEnhanced() {
             <div
                 className="grain"
                 style={{
+                    // La paleta elegida redefine las variables riso aquí dentro,
+                    // así que todo lo de abajo se tiñe solo.
+                    ...pageThemeVars(formData),
                     width: '100%', height: '100%',
                     background: 'var(--paper)',
                     backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.3  0 0 0 0 0.1  0 0 0 0 0 0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>\")",
@@ -791,15 +1160,24 @@ export default function CreatePageEnhanced() {
                     fontFamily: 'var(--mono)', color: 'var(--ink-black)',
                 }}
             >
-                {/* Background image overlay — mirrors public page rendering */}
+                {/* Imagen de fondo: se ve de verdad, con un velo de papel encima
+                    para que el texto siga siendo legible. */}
                 {bgImagePreview && (
-                    <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${bgImagePreview})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.08, pointerEvents: 'none', mixBlendMode: 'multiply', zIndex: 1 }} />
+                    <>
+                        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${bgImagePreview})`, backgroundSize: 'cover', backgroundPosition: 'center', pointerEvents: 'none', zIndex: 0 }} />
+                        <div style={{ position: 'absolute', inset: 0, background: 'var(--paper)', opacity: 0.68, pointerEvents: 'none', zIndex: 1 }} />
+                    </>
+                )}
+                {/* Partículas — mismo componente que la página publicada, para que
+                    lo que se elige aquí sea exactamente lo que se va a ver. */}
+                {hasParticles(formData.animation) && (
+                    <ParticleCanvas kind={animToKind(formData.animation)} density={0.55} />
                 )}
                 {/* Riso circles — top right, identical proportions to prototipo */}
-                <svg style={{ position: 'absolute', top: -60, right: -80, width: 220, height: 220, mixBlendMode: 'multiply', opacity: 0.78, pointerEvents: 'none' }} viewBox="0 0 200 200">
+                <svg style={{ position: 'absolute', top: -60, right: -80, width: 220, height: 220, mixBlendMode: inkBlend, opacity: 0.78, pointerEvents: 'none' }} viewBox="0 0 200 200">
                     <circle cx="100" cy="100" r="90" fill="var(--ink-red)" />
                 </svg>
-                <svg style={{ position: 'absolute', top: -40, right: -100, width: 220, height: 220, mixBlendMode: 'multiply', opacity: 0.7, pointerEvents: 'none' }} viewBox="0 0 200 200">
+                <svg style={{ position: 'absolute', top: -40, right: -100, width: 220, height: 220, mixBlendMode: inkBlend, opacity: 0.7, pointerEvents: 'none' }} viewBox="0 0 200 200">
                     <circle cx="100" cy="100" r="86" fill="var(--ink-blue)" />
                 </svg>
 
@@ -828,7 +1206,14 @@ export default function CreatePageEnhanced() {
                         {stk[1] && <span style={{ position: 'absolute', right: -18, top: -8, fontSize: 16, color: 'var(--ink-blue)', transform: 'rotate(14deg)' }}>{stk[1]}</span>}
                         <h1
                             className="serif-display"
-                            style={{ fontSize: 52, margin: 0, maxWidth: 260, lineHeight: 0.86 }}
+                            style={{
+                                fontFamily: titleFontFamily(formData.titleFont),
+                                // Las cursivas y display de Google no aguantan
+                                // la caja alta condensada del riso.
+                                textTransform: customTitleFont ? 'none' : 'uppercase',
+                                lineHeight: customTitleFont ? 1.04 : 0.86,
+                                fontSize: 52, margin: 0, maxWidth: 260,
+                            }}
                         >
                             {words.map((word, i) => (
                                 <span
@@ -843,7 +1228,7 @@ export default function CreatePageEnhanced() {
                     </div>
 
                     {/* Message */}
-                    <div style={{ marginTop: 18, fontFamily: 'var(--serif)', fontSize: 12, fontStyle: 'italic', color: 'var(--ink-black)', maxWidth: 240, lineHeight: 1.55 }}>
+                    <div style={{ marginTop: 18, fontFamily: bodyFontFamily(formData.bodyFont), fontSize: 12, fontStyle: customBodyFont ? 'normal' : 'italic', color: 'var(--ink-black)', maxWidth: 240, lineHeight: 1.55 }}>
                         {formData.message ? renderMsg(formData.message) : t.create.previewMessagePlaceholder}
                     </div>
 
@@ -858,9 +1243,9 @@ export default function CreatePageEnhanced() {
 
                     {/* Sender */}
                     <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ width: 14, height: 1, background: 'var(--ink-red)' }} />
-                        <span style={{ fontFamily: 'var(--hand)', fontSize: 18, color: 'var(--ink-red)' }}>{t.create.previewFrom}</span>
-                        {stk[2] && <span style={{ fontSize: 14, color: 'var(--ink-red)' }}>{stk[2]}</span>}
+                        <span style={{ width: 14, height: 1, background: 'var(--ink-red-ink)' }} />
+                        <span style={{ fontFamily: 'var(--hand)', fontSize: 18, color: 'var(--ink-red-ink)' }}>{t.create.previewFrom}</span>
+                        {stk[2] && <span style={{ fontSize: 14 }}>{stk[2]}</span>}
                     </div>
 
                     {/* CTA */}
@@ -911,44 +1296,73 @@ export default function CreatePageEnhanced() {
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                     {freeLimitReached && <span className="mono-eyebrow" style={{ fontSize: 9, color: 'var(--ink-soft)' }}>{t.create.limitReached}</span>}
                     {isPro && <ProBadge />}
-                    {!freeLimitReached && <span className="mono-eyebrow" style={{ fontSize: 9, color: 'var(--ink-soft)' }}>{t.create.unsaved}</span>}
-                    <button
-                        style={{ padding: '8px 14px', border: '1.5px solid var(--ink-black)', background: 'var(--paper)', fontSize: 11, fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.08em', cursor: 'pointer', color: 'var(--ink-black)' }}
-                        onClick={() => setShowMobilePreview(true)}
-                    >{t.create.previewBtn}</button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading || freeLimitReached}
-                        className="btn-accent"
-                        style={{ padding: '8px 16px', fontSize: 11, opacity: freeLimitReached ? 0.5 : 1, cursor: freeLimitReached ? 'not-allowed' : 'pointer' }}
-                    >
-                        {loading ? t.create.publishing : t.create.publishBtn}
-                    </button>
+                    {/* Estado real del borrador, no una etiqueta decorativa */}
+                    {!freeLimitReached && (
+                        <span className="mono-eyebrow" style={{ fontSize: 9, color: savedLabel ? 'var(--ink-blue)' : 'var(--ink-soft)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            {savedLabel && <Check style={{ width: 11, height: 11 }} />}
+                            {savedLabel || t.create.unsaved}
+                        </span>
+                    )}
+                    {savedLabel && (
+                        <button
+                            onClick={discardDraft}
+                            title={t.create.draftDiscard}
+                            style={{ padding: '7px 9px', border: '1.5px solid var(--ink-black)', background: 'var(--paper)', cursor: 'pointer', color: 'var(--ink-soft)', lineHeight: 0 }}
+                        >
+                            <RotateCcw style={{ width: 13, height: 13 }} />
+                        </button>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading || freeLimitReached}
+                            className="btn-accent"
+                            style={{ padding: '8px 16px', fontSize: 11, opacity: freeLimitReached ? 0.5 : 1, cursor: freeLimitReached ? 'not-allowed' : 'pointer' }}
+                        >
+                            {loading ? t.create.publishing : t.create.publishBtn}
+                        </button>
+                        {missingFields.length > 0 && (
+                            <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink-red)', letterSpacing: '0.06em' }}>
+                                {t.create.missingHint.replace('{fields}', missingFields.map((f) => f.label).join(' + '))}
+                            </span>
+                        )}
+                    </div>
                 </div>
             </header>
 
             {/* ── 3-COLUMN GRID ── */}
             <div style={{ flex: 1, overflow: 'hidden', display: 'grid', gridTemplateColumns: '56px 1fr 380px' }}>
 
-                {/* ─ SIDEBAR ─ */}
+                {/* ─ SIDEBAR — controles del lienzo ─
+                    Antes duplicaba las pestañas del panel derecho. Ahora hace lo
+                    único que al lienzo le faltaba: elegir en qué pantalla se mira. */}
                 <aside style={{ borderRight: '1.5px solid var(--ink-black)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: 16, background: 'var(--paper-soft)' }}>
                     <div style={{ width: 36, height: 36, borderRadius: 0, background: 'var(--ink-red)', color: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--ink-black)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>L</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                        {([['Aa', 'content', t.create.tabContent], ['◐', 'design', t.create.tabDesign], ['✦', 'media', t.create.tabMedia], ['♪', 'effects', t.create.tabEffects], ['⚙', 'preview', t.create.tabLink]] as [string, Step, string][]).map(([icon, step, label]) => (
-                            <button
-                                key={step}
-                                onClick={() => setCurrentStep(step)}
-                                title={label}
-                                style={{
-                                    width: 36, height: 36,
-                                    border: currentStep === step ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
-                                    background: currentStep === step ? 'var(--paper)' : 'var(--paper-soft)',
-                                    borderRadius: 0, cursor: 'pointer', fontSize: 16,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    transition: 'all 0.1s',
-                                }}
-                            >{icon}</button>
-                        ))}
+                    <span style={{ width: 20, height: 1.5, background: 'var(--rule)' }} aria-hidden="true" />
+                    <div role="group" aria-label={t.create.canvasDevice} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {PREVIEW_DEVICES.map((device) => {
+                            const Icon = device.icon;
+                            const active = previewDevice === device.id;
+                            return (
+                                <button
+                                    key={device.id}
+                                    onClick={() => setPreviewDevice(device.id)}
+                                    title={device.label}
+                                    aria-pressed={active}
+                                    style={{
+                                        width: 36, height: 36,
+                                        border: active ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
+                                        background: active ? 'var(--paper)' : 'var(--paper-soft)',
+                                        borderRadius: 0, cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: active ? 'var(--ink-red)' : 'var(--ink-soft)',
+                                        transition: 'all 0.1s',
+                                    }}
+                                >
+                                    <Icon style={{ width: 16, height: 16 }} />
+                                </button>
+                            );
+                        })}
                     </div>
                 </aside>
 
@@ -962,18 +1376,24 @@ export default function CreatePageEnhanced() {
                         <circle cx="100" cy="100" r="85" fill="var(--ink-blue)" />
                     </svg>
 
-                    {/* iPhone frame */}
-                    <div style={{ position: 'relative', width: 320, height: 640, background: 'var(--ink-black)', borderRadius: 44, padding: 10, flexShrink: 0, zIndex: 1 }}>
-                        <div style={{ width: '100%', height: '100%', borderRadius: 36, overflow: 'hidden' }}>
-                            {previewContent()}
-                        </div>
-                        {/* Notch */}
-                        <div style={{ position: 'absolute', top: 18, left: '50%', transform: 'translateX(-50%)', width: 90, height: 24, background: 'var(--ink-black)', borderRadius: 999, zIndex: 10, pointerEvents: 'none' }} />
-                    </div>
+                    {/* Marco del dispositivo elegido en el rail */}
+                    {(() => {
+                        const device = PREVIEW_DEVICES.find((d) => d.id === previewDevice) ?? PREVIEW_DEVICES[0];
+                        return (
+                            <div style={{ position: 'relative', width: device.width, height: device.height, maxWidth: '100%', maxHeight: '100%', background: 'var(--ink-black)', borderRadius: device.radius, padding: 10, flexShrink: 1, zIndex: 1 }}>
+                                <div style={{ width: '100%', height: '100%', borderRadius: Math.max(0, device.radius - 8), overflow: 'hidden' }}>
+                                    {previewContent()}
+                                </div>
+                                {device.notch && (
+                                    <div style={{ position: 'absolute', top: 18, left: '50%', transform: 'translateX(-50%)', width: 90, height: 24, background: 'var(--ink-black)', borderRadius: 999, zIndex: 10, pointerEvents: 'none' }} />
+                                )}
+                            </div>
+                        );
+                    })()}
 
                     {/* Preview badge */}
                     <div style={{ position: 'absolute', top: 32, left: 32, padding: '6px 12px', background: 'var(--paper-soft)', border: '1.5px solid var(--ink-black)', fontFamily: 'var(--mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-blue)', zIndex: 2 }}>
-                        {t.create.previewBadge}
+                        {t.create.previewBadge} · {(PREVIEW_DEVICES.find((d) => d.id === previewDevice) ?? PREVIEW_DEVICES[0]).label}
                     </div>
 
                     {/* URL badge */}
@@ -1011,21 +1431,56 @@ export default function CreatePageEnhanced() {
                     {/* Scrollable content */}
                     <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-                        {/* Expiration notice */}
-                        {!isPro && showExpirationNotice && (
-                            <div style={{ padding: '10px 14px', background: 'var(--paper-2)', border: '1.5px solid var(--ink-black)', fontSize: 11, fontFamily: 'var(--mono)', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                                <span style={{ flex: 1, lineHeight: 1.4 }}>⏱ expira en <strong>{t.create.expirationDays}</strong>. <button onClick={goToUpgrade} style={{ textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, color: 'var(--ink-red)', padding: 0, fontFamily: 'var(--mono)', fontSize: 11 }}>{t.create.expirationUpgradeLink}</button></span>
-                                <button onClick={dismissExpirationNotice} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--ink-soft)', padding: 0, lineHeight: 1 }}>×</button>
+                        {/* Borrador recuperado */}
+                        {restoredNotice && (
+                            <div style={{ padding: '10px 14px', background: 'var(--paper-2)', border: '1.5px solid var(--ink-black)', fontSize: 11, fontFamily: 'var(--mono)', display: 'flex', gap: 8, alignItems: 'flex-start', lineHeight: 1.45 }}>
+                                <RotateCcw style={{ width: 13, height: 13, flexShrink: 0, marginTop: 2, color: 'var(--ink-blue)' }} />
+                                <span style={{ flex: 1 }}>{restoredNotice.hadImages ? t.create.draftRestoredImages : t.create.draftRestored}</span>
+                                <button onClick={() => setRestoredNotice(null)} aria-label="Cerrar" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--ink-soft)', padding: 0, lineHeight: 1 }}>×</button>
                             </div>
+                        )}
+
+                        {/* Opciones PRO en prueba: se cobran al publicar, no al elegirlas */}
+                        {proSelections.length > 0 && (
+                            <button
+                                onClick={() => setShowProDecision(true)}
+                                style={{ padding: '10px 14px', background: 'var(--melocoton)', border: '1.5px solid var(--ink-red)', fontSize: 11, fontFamily: 'var(--mono)', display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer', textAlign: 'left', width: '100%', color: 'var(--ink-black)' }}
+                            >
+                                <Crown style={{ width: 13, height: 13, flexShrink: 0, color: 'var(--ink-red)' }} />
+                                <span style={{ flex: 1, lineHeight: 1.4 }}>
+                                    {proSelections.length === 1
+                                        ? t.create.proTrialBarOne
+                                        : t.create.proTrialBarMany.replace('{n}', String(proSelections.length))}
+                                </span>
+                                <span style={{ textDecoration: 'underline', color: 'var(--ink-red)', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.create.proTrialBarCta}</span>
+                            </button>
                         )}
 
                         {/* ── Tab: contenido ── */}
                         {currentStep === 'content' && (<>
-                            <DField label={t.create.fieldTitle}>
-                                <input value={formData.title} onChange={e => updateForm({ title: e.target.value })} placeholder={t.create.titlePlaceholder} maxLength={200} style={dI} />
+                            <DField label={t.create.fieldTitle} hint={<RequiredMark filled={!!formData.title.trim()} label={t.create.requiredMark} />}>
+                                <input
+                                    ref={titleRef}
+                                    value={formData.title}
+                                    onChange={e => updateForm({ title: e.target.value })}
+                                    placeholder={t.create.titlePlaceholder}
+                                    maxLength={200}
+                                    aria-required="true"
+                                    aria-invalid={invalidField === 'title'}
+                                    style={invalidField === 'title' ? dInvalid : dI}
+                                />
                             </DField>
-                            <DField label={t.create.fieldRecipient}>
-                                <input value={formData.recipientName} onChange={e => updateForm({ recipientName: e.target.value })} placeholder={t.create.recipientPlaceholder} maxLength={100} style={dI} />
+                            <DField label={t.create.fieldRecipient} hint={<RequiredMark filled={!!formData.recipientName.trim()} label={t.create.requiredMark} />}>
+                                <input
+                                    ref={recipientRef}
+                                    value={formData.recipientName}
+                                    onChange={e => updateForm({ recipientName: e.target.value })}
+                                    placeholder={t.create.recipientPlaceholder}
+                                    maxLength={100}
+                                    aria-required="true"
+                                    aria-invalid={invalidField === 'recipientName'}
+                                    style={invalidField === 'recipientName' ? dInvalid : dI}
+                                />
                             </DField>
                             <DField label={t.create.fieldMessage} hint={`${formData.message.length}/1000`}>
                                 <textarea value={formData.message} onChange={e => updateForm({ message: e.target.value })} placeholder={t.create.messagePlaceholder} maxLength={1000} rows={5} style={{ ...dI, resize: 'none', lineHeight: 1.5 }} />
@@ -1131,7 +1586,7 @@ export default function CreatePageEnhanced() {
                                                 }}
                                             >
                                                 <span className="mono-eyebrow" style={{ fontSize: 9, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>{font.name}</span>
-                                                <span style={{ fontSize: 22, fontFamily: `'${font.name}', ${font.category}`, display: 'block' }}>Aa Bb Cc</span>
+                                                <span style={{ fontSize: 22, fontFamily: titleFontFamily(font.name), display: 'block' }}>Aa Bb Cc</span>
                                             </button>
                                         </div>
                                     ))}
@@ -1212,7 +1667,7 @@ export default function CreatePageEnhanced() {
                                         <div key={anim.id} style={{ position: 'relative' }}>
                                             {!anim.free && !isPro && <div style={{ position: 'absolute', top: 2, right: 2, zIndex: 5 }}><ProBadge small /></div>}
                                             <button
-                                                onClick={() => { if (!anim.free && !isPro) { goToUpgrade(); return; } updateForm({ animation: anim.id }); }}
+                                                onClick={() => { if (!anim.free && !isPro) noteProTrial(); updateForm({ animation: anim.id }); }}
                                                 style={{
                                                     aspectRatio: '1', width: '100%',
                                                     border: formData.animation === anim.id ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
@@ -1234,7 +1689,7 @@ export default function CreatePageEnhanced() {
                                     {BACKGROUND_MUSIC.map(music => (
                                         <button
                                             key={music.id}
-                                            onClick={() => { if (!music.free && !isPro) { goToUpgrade(); return; } updateForm({ backgroundMusic: music.id }); }}
+                                            onClick={() => { if (!music.free && !isPro) noteProTrial(); updateForm({ backgroundMusic: music.id }); }}
                                             style={{
                                                 padding: '10px 12px',
                                                 border: formData.backgroundMusic === music.id ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)',
@@ -1253,79 +1708,116 @@ export default function CreatePageEnhanced() {
                             </DField>
 
                             <DField label={t.create.fieldVideo} hint={!isPro ? <ProBadge small /> : undefined}>
-                                {isPro ? (
-                                    <input type="url" placeholder="https://youtube.com/..." value={formData.videoUrl} onChange={e => updateForm({ videoUrl: e.target.value })} style={dI} />
-                                ) : (
-                                    <button onClick={goToUpgrade} style={{ width: '100%', padding: '10px 12px', border: '1.5px dashed var(--ink-black)', background: 'var(--paper)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--ink-soft)', textAlign: 'center', letterSpacing: '0.04em' }}>
-                                        {t.create.videoHint}
-                                    </button>
-                                )}
+                                <input
+                                    type="url"
+                                    placeholder="https://youtube.com/..."
+                                    value={formData.videoUrl}
+                                    onChange={e => {
+                                        if (!isPro && e.target.value && !formData.videoUrl) noteProTrial();
+                                        updateForm({ videoUrl: e.target.value });
+                                    }}
+                                    style={dI}
+                                />
                             </DField>
                         </>)}
 
                         {/* ── Tab: enlace ── */}
                         {currentStep === 'preview' && (<>
-                            <DField label={t.create.fieldUrlCustom} hint={!isPro ? <span style={{ padding: '2px 6px', fontSize: 9, background: 'var(--ink-black)', color: 'var(--ink-red)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>pro</span> : undefined}>
+                            {/* El slug se puede escribir sin PRO: se ve en la insignia de
+                                URL del lienzo y se decide al publicar, como el resto. */}
+                            <DField label={t.create.fieldUrlCustom} hint={!isPro ? <ProBadge small /> : undefined}>
                                 <div style={{ display: 'flex', alignItems: 'stretch', border: '1.5px solid var(--ink-black)', background: 'var(--paper)', overflow: 'hidden' }}>
                                     <span style={{ padding: '10px 12px', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-soft)', borderRight: '1.5px solid var(--ink-black)', background: 'var(--paper-3)', flexShrink: 0 }}>lovepages.ink/p/</span>
-                                    {isPro ? (
-                                        <input value={formData.customSlug} onChange={e => updateForm({ customSlug: e.target.value })} style={{ ...dI, border: 'none', flex: 1, color: 'var(--ink-red)' }} placeholder="tu-slug-aqui" />
-                                    ) : (
-                                        <button onClick={goToUpgrade} style={{ flex: 1, padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-soft)', textAlign: 'left' }}>
-                                            {formData.recipientName ? `para-${formData.recipientName.toLowerCase()}` : '—'}
-                                        </button>
-                                    )}
+                                    <input
+                                        value={formData.customSlug}
+                                        onChange={e => {
+                                            if (!isPro && e.target.value && !formData.customSlug) noteProTrial();
+                                            updateForm({ customSlug: e.target.value });
+                                        }}
+                                        style={{ ...dI, border: 'none', flex: 1, color: 'var(--ink-red)' }}
+                                        placeholder={formData.recipientName ? `para-${formData.recipientName.toLowerCase()}` : 'tu-slug-aqui'}
+                                    />
                                 </div>
                             </DField>
 
                             <DField label={t.create.fieldPrivacy}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {[['🔓', t.create.privacyPublic, t.create.privacyPublicDesc], ['🔒', t.create.privacyCode, t.create.privacyCodeDesc]].map(([icon, title, hint], k) => (
-                                        <label key={title} style={{ padding: 12, border: k === 0 ? '2px solid var(--ink-red)' : '1.5px solid var(--ink-black)', background: 'var(--paper)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
-                                            <span style={{ fontSize: 18 }}>{icon}</span>
-                                            <div>
-                                                <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{title}</div>
-                                                <div style={{ fontSize: 10, color: 'var(--ink-soft)', fontFamily: 'var(--mono)' }}>{hint}</div>
-                                            </div>
-                                        </label>
-                                    ))}
+                                    <label style={{ padding: 12, border: '2px solid var(--ink-red)', background: 'var(--paper)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <span style={{ fontSize: 18 }}>🔓</span>
+                                        <div>
+                                            <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{t.create.privacyPublic}</div>
+                                            <div style={{ fontSize: 10, color: 'var(--ink-soft)', fontFamily: 'var(--mono)' }}>{t.create.privacyPublicDesc}</div>
+                                        </div>
+                                    </label>
+                                    {/* Todavía no existe: se enseña, pero no se ofrece como si se pudiera elegir. */}
+                                    <div aria-disabled="true" style={{ padding: 12, border: '1.5px dashed var(--rule)', background: 'transparent', display: 'flex', alignItems: 'center', gap: 12, opacity: 0.6, cursor: 'not-allowed' }}>
+                                        <span style={{ fontSize: 18, filter: 'grayscale(1)' }}>🔒</span>
+                                        <div>
+                                            <div style={{ fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink-soft)' }}>{t.create.privacyCode}</div>
+                                            <div style={{ fontSize: 10, color: 'var(--ink-soft)', fontFamily: 'var(--mono)' }}>{t.create.privacyCodeDesc}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </DField>
 
                             <div style={{ padding: 14, background: 'var(--paper)', border: '1.5px solid var(--ink-black)', display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {[
-                                    [t.create.summaryTitleKey, formData.title || '—'],
-                                    [t.create.summaryForKey, formData.recipientName || '—'],
-                                    [t.create.summaryThemeKey, THEMES.find(th => th.id === formData.theme) ? (t.themes[formData.theme as keyof typeof t.themes] || THEMES.find(th => th.id === formData.theme)?.name || '—') : '—'],
-                                    [t.create.summaryAnimKey, t.animations[formData.animation as keyof typeof t.animations] || ANIMATIONS.find(a => a.id === formData.animation)?.name || '—'],
-                                ].map(([k, v]) => (
-                                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: 'var(--mono)' }}>
+                                    { k: t.create.summaryTitleKey, v: formData.title || '—', missing: !formData.title.trim() },
+                                    { k: t.create.summaryForKey, v: formData.recipientName || '—', missing: !formData.recipientName.trim() },
+                                    { k: t.create.summaryThemeKey, v: t.themes[formData.theme as keyof typeof t.themes] || THEMES.find(th => th.id === formData.theme)?.name || '—', missing: false },
+                                    { k: t.create.summaryAnimKey, v: t.animations[formData.animation as keyof typeof t.animations] || ANIMATIONS.find(a => a.id === formData.animation)?.name || '—', missing: false },
+                                ].map(({ k, v, missing }) => (
+                                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 11, fontFamily: 'var(--mono)' }}>
                                         <span style={{ color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</span>
-                                        <span style={{ fontWeight: 700 }}>{v}</span>
+                                        {/* Un campo obligatorio vacío no puede parecerse a uno opcional vacío */}
+                                        {missing ? (
+                                            <button
+                                                onClick={focusMissing}
+                                                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--ink-red)', fontWeight: 700, fontFamily: 'var(--mono)', fontSize: 11, textDecoration: 'underline' }}
+                                            >
+                                                <AlertCircle style={{ width: 11, height: 11 }} />
+                                                {t.create.requiredMark}
+                                            </button>
+                                        ) : (
+                                            <span style={{ fontWeight: 700, textAlign: 'right' }}>{v}</span>
+                                        )}
                                     </div>
                                 ))}
                             </div>
 
+                            {/* La caducidad se cuenta aquí, junto al enlace que se va a
+                                mandar, y no como aviso descartable antes de escribir nada. */}
                             {!isPro && (
-                                <div style={{ padding: 12, background: 'var(--lila-soft)', border: '1.5px solid var(--ink)', borderRadius: 0, fontSize: 12, color: 'var(--ink)' }}>
-                                    <span>{t.create.proUrlYour} <strong className="mono-eyebrow" style={{ fontSize: 10 }}>lovepages.ink/p/xK9mP2</strong></span>
-                                    <br />
-                                    <span style={{ color: 'var(--ink-soft)' }}>{t.create.proUrlWithPro} </span>
-                                    <strong style={{ color: 'var(--ink-blue)', fontFamily: 'var(--mono)', fontSize: 11 }}>para-{(formData.recipientName || 'ella').toLowerCase()}</strong>
-                                    <button onClick={goToUpgrade} style={{ display: 'block', marginTop: 8, width: '100%', padding: '8px 14px', background: 'var(--ink-red)', color: 'var(--paper)', border: '1.5px solid var(--ink-black)', borderRadius: 0, cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em', boxShadow: '2px 2px 0 var(--ink-black)' }}>
-                                        {t.create.proUrlUpgrade}
+                                <div style={{ padding: 14, background: 'var(--paper-2)', border: '1.5px solid var(--ink-black)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <Clock style={{ width: 14, height: 14, color: 'var(--ink-red)' }} />
+                                        <span className="mono-eyebrow" style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--ink-black)' }}>{t.create.expirationLinkTitle}</span>
+                                    </div>
+                                    <p style={{ fontSize: 11, fontFamily: 'var(--mono)', lineHeight: 1.5, color: 'var(--ink-soft)', margin: 0 }}>
+                                        {t.create.expirationLinkDesc}
+                                    </p>
+                                    <button onClick={goToUpgrade} style={{ marginTop: 2, width: '100%', padding: '9px 14px', background: 'var(--ink-red)', color: 'var(--paper)', border: '1.5px solid var(--ink-black)', borderRadius: 0, cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em', textTransform: 'uppercase', boxShadow: '2px 2px 0 var(--ink-black)' }}>
+                                        {t.create.expirationLinkCta}
                                     </button>
                                 </div>
                             )}
 
-                            <button
-                                onClick={handleSubmit}
-                                disabled={loading || freeLimitReached}
-                                style={{ width: '100%', padding: '12px 20px', background: freeLimitReached ? '#ccc' : 'var(--ink-red)', color: 'var(--paper)', border: '1.5px solid var(--ink-black)', borderRadius: 0, cursor: freeLimitReached ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em', boxShadow: '3px 3px 0 var(--ink-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: freeLimitReached ? 0.5 : 1 }}
-                            >
-                                <Sparkles style={{ width: 16, height: 16 }} />
-                                {loading ? t.create.publishing : t.create.publishPageBtn}
-                            </button>
+                            <div>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={loading || freeLimitReached}
+                                    style={{ width: '100%', padding: '12px 20px', background: freeLimitReached ? '#ccc' : 'var(--ink-red)', color: 'var(--paper)', border: '1.5px solid var(--ink-black)', borderRadius: 0, cursor: freeLimitReached ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em', boxShadow: '3px 3px 0 var(--ink-black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: freeLimitReached ? 0.5 : 1 }}
+                                >
+                                    <Sparkles style={{ width: 16, height: 16 }} />
+                                    {loading ? t.create.publishing : t.create.publishPageBtn}
+                                </button>
+                                {missingFields.length > 0 && (
+                                    <p style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-red)', letterSpacing: '0.04em' }}>
+                                        <AlertCircle style={{ width: 11, height: 11 }} />
+                                        {t.create.missingHint.replace('{fields}', missingFields.map((f) => f.label).join(' + '))}
+                                    </p>
+                                )}
+                            </div>
                         </>)}
                     </div>
                 </aside>
@@ -1335,41 +1827,83 @@ export default function CreatePageEnhanced() {
         {/* ═══════════════════════════════════════════════════════
             MOBILE — step wizard (< lg)
         ═══════════════════════════════════════════════════════ */}
-        <div className="lg:hidden min-h-screen pb-20" style={{ background: 'var(--paper)' }}>
-            <Header />
+        <div className="lg:hidden min-h-screen" style={{ background: 'var(--paper)', paddingBottom: 96 }}>
+
+            {/* ── Cabecera + vista previa en vivo (fija) ──
+                El editor móvil era un asistente lineal donde la maqueta vivía
+                detrás de un botón: se escribía a ciegas. Ahora la carta está
+                siempre a la vista y las secciones dejan de ser un solo sentido. */}
+            <div style={{ position: 'sticky', top: 0, zIndex: 30, background: 'var(--paper-soft)', borderBottom: '2px solid var(--ink-black)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+                    <Link href="/dashboard" aria-label={t.create.backToPages} style={{ lineHeight: 0, color: 'var(--ink-black)' }}>
+                        <ArrowLeft style={{ width: 18, height: 18 }} />
+                    </Link>
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontFamily: 'var(--sans)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {formData.title || t.create.newLetter}
+                    </span>
+                    {isPro && <Crown style={{ width: 13, height: 13, color: 'var(--ink-red)', flexShrink: 0 }} />}
+                    {savedLabel && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em', color: 'var(--ink-blue)', flexShrink: 0 }}>
+                            <Check style={{ width: 10, height: 10 }} />
+                            {savedLabel}
+                        </span>
+                    )}
+                    <button
+                        onClick={() => setPreviewCollapsed((v) => !v)}
+                        aria-expanded={!previewCollapsed}
+                        aria-label={t.create.previewBadge}
+                        style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', lineHeight: 0, color: 'var(--ink-soft)', flexShrink: 0 }}
+                    >
+                        <ChevronDown style={{ width: 18, height: 18, transform: previewCollapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 200ms' }} />
+                    </button>
+                </div>
+
+                {/* Sin marco de teléfono: ya estamos en uno. La carta se ve a
+                    ancho real y se recorta en alto, en vez de encogerse a una
+                    miniatura ilegible. */}
+                <div
+                    style={{
+                        height: previewCollapsed ? 0 : '38vh',
+                        overflow: 'hidden',
+                        transition: 'height 220ms ease',
+                        background: 'var(--paper-3)',
+                    }}
+                >
+                    <div style={{ height: '38vh', width: '100%' }}>
+                        {previewContent()}
+                    </div>
+                </div>
+
+                {/* Secciones: misma navegación y mismas etiquetas que en desktop */}
+                <div style={{ display: 'flex', overflowX: 'auto', borderTop: '1.5px solid var(--ink-black)', WebkitOverflowScrolling: 'touch' }}>
+                    {([[t.create.tabContent, 'content'], [t.create.tabDesign, 'design'], [t.create.tabMedia, 'media'], [t.create.tabEffects, 'effects'], [t.create.tabLink, 'preview']] as [string, Step][]).map(([label, key]) => {
+                        const active = currentStep === key;
+                        return (
+                            <button
+                                key={key}
+                                onClick={() => setCurrentStep(key)}
+                                style={{
+                                    flex: '1 0 auto', minWidth: 78, minHeight: 44,
+                                    padding: '11px 10px',
+                                    background: active ? 'var(--paper)' : 'transparent',
+                                    border: 'none',
+                                    borderRight: '1.5px solid var(--ink-black)',
+                                    borderBottom: active ? '3px solid var(--ink-red)' : '3px solid transparent',
+                                    color: active ? 'var(--ink-black)' : 'var(--ink-soft)',
+                                    fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 600,
+                                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                                    cursor: 'pointer', whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
 
             <main className="container py-4 px-4">
                 <div className="max-w-lg mx-auto">
-                    {/* Mobile header */}
-                    <div className="mb-4">
-                        <div className="flex items-center gap-3 mb-3">
-                            <Link href="/dashboard">
-                                <button className="p-2 rounded-full hover:bg-white/60 active:scale-95 transition-all">
-                                    <ArrowLeft className="w-5 h-5 text-gray-700" />
-                                </button>
-                            </Link>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 truncate">
-                                    {stepIndex + 1}/{steps.length}: {steps[stepIndex].label}
-                                    {isPro && (
-                                        <span className="ml-2 inline-flex items-center gap-0.5 text-amber-600">
-                                            <Crown className="w-3 h-3" />
-                                        </span>
-                                    )}
-                                </p>
-                            </div>
-                        </div>
-                        {/* Progress bar */}
-                        <div className="w-full h-1.5 overflow-hidden" style={{ background: 'var(--paper-2)', border: '1px solid var(--ink-black)' }}>
-                            <motion.div
-                                className="h-full"
-                                style={{ background: 'var(--ink-red)' }}
-                                initial={false}
-                                animate={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
-                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                            />
-                        </div>
-                    </div>
 
                     {freeLimitReached && (
                         <div className="mb-4 px-3 py-2.5 text-sm rounded-xl" style={{ background: 'var(--butter)', border: '1.5px solid var(--ink)' }}>
@@ -1377,16 +1911,34 @@ export default function CreatePageEnhanced() {
                         </div>
                     )}
 
-                    {!isPro && showExpirationNotice && (
-                        <div className="mb-4 flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: 'var(--butter)', border: '1.5px solid var(--ink)' }}>
-                            <div className="flex-1 text-xs" style={{ color: 'var(--ink)' }}>
-                                <span className="font-semibold">{t.create.expirationMobile}</span>{' '}
-                                <button type="button" onClick={goToUpgrade} className="font-semibold underline">{t.create.expirationMobileUpgrade}</button>
+                    {restoredNotice && (
+                        <div className="mb-4 flex items-start gap-3 px-3 py-2.5" style={{ background: 'var(--paper-2)', border: '1.5px solid var(--ink)' }}>
+                            <RotateCcw className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--ink-blue)' }} />
+                            <div className="flex-1 text-xs leading-relaxed" style={{ color: 'var(--ink)' }}>
+                                {restoredNotice.hadImages ? t.create.draftRestoredImages : t.create.draftRestored}
+                                <button type="button" onClick={discardDraft} className="ml-1 font-semibold underline">{t.create.draftDiscard}</button>
                             </div>
-                            <button type="button" onClick={dismissExpirationNotice} style={{ color: 'var(--ink-soft)' }}>
+                            <button type="button" onClick={() => setRestoredNotice(null)} aria-label="Cerrar" style={{ color: 'var(--ink-soft)' }}>
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
+                    )}
+
+                    {proSelections.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => setShowProDecision(true)}
+                            className="mb-4 w-full flex items-center gap-2 px-3 py-2.5 text-left"
+                            style={{ background: 'var(--melocoton)', border: '1.5px solid var(--ink-red)' }}
+                        >
+                            <Crown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ink-red)' }} />
+                            <span className="flex-1 text-xs" style={{ color: 'var(--ink)' }}>
+                                {proSelections.length === 1
+                                    ? t.create.proTrialBarOne
+                                    : t.create.proTrialBarMany.replace('{n}', String(proSelections.length))}
+                            </span>
+                            <span className="text-xs font-semibold underline" style={{ color: 'var(--ink-red)' }}>{t.create.proTrialBarCta}</span>
+                        </button>
                     )}
 
                     {/* Mobile steps */}
@@ -1407,19 +1959,27 @@ export default function CreatePageEnhanced() {
                                     </CardHeader>
                                     <CardContent className="space-y-4 px-4 lg:px-6">
                                         <Input
+                                            ref={mTitleRef}
                                             label={t.create.titleLabel}
                                             placeholder={t.create.titlePlaceholder}
                                             value={formData.title}
                                             onChange={(e) => updateForm({ title: e.target.value })}
                                             maxLength={200}
+                                            required
+                                            aria-invalid={invalidField === 'title'}
+                                            error={invalidField === 'title' ? t.create.titleRequired : undefined}
                                         />
 
                                         <Input
+                                            ref={mRecipientRef}
                                             label={t.create.recipientLabel}
                                             placeholder={t.create.recipientPlaceholder}
                                             value={formData.recipientName}
                                             onChange={(e) => updateForm({ recipientName: e.target.value })}
                                             maxLength={100}
+                                            required
+                                            aria-invalid={invalidField === 'recipientName'}
+                                            error={invalidField === 'recipientName' ? t.create.recipientRequired : undefined}
                                         />
                                         {isPro && (
                                             <div className="border-t pt-4 mt-4">
@@ -1672,7 +2232,7 @@ export default function CreatePageEnhanced() {
                                                                 ? 'border-pink-600 bg-pink-50'
                                                                 : 'border-gray-200 hover:border-pink-300'
                                                                 } ${!font.free && !isPro ? 'opacity-60' : ''}`}
-                                                            style={{ fontFamily: `'${font.name}', ${font.category}` }}
+                                                            style={{ fontFamily: titleFontFamily(font.name) }}
                                                         >
                                                             <span className="text-lg sm:text-base">Aa</span>
                                                             <span className="block text-xs sm:text-[10px] text-gray-500 font-sans mt-0.5">
@@ -1915,10 +2475,7 @@ export default function CreatePageEnhanced() {
                                                         )}
                                                         <button
                                                             onClick={() => {
-                                                                if (!anim.free && !isPro) {
-                                                                    goToUpgrade();
-                                                                    return;
-                                                                }
+                                                                if (!anim.free && !isPro) noteProTrial();
                                                                 updateForm({ animation: anim.id });
                                                             }}
                                                             className={`w-full p-3 border-2 rounded-lg text-left transition-all active:scale-95 min-h-[48px] ${formData.animation === anim.id
@@ -1948,10 +2505,7 @@ export default function CreatePageEnhanced() {
                                                     <div key={music.id} className="relative">
                                                         <button
                                                             onClick={() => {
-                                                                if (!music.free && !isPro) {
-                                                                    goToUpgrade();
-                                                                    return;
-                                                                }
+                                                                if (!music.free && !isPro) noteProTrial();
                                                                 updateForm({ backgroundMusic: music.id });
                                                             }}
                                                             className={`w-full p-3 border-2 rounded-lg text-left text-sm transition-all flex items-center justify-between active:scale-[0.98] min-h-[48px] ${formData.backgroundMusic === music.id
@@ -1978,25 +2532,19 @@ export default function CreatePageEnhanced() {
                                                 </label>
                                                 {!isPro && <ProBadge />}
                                             </div>
-                                            {isPro ? (
-                                                <div>
-                                                    <input
-                                                        type="url"
-                                                        placeholder="https://youtube.com/watch?v=... o https://tiktok.com/..."
-                                                        value={formData.videoUrl}
-                                                        onChange={(e) => updateForm({ videoUrl: e.target.value })}
-                                                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 min-h-[44px]"
-                                                    />
-                                                    <p className="text-xs text-gray-500 mt-1">YouTube o TikTok. Se mostrará como video embed en tu página.</p>
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={goToUpgrade}
-                                                    className="w-full p-3 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-600 hover:bg-amber-50 active:scale-[0.99] transition-all text-center min-h-[48px]"
-                                                >
-                                                    Agrega un video de YouTube o TikTok — solo PRO
-                                                </button>
-                                            )}
+                                            <div>
+                                                <input
+                                                    type="url"
+                                                    placeholder="https://youtube.com/watch?v=... o https://tiktok.com/..."
+                                                    value={formData.videoUrl}
+                                                    onChange={(e) => {
+                                                        if (!isPro && e.target.value && !formData.videoUrl) noteProTrial();
+                                                        updateForm({ videoUrl: e.target.value });
+                                                    }}
+                                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 min-h-[44px]"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">YouTube o TikTok. Se mostrará como video embed en tu página.</p>
+                                            </div>
                                         </div>
 
                                         {/* Marca de agua */}
@@ -2049,12 +2597,7 @@ export default function CreatePageEnhanced() {
                                         <CardDescription>Revisa tu página y publícala</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4 px-4 lg:px-6">
-                                        {/* Mobile preview snapshot inline */}
-                                        <div className="lg:hidden">
-                                            <div className="max-w-[260px] mx-auto" style={{ height: 520 }}>
-                                                {previewContent()}
-                                            </div>
-                                        </div>
+                                        {/* La maqueta ya está fija arriba: repetirla aquí sobraba */}
 
                                         {isPro && formData.customSlug && (
                                             <div className="p-4" style={{ background: 'var(--paper-soft)', border: '2px solid var(--ink-black)' }}>
@@ -2076,18 +2619,30 @@ export default function CreatePageEnhanced() {
                                             </div>
                                         )}
 
+                                        {/* La caducidad se cuenta junto al enlace, en el momento
+                                            en que la carta ya existe y hay algo que perder. */}
                                         {!isPro && (
-                                            <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-xl">
+                                            <div className="p-4" style={{ background: 'var(--paper-2)', border: '1.5px solid var(--ink-black)' }}>
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <Crown className="w-5 h-5 text-amber-600" />
-                                                    <p className="text-sm font-bold text-amber-900">
-                                                        ¿Quieres que el enlace diga su nombre? 💕
+                                                    <Clock className="w-4 h-4" style={{ color: 'var(--ink-red)' }} />
+                                                    <p className="text-sm font-bold" style={{ color: 'var(--ink-black)' }}>
+                                                        {t.create.expirationLinkTitle}
                                                     </p>
                                                 </div>
-                                                <p className="text-xs text-amber-700 mb-3">
-                                                    Tu página tendrá: <span className="font-mono bg-white px-2 py-0.5 rounded">lovepages.ink/p/xK9mP2nQ7z</span>
+                                                <p className="text-xs mb-3 leading-relaxed" style={{ color: 'var(--ink-soft)' }}>
+                                                    {t.create.expirationLinkDesc}
                                                     <br />
-                                                    Con PRO podría ser: <span className="font-mono bg-white px-2 py-0.5 rounded text-pink-600 font-bold">lovepages.ink/p/para-{formData.recipientName.toLowerCase()}</span>
+                                                    <span style={{ color: 'var(--ink-soft)' }}>{t.create.proUrlYour} </span>
+                                                    <span className="font-mono">lovepages.ink/p/xK9mP2nQ7z</span>
+                                                    {formData.recipientName && (
+                                                        <>
+                                                            <br />
+                                                            <span style={{ color: 'var(--ink-soft)' }}>{t.create.proUrlWithPro} </span>
+                                                            <span className="font-mono font-bold" style={{ color: 'var(--ink-red)' }}>
+                                                                lovepages.ink/p/para-{formData.recipientName.toLowerCase()}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 </p>
                                                 <Button
                                                     onClick={goToUpgrade}
@@ -2096,7 +2651,7 @@ export default function CreatePageEnhanced() {
                                                     className="w-full"
                                                 >
                                                     <Crown className="w-4 h-4 mr-1" />
-                                                    Hacerlo más especial – $1.75
+                                                    {t.create.expirationLinkCta}
                                                 </Button>
                                             </div>
                                         )}
@@ -2192,66 +2747,46 @@ export default function CreatePageEnhanced() {
                 </div>
             </main>
 
-            {/* Mobile: Floating Preview Button */}
-            {currentStep !== 'preview' && (
-                <motion.button
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    onClick={() => setShowMobilePreview(true)}
-                    style={{ background: 'var(--accent-hex)' }}
-                    className="fixed right-4 bottom-20 z-30 w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform"
-                    aria-label="Ver vista previa"
-                >
-                    <Eye className="w-6 h-6" />
-                </motion.button>
-            )}
-
-            {/* Mobile: Bottom navigation bar */}
-            <div className="fixed bottom-0 left-0 right-0 z-30 px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))]" style={{ background: 'white', borderTop: '2px solid var(--ink)' }}>
-                <div className="flex items-center gap-2 max-w-md mx-auto">
-                    {stepIndex > 0 ? (
-                        <Button
-                            onClick={goBack}
-                            variant="outline"
-                            size="lg"
-                            className="flex-1 min-h-[48px]"
+            {/* ── Barra inferior: publicar desde cualquier sección ──
+                Ya no hay «Atrás / Siguiente»: el orden lo sugieren las secciones,
+                no lo impone la barra. Si falta algo, aquí se dice qué. */}
+            <div className="fixed bottom-0 left-0 right-0 z-30 px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))]" style={{ background: 'var(--paper-soft)', borderTop: '2px solid var(--ink)' }}>
+                <div className="max-w-md mx-auto flex flex-col gap-1.5">
+                    {missingFields.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={focusMissing}
+                            className="flex items-center justify-center gap-1.5 text-[11px]"
+                            style={{ fontFamily: 'var(--mono)', color: 'var(--ink-red)', background: 'none', border: 'none', letterSpacing: '0.04em' }}
                         >
-                            <ArrowLeft className="w-4 h-4 mr-1.5" />
-                            {t.common.back}
-                        </Button>
-                    ) : (
-                        <Link href="/dashboard" className="flex-1">
-                            <Button variant="outline" size="lg" className="w-full min-h-[48px]">
-                                <X className="w-4 h-4 mr-1.5" />
-                                Cancelar
-                            </Button>
-                        </Link>
+                            <AlertCircle className="w-3 h-3" />
+                            {t.create.missingHint.replace('{fields}', missingFields.map((f) => f.label).join(' + '))}
+                        </button>
                     )}
-
-                    {currentStep === 'preview' ? (
+                    <div className="flex items-center gap-2">
+                        {currentStep !== 'preview' && (
+                            <Button
+                                onClick={() => setCurrentStep('preview')}
+                                variant="outline"
+                                size="lg"
+                                className="flex-1 min-h-[48px]"
+                            >
+                                {t.create.tabLink}
+                                <ArrowRight className="w-4 h-4 ml-1.5" />
+                            </Button>
+                        )}
                         <Button
                             onClick={handleSubmit}
                             loading={loading}
+                            disabled={freeLimitReached}
                             variant="gradient"
                             size="lg"
-                            className="flex-[1.5] min-h-[48px]"
+                            className={currentStep === 'preview' ? 'w-full min-h-[48px]' : 'flex-[1.5] min-h-[48px]'}
                         >
                             <Sparkles className="w-4 h-4 mr-1.5" />
-                            Publicar
+                            {loading ? t.create.publishing : 'Publicar'}
                         </Button>
-                    ) : (
-                        <Button
-                            onClick={goNext}
-                            variant="gradient"
-                            size="lg"
-                            disabled={!canGoNext()}
-                            className="flex-[1.5] min-h-[48px]"
-                        >
-                            {t.common.next}
-                            <ArrowRight className="w-4 h-4 ml-1.5" />
-                        </Button>
-                    )}
+                    </div>
                 </div>
             </div>
 
@@ -2260,21 +2795,20 @@ export default function CreatePageEnhanced() {
         {/* ═══════════════════════════════════════════════════════
             SHARED — BottomSheets + Modal (mobile + desktop)
         ═══════════════════════════════════════════════════════ */}
-        <BottomSheet
-            isOpen={showMobilePreview}
-            onClose={() => setShowMobilePreview(false)}
-            title="Vista previa"
-            height="90vh"
-        >
-            <div className="p-4">
-                <div className="max-w-[300px] mx-auto" style={{ height: 600 }}>
-                    {previewContent()}
-                </div>
-                <p className="text-center text-xs mt-4" style={{ color: 'var(--ink-soft)' }}>
-                    Así se verá tu página
-                </p>
-            </div>
-        </BottomSheet>
+        <LoginGateModal
+            isOpen={showLoginGate}
+            onClose={() => { pendingPublishRef.current = false; setShowLoginGate(false); }}
+            title={t.create.loginGateTitle}
+            description={t.create.loginGateDesc}
+        />
+
+        <ProDecisionModal
+            isOpen={showProDecision}
+            onClose={() => setShowProDecision(false)}
+            onPublishFree={publishWithoutPro}
+            onUpgrade={() => { setShowProDecision(false); setShowUpgradeModal(true); }}
+            selections={proSelections.map(({ label, value }) => ({ label, value }))}
+        />
 
         <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
         </>

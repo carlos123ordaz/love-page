@@ -370,7 +370,10 @@ export default function DashboardPage() {
 
                 {/* ── Stats strip ── */}
                 <section style={{ margin: '0 0 32px', border: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)' }} className="grid grid-cols-2 sm:grid-cols-[repeat(4,1fr)_2fr] items-center">
-                    <Mini n={user.pagesCreated} l="páginas" />
+                    {/* Todas las cifras de esta tira salen de `pages`, igual que la
+                        lista de abajo. Usar aquí el contador histórico del backend
+                        hacía que dijera «7 páginas» junto a «aún no has creado ninguna». */}
+                    <Mini n={pages.length} l="páginas" />
                     <Mini n={totalViews} l="visitas totales" />
                     <Mini n={totalResponses} l="respuestas sí" accent />
                     <Mini n={activeCount} l="activas" />
