@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { fleeDelta, clampDelta } from '@/lib/escape-button';
 
 interface ProPageRendererProps {
     html: string;
@@ -73,91 +74,110 @@ export function ProPageRenderer({ html, css, noButtonEscapes, onYesClick, onNoCl
         const yesButton = containerRef.current.querySelector('#yes-button');
         const noButton = containerRef.current.querySelector('#no-button');
 
+        const container = containerRef.current;
         const handleYesClick = () => onYesClickRef.current();
-        const handleNoClick = () => onNoClickRef.current();
 
-        if (yesButton) {
-            yesButton.addEventListener('click', handleYesClick);
-        }
-
-        if (noButton) {
-            noButton.addEventListener('click', handleNoClick);
-
-            // Si el botón "No" debe escapar
+        // Mientras el botón huye, el click no debe registrar respuesta: antes
+        // se apuntaba el "no" igualmente, así que bastaba con alcanzarlo una vez.
+        const handleNoClick = (e: Event) => {
             if (noButtonEscapes) {
-                let isEscaping = false;
-
-                const handleMouseMove = (e: MouseEvent) => {
-                    if (isEscaping) return;
-
-                    const button = noButton as HTMLElement;
-                    const rect = button.getBoundingClientRect();
-                    const mouseX = e.clientX;
-                    const mouseY = e.clientY;
-
-                    // Calcular distancia del cursor al botón
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-                    const distanceX = mouseX - centerX;
-                    const distanceY = mouseY - centerY;
-                    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-
-                    // Si el cursor está cerca (dentro de 100px), mover el botón
-                    if (distance < 100) {
-                        isEscaping = true;
-
-                        // Calcular nueva posición aleatoria
-                        const container = button.parentElement;
-                        if (container) {
-                            const containerRect = container.getBoundingClientRect();
-                            const maxX = containerRect.width - rect.width - 20;
-                            const maxY = containerRect.height - rect.height - 20;
-
-                            // Generar posición aleatoria lejos del cursor
-                            let newX, newY;
-                            do {
-                                newX = Math.random() * maxX;
-                                newY = Math.random() * maxY;
-                                const newCenterX = newX + rect.width / 2;
-                                const newCenterY = newY + rect.height / 2;
-                                const newDistanceX = mouseX - newCenterX;
-                                const newDistanceY = mouseY - newCenterY;
-                                const newDistance = Math.sqrt(newDistanceX * newDistanceX + newDistanceY * newDistanceY);
-
-                                // Asegurar que la nueva posición esté lejos del cursor
-                                if (newDistance > 200) break;
-                            } while (true);
-
-                            // Aplicar nueva posición con transición suave
-                            button.style.position = 'absolute';
-                            button.style.transition = 'all 0.3s ease';
-                            button.style.left = `${newX}px`;
-                            button.style.top = `${newY}px`;
-
-                            // Resetear flag después de la animación
-                            setTimeout(() => {
-                                isEscaping = false;
-                            }, 400);
-                        }
-                    }
-                };
-
-                // Agregar listener de mousemove al documento
-                document.addEventListener('mousemove', handleMouseMove);
-
-                // Cleanup
-                return () => {
-                    document.removeEventListener('mousemove', handleMouseMove);
-                    if (yesButton) yesButton.removeEventListener('click', handleYesClick);
-                    if (noButton) noButton.removeEventListener('click', handleNoClick);
-                };
+                e.preventDefault();
+                e.stopPropagation();
+                return;
             }
+            onNoClickRef.current();
+        };
+
+        if (yesButton) yesButton.addEventListener('click', handleYesClick);
+        if (noButton) noButton.addEventListener('click', handleNoClick);
+
+        if (!noButton || !noButtonEscapes || !container) {
+            return () => {
+                if (yesButton) yesButton.removeEventListener('click', handleYesClick);
+                if (noButton) noButton.removeEventListener('click', handleNoClick);
+            };
         }
 
-        // Cleanup al desmontar
+        const button = noButton as HTMLElement;
+        // Se desplaza con transform en vez de conmutar a position:absolute, que
+        // rompía la maquetación de la plantilla.
+        let tx = 0;
+        let ty = 0;
+        button.style.transition = 'transform 180ms cubic-bezier(.2,.9,.3,1.1)';
+        button.style.touchAction = 'manipulation';
+
+        // Posición natural en coordenadas de página, para poder calcular siempre
+        // la posición *de destino*: `getBoundingClientRect()` durante la
+        // transición devuelve la intermedia, y acotar contra ella dejaba que
+        // cada movimiento del ratón se pasara del límite.
+        let home: { left: number; top: number } | null = null;
+        const measureHome = () => {
+            const r = button.getBoundingClientRect();
+            home = { left: r.left + window.scrollX - tx, top: r.top + window.scrollY - ty };
+        };
+        measureHome();
+
+        const targetRect = () => {
+            if (!home) return null;
+            const r = button.getBoundingClientRect();
+            return {
+                left: home.left - window.scrollX + tx,
+                top: home.top - window.scrollY + ty,
+                width: r.width,
+                height: r.height,
+            };
+        };
+
+        const flee = (pointerX: number, pointerY: number, force: boolean) => {
+            const target = targetRect();
+            if (!target) return;
+            const delta = fleeDelta({
+                btn: target,
+                container: container.getBoundingClientRect(),
+                pointerX,
+                pointerY,
+                force,
+            });
+            if (!delta) return;
+            tx += delta.dx;
+            ty += delta.dy;
+            button.style.transform = `translate(${tx}px, ${ty}px)`;
+        };
+
+        // `pointermove` cubre ratón, dedo y lápiz; el `mousemove` anterior no
+        // llegaba a existir en táctil, donde el botón nunca se apartaba.
+        const onPointerMove = (e: PointerEvent) => flee(e.clientX, e.clientY, false);
+        // El toque va directo al click: apartarlo en pointerdown y cancelar.
+        const onPointerDown = (e: PointerEvent) => {
+            e.preventDefault();
+            flee(e.clientX, e.clientY, true);
+        };
+
+        // Girar el móvil no debe dejar el botón fuera de la pantalla.
+        const onResize = () => {
+            measureHome();
+            const target = targetRect();
+            if (!target) return;
+            const delta = clampDelta({
+                btn: target,
+                container: container.getBoundingClientRect(),
+            });
+            if (!delta) return;
+            tx += delta.dx;
+            ty += delta.dy;
+            button.style.transform = `translate(${tx}px, ${ty}px)`;
+        };
+
+        container.addEventListener('pointermove', onPointerMove, { passive: true });
+        button.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('resize', onResize);
+
         return () => {
+            container.removeEventListener('pointermove', onPointerMove);
+            button.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('resize', onResize);
             if (yesButton) yesButton.removeEventListener('click', handleYesClick);
-            if (noButton) noButton.removeEventListener('click', handleNoClick);
+            button.removeEventListener('click', handleNoClick);
         };
     }, [mounted, html, css, noButtonEscapes]);
 

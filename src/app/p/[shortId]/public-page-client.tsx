@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ProPageRenderer } from '@/components/ProPageRenderer';
 import { ParticleCanvas, animToKind, hasParticles } from '@/components/ParticleCanvas';
 import { pageThemeVars, titleFontFamily, bodyFontFamily, googleFontsHref, isDarkColor, RISO_FONT } from '@/lib/page-theme';
+import { fleeDelta, clampDelta } from '@/lib/escape-button';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
 
@@ -62,8 +63,6 @@ const MUSIC_URLS: Record<string, string> = {
 };
 
 // ── EscapeNoButton — riso flat, blue outline ──────────────────
-function clamp(v: number, a: number, b: number) { return Math.max(a, Math.min(b, v)); }
-
 function EscapeNoButton({
     label,
     containerRef,
@@ -78,33 +77,124 @@ function EscapeNoButton({
     answered: boolean;
 }) {
     const [pos, setPos] = useState({ x: 0, y: 0 });
+    const posRef = useRef({ x: 0, y: 0 });
     const ref = useRef<HTMLButtonElement>(null);
+    /** Posición natural del botón, en coordenadas de página (aguanta el scroll). */
+    const homeRef = useRef<{ left: number; top: number } | null>(null);
 
-    const bump = () => {
-        if (!noButtonEscapes || answered) return;
-        const c = containerRef.current;
+    const escaping = noButtonEscapes && !answered;
+    const escapingRef = useRef(escaping);
+    escapingRef.current = escaping;
+
+    const measureHome = useCallback(() => {
         const btn = ref.current;
-        if (!c || !btn) return;
-        const cr = c.getBoundingClientRect();
-        const br = btn.getBoundingClientRect();
-        const maxX = cr.width - br.width - 24;
-        const maxY = cr.height - br.height - 24;
-        setPos({
-            x: (Math.random() - 0.5) * Math.min(maxX, 320),
-            y: (Math.random() - 0.5) * Math.min(maxY, 200),
+        if (!btn) return;
+        const r = btn.getBoundingClientRect();
+        homeRef.current = {
+            left: r.left + window.scrollX - posRef.current.x,
+            top: r.top + window.scrollY - posRef.current.y,
+        };
+    }, []);
+
+    useEffect(() => { measureHome(); }, [measureHome]);
+
+    /**
+     * Dónde va a estar el botón cuando termine la transición. Medirlo con
+     * `getBoundingClientRect()` mientras la animación corre da la posición
+     * intermedia, y acotar contra ella hacía que cada movimiento del ratón se
+     * pasara del límite hasta sacarlo de la pantalla.
+     */
+    const targetRect = useCallback(() => {
+        const btn = ref.current;
+        const home = homeRef.current;
+        if (!btn || !home) return null;
+        const r = btn.getBoundingClientRect();
+        return {
+            left: home.left - window.scrollX + posRef.current.x,
+            top: home.top - window.scrollY + posRef.current.y,
+            width: r.width,
+            height: r.height,
+        };
+    }, []);
+
+    const flee = useCallback((pointerX: number, pointerY: number, force: boolean) => {
+        if (!escapingRef.current) return;
+        const c = containerRef.current;
+        const target = targetRect();
+        if (!c || !target) return;
+
+        const delta = fleeDelta({
+            btn: target,
+            container: c.getBoundingClientRect(),
+            pointerX,
+            pointerY,
+            force,
         });
-    };
+        if (!delta) return;
+
+        const next = { x: posRef.current.x + delta.dx, y: posRef.current.y + delta.dy };
+        posRef.current = next;
+        setPos(next);
+    }, [containerRef, targetRect]);
+
+    // Se aparta al acercarse el puntero, sin esperar a que llegue encima.
+    // `pointermove` cubre ratón, dedo y lápiz; `mouseenter` no existe en táctil.
+    useEffect(() => {
+        const c = containerRef.current;
+        if (!c || !escaping) return;
+        const onMove = (e: PointerEvent) => flee(e.clientX, e.clientY, false);
+        c.addEventListener('pointermove', onMove, { passive: true });
+        return () => c.removeEventListener('pointermove', onMove);
+    }, [escaping, flee, containerRef]);
+
+    // Si la ventana cambia de tamaño (girar el móvil) después de haber huido,
+    // el botón podría quedarse fuera de la vista: se le devuelve a la pantalla.
+    useEffect(() => {
+        const c = containerRef.current;
+        if (!c) return;
+        const onResize = () => {
+            measureHome();
+            const target = targetRect();
+            if (!target) return;
+            const delta = clampDelta({
+                btn: target,
+                container: c.getBoundingClientRect(),
+            });
+            if (!delta) return;
+            const next = { x: posRef.current.x + delta.dx, y: posRef.current.y + delta.dy };
+            posRef.current = next;
+            setPos(next);
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [containerRef, measureHome, targetRect]);
 
     return (
         <button
             ref={ref}
-            onMouseEnter={bump}
-            onFocus={bump}
-            onClick={() => { if (!noButtonEscapes) onAnswer(); }}
+            // En táctil no hay hover: el dedo iba directo al click. Interceptar
+            // el pointerdown lo aparta antes de que el toque llegue a serlo.
+            onPointerDown={(e) => {
+                if (!escapingRef.current) return;
+                e.preventDefault();
+                flee(e.clientX, e.clientY, true);
+            }}
+            onPointerEnter={(e) => flee(e.clientX, e.clientY, true)}
+            onFocus={() => {
+                const b = ref.current?.getBoundingClientRect();
+                if (b) flee(b.left + b.width / 2, b.top + b.height / 2, true);
+            }}
+            onClick={(e) => {
+                if (escapingRef.current) {
+                    e.preventDefault();
+                    return;
+                }
+                if (!answered) onAnswer();
+            }}
             style={{
                 position: 'relative',
                 transform: `translate(${pos.x}px, ${pos.y}px)`,
-                transition: 'transform 320ms cubic-bezier(.2,.9,.3,1.1)',
+                transition: 'transform 180ms cubic-bezier(.2,.9,.3,1.1)',
                 background: 'transparent',
                 color: 'var(--ink-blue)',
                 border: '2px solid var(--ink-blue)',
@@ -113,9 +203,11 @@ function EscapeNoButton({
                 fontFamily: 'var(--sans)',
                 fontWeight: 600,
                 fontSize: 14,
-                cursor: 'pointer',
+                cursor: escaping ? 'default' : 'pointer',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
+                touchAction: 'manipulation',
+                userSelect: 'none',
             }}
         >
             {label}
