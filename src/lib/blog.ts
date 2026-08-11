@@ -352,6 +352,274 @@ export const blogPosts: BlogPost[] = [
 <p>¿Listo para declararte? Si quieres hacerlo de una forma original y moderna, <a href="/create">crea tu página personalizada en Love Pages</a>. En minutos tendrás algo que esa persona nunca olvidará.</p>
         `,
     },
+    {
+        slug: 'carta-de-amor-para-mi-novia',
+        title: 'Carta de amor para mi novia: cómo escribirla (y 12 ejemplos reales)',
+        description:
+            'Guía para escribir una carta de amor a tu novia que no suene a plantilla: estructura, ejemplos según el momento de la relación y los errores que la arruinan.',
+        category: 'Consejos',
+        publishedAt: '2026-02-20',
+        readingTime: 9,
+        content: `
+<p>Escribir una carta de amor da vértigo por una razón concreta: sabes lo que sientes, pero en cuanto lo pones por escrito suena a canción de radio. Este artículo va de resolver justo eso.</p>
+
+<h2>Por qué la mayoría de las cartas suenan igual</h2>
+<p>Porque empiezan por el final. Arrancan con la conclusión ("eres el amor de mi vida", "no puedo vivir sin ti") en lugar de con la evidencia. Y las conclusiones sin evidencia suenan huecas, por muy verdaderas que sean.</p>
+<p>La prueba está en que si cambias el nombre de tu novia por cualquier otro, la carta sigue funcionando igual. Si eso pasa, la carta no es sobre ella: es sobre el concepto de estar enamorado.</p>
+
+<h2>La regla que lo cambia todo: concreto gana a bonito</h2>
+<p>Compara estas dos frases:</p>
+<ul>
+<li><em>"Me encanta tu sonrisa."</em></li>
+<li><em>"Me encanta que cuando algo te da mucha risa te tapas la boca con las dos manos, como si te diera vergüenza que se te oiga."</em></li>
+</ul>
+<p>La segunda no es más poética. Es más específica. Y por eso funciona: demuestra que has estado mirando. Una carta de amor no tiene que demostrar que sabes escribir, tiene que demostrar que sabes mirar.</p>
+<p>Antes de escribir nada, haz esto: apunta cinco cosas concretas que hace ella y que nadie más hace igual. No cinco virtudes: cinco gestos, manías, frases que repite. Esa lista es tu carta.</p>
+
+<h2>Una estructura que funciona</h2>
+<p>No hace falta que sea larga. Cuatro párrafos bastan:</p>
+<ol>
+<li><strong>Un detalle concreto.</strong> Empieza por una escena real, no por una declaración. "El martes, cuando te quedaste dormida a mitad de la película otra vez..."</li>
+<li><strong>Qué te hace sentir eso.</strong> Aquí sí puedes ponerte sentimental, porque ya te has ganado el derecho.</li>
+<li><strong>Algo que sólo tú sabes.</strong> Un miedo, una cosa que no le has dicho, algo que pensaste y te callaste.</li>
+<li><strong>Lo que quieres.</strong> Cierra con futuro, no con resumen. "Quiero seguir viendo películas que no vas a terminar."</li>
+</ol>
+
+<h2>12 ejemplos según el momento de la relación</h2>
+
+<h3>Si llevan poco tiempo</h3>
+<p><em>"No sé todavía qué somos y no tengo prisa por ponerle nombre. Sólo sé que llevo tres semanas contándote cosas que no le cuento a nadie, y que eso no me había pasado antes."</em></p>
+<p><em>"Me gusta que no intentes caerme bien. Que digas lo que piensas aunque sea incómodo. Fue lo primero que noté y sigue siendo lo que más me gusta."</em></p>
+<p><em>"Tengo miedo de escribirte esto y que sea demasiado pronto. Lo escribo igual."</em></p>
+
+<h3>Si llevan años</h3>
+<p><em>"La gente dice que después de unos años se apaga. A mí lo que me pasa es distinto: ya no me sorprendes, y resulta que eso me gusta más que la sorpresa."</em></p>
+<p><em>"Hemos discutido por cosas ridículas cientos de veces. Y ninguna de esas veces se me pasó por la cabeza irme."</em></p>
+<p><em>"Sé cómo suena tu respiración cuando estás a punto de dormirte. No hay nadie más en el mundo del que sepa eso."</em></p>
+
+<h3>Si están a distancia</h3>
+<p><em>"Lo peor no es no verte. Es que me pasan cosas pequeñas durante el día y tengo que esperar para contártelas."</em></p>
+<p><em>"Cuento los días como si fueran una cuenta atrás, y creo que eso también es una forma de estar contigo."</em></p>
+
+<h3>Si te cuesta expresarte</h3>
+<p><em>"No se me da bien esto. Lo he empezado cuatro veces. Te lo mando igual porque me parece peor no decírtelo."</em></p>
+<p><em>"Soy mejor haciendo cosas que diciéndolas. Así que ahí va la lista de cosas que he hecho pensando en ti este mes."</em></p>
+
+<h3>Para pedir algo importante</h3>
+<p><em>"Llevo semanas dándole vueltas a cómo preguntártelo sin que suene solemne. No lo he conseguido. ¿Quieres que hagamos esto en serio?"</em></p>
+<p><em>"Te quiero pedir una cosa y prefiero hacerlo por escrito, porque en persona me voy a poner nervioso y lo voy a estropear."</em></p>
+
+<h2>Cuatro errores que la arruinan</h2>
+<ul>
+<li><strong>Citar a otros.</strong> Una frase de Neruda es de Neruda. Ella quiere leerte a ti.</li>
+<li><strong>Disculparte por escribir.</strong> "Perdón por ser cursi" le quita valor a todo lo que viene después.</li>
+<li><strong>Hacerla demasiado larga.</strong> Media página leída dos veces vale más que tres páginas leídas por encima.</li>
+<li><strong>Corregirla hasta que no quede nada tuyo.</strong> Las faltas se arreglan; el tono se pierde.</li>
+</ul>
+
+<h2>Dónde escribirla</h2>
+<p>El papel sigue siendo insuperable si vas a entregarla en mano. Pero si están a distancia, o si quieres que sea una sorpresa que se abra en el momento exacto, una página web personalizada funciona mejor: le mandas un enlace y ves en tiempo real cuándo la abre y qué contesta.</p>
+<p>En <a href="/create">Love Pages puedes crear la tuya gratis</a>, sin saber diseñar ni programar. Si quieres más ideas sobre el texto, mira también <a href="/blog/como-escribir-mensaje-de-amor-perfecto">cómo escribir el mensaje de amor perfecto</a>.</p>
+
+<h2>Lo único que importa</h2>
+<p>Una carta de amor no se juzga por lo bien escrita que esté, sino por si quien la lee se reconoce en ella. Si tu novia lee la tuya y piensa "esto sólo lo podía haber escrito él, y sólo sobre mí", ya has terminado.</p>
+        `,
+    },
+    {
+        slug: 'como-pedirle-que-sea-mi-novia',
+        title: 'Cómo pedirle que sea tu novia: qué decir exactamente y cuándo',
+        description:
+            'Cómo saber si es el momento de pedirle que sea tu novia, qué decir palabra por palabra, siete formas de hacerlo y qué hacer si dice que no.',
+        category: 'Consejos',
+        publishedAt: '2026-02-21',
+        readingTime: 8,
+        content: `
+<p>Pedirle a alguien que sea tu novia da miedo por algo simple: estás pidiendo ponerle nombre a algo que ahora mismo funciona sin nombre, y existe la posibilidad de que al nombrarlo se rompa. Esa parte es incómoda y no hay manera de saltársela. Lo que sí se puede hacer es llegar preparado.</p>
+
+<h2>Tres señales de que es el momento</h2>
+<p>No hay un número de citas correcto, pero sí indicadores razonablemente fiables:</p>
+<ul>
+<li><strong>Ya actúan como pareja sin serlo.</strong> Se cuentan el día, aparecen en los planes del otro, existe una rutina.</li>
+<li><strong>Te ha presentado a alguien de su vida.</strong> Amigos, hermanos, compañeros de trabajo. Señal de que no te mantiene en un compartimento aparte.</li>
+<li><strong>La pregunta te da miedo por lo que puedes perder, no por lo que puedes ganar.</strong> Eso significa que ya hay algo que perder.</li>
+</ul>
+<p>Si ninguna se cumple, probablemente sea pronto, y no pasa nada.</p>
+
+<h2>Qué decir, palabra por palabra</h2>
+<p>El error más común es convertirlo en un discurso. Cuanto más largo, más solemne; y cuanta más solemnidad, más presión para quien tiene que contestar.</p>
+<p>Una estructura que funciona, en tres frases:</p>
+<ol>
+<li><strong>Nombra lo que ya pasa.</strong> "Llevamos dos meses viéndonos casi cada semana y me lo paso mejor contigo que con nadie."</li>
+<li><strong>Di lo que quieres, claro.</strong> "Quiero que seas mi novia."</li>
+<li><strong>Quítale presión.</strong> "No hace falta que me contestes ahora."</li>
+</ol>
+<p>Eso es todo. Diez segundos. Lo que sobre de ahí es para tranquilizarte a ti, no para ayudarla a ella.</p>
+
+<h2>Siete formas de hacerlo</h2>
+<h3>1. Directamente, en persona</h3>
+<p>Sigue siendo la mejor si la relación ya es sólida. Sin escenario, sin público, sin anillo: un momento tranquilo en el que estéis solos.</p>
+<h3>2. Escrito, y luego en persona</h3>
+<p>Ideal si te bloqueas hablando. Le mandas algo escrito y quedas después. Le das tiempo para procesarlo sin tenerte delante esperando respuesta.</p>
+<h3>3. Con una página personalizada</h3>
+<p>Le mandas un enlace, lo abre y encuentra una página hecha para ella con la pregunta y dos botones. Funciona especialmente bien a distancia o si vuestra relación ha vivido mucho por el móvil. Puedes <a href="/create">crear una gratis aquí</a>.</p>
+<h3>4. Recreando el sitio donde os conocisteis</h3>
+<p>Volver al lugar de la primera cita y preguntárselo ahí. El contexto hace la mitad del trabajo.</p>
+<h3>5. Con una fecha marcada</h3>
+<p>El día que hizo tres meses desde la primera cita, por ejemplo. Que ella caiga en la fecha antes de que preguntes ya crea la expectativa.</p>
+<h3>6. Después de algo que hicisteis juntos</h3>
+<p>Al final de un viaje, de una cena que salió bien, de un día largo. El buen momento compartido es el mejor preámbulo.</p>
+<h3>7. Por sorpresa, sin ocasión</h3>
+<p>Un martes cualquiera. Contraintuitivamente es de las que mejor funcionan: demuestra que no lo hiciste porque tocaba.</p>
+
+<h2>Lo que no hay que hacer</h2>
+<ul>
+<li><strong>Delante de gente.</strong> Un público convierte un "no" en una humillación, y eso la obliga a decir que sí. Nadie quiere un sí obligado.</li>
+<li><strong>Después de una discusión.</strong> No arregla nada y confunde el gesto con una disculpa.</li>
+<li><strong>Con ultimátum.</strong> "O somos algo o lo dejamos" no es una pregunta, es una amenaza.</li>
+<li><strong>Borracho.</strong> Le quita todo el peso, aunque lo sientas igual.</li>
+</ul>
+
+<h2>Si dice que no</h2>
+<p>Puede pasar, y no siempre significa lo mismo: a veces es "no" y a veces "todavía no", que son cosas distintas. La respuesta correcta en ambos casos es la misma: no discutir, no negociar y no pedir explicaciones en ese momento.</p>
+<p>Di algo como "vale, gracias por ser sincera" y déjalo estar unos días. Si era "todavía no", volverá el tema. Si era "no", te habrás ahorrado meses.</p>
+<p>Lo que no funciona es fingir que no pasó nada. Preguntarlo cambia la relación, diga lo que diga, y aceptar eso forma parte de preguntarlo.</p>
+
+<h2>El resumen</h2>
+<p>Sé claro, sé breve, hazlo en privado y quítale presión a la respuesta. Si además quieres que sea memorable, dale una forma que se pueda guardar. Los diez segundos se olvidan; lo que se puede releer, no.</p>
+<p><a href="/create">Crea tu página gratis</a> y tendrás el enlace listo para enviárselo cuando quieras.</p>
+        `,
+    },
+    {
+        slug: 'mensajes-de-aniversario',
+        title: 'Mensajes de aniversario: 40 ideas según los años que llevéis',
+        description:
+            'Mensajes de aniversario para novios, novias y parejas de años, ordenados por tiempo juntos, más una fórmula para escribir el tuyo en cinco minutos.',
+        category: 'Aniversario',
+        publishedAt: '2026-02-22',
+        readingTime: 8,
+        content: `
+<p>El problema de los mensajes de aniversario es que hay que escribir uno cada año, y a partir del tercero se acaban las formas de decir "te quiero, qué rápido pasa el tiempo". Aquí van ideas ordenadas por momento de la relación, y una fórmula para que el año que viene no tengas que buscar otra vez.</p>
+
+<h2>La fórmula, por si tienes prisa</h2>
+<p>Un buen mensaje de aniversario tiene tres piezas: <strong>una referencia a este año en concreto</strong>, <strong>algo que hayas aprendido de la otra persona</strong> y <strong>algo que quieras del siguiente</strong>. Con eso ya no se parece al del año pasado, porque cada año es distinto.</p>
+<p>Ejemplo: <em>"Este año nos mudamos, discutimos por las estanterías y sobrevivimos. Aprendí que tienes más paciencia que yo. El año que viene quiero que discutamos por cosas más caras."</em></p>
+
+<h2>Primeros meses</h2>
+<ul>
+<li><em>"Un mes. Que conste que los estoy contando."</em></li>
+<li><em>"Tres meses y todavía me pongo nervioso antes de verte. Espero que eso no se pase."</em></li>
+<li><em>"Seis meses. Ya no me acuerdo de qué hacía los domingos antes."</em></li>
+<li><em>"Llevamos poco y ya te has vuelto costumbre. De las buenas."</em></li>
+</ul>
+
+<h2>Primer año</h2>
+<ul>
+<li><em>"Un año. Trescientos sesenta y cinco días de los cuales no cambiaría casi ninguno."</em></li>
+<li><em>"Hace un año no sabía nada de ti. Hoy sé cómo te tomas el café y qué cara pones cuando algo no te gusta pero no lo vas a decir."</em></li>
+<li><em>"Feliz primer año. Que sea el que menos llevemos juntos."</em></li>
+<li><em>"Un año contigo y todavía me sorprende que dijeras que sí."</em></li>
+</ul>
+
+<h2>De dos a cinco años</h2>
+<ul>
+<li><em>"Tres años. Ya hemos pasado la fase en la que todo era perfecto y resulta que esto me gusta más."</em></li>
+<li><em>"Cuatro años. Nos hemos visto en nuestras peores versiones y seguimos aquí. Eso vale más que cualquier aniversario bonito."</em></li>
+<li><em>"Cinco años. Media década aguantándome. Te has ganado algo mejor que un mensaje, pero de momento toma esto."</em></li>
+<li><em>"Ya llevamos suficiente tiempo como para tener chistes que nadie más entiende. Creo que eso es lo que más me gusta."</em></li>
+</ul>
+
+<h2>Diez años o más</h2>
+<ul>
+<li><em>"Diez años. La mitad de las cosas que soy ahora las aprendí contigo delante."</em></li>
+<li><em>"Llevamos tanto que ya no sé dónde acabo yo y dónde empiezas tú. Y no tengo ningún interés en averiguarlo."</em></li>
+<li><em>"Hemos cambiado los dos bastante desde que empezamos. Lo raro y lo bonito es que cambiamos en la misma dirección."</em></li>
+</ul>
+
+<h2>Si estáis a distancia</h2>
+<ul>
+<li><em>"Un año más de aniversarios por videollamada. El próximo lo celebramos en la misma habitación."</em></li>
+<li><em>"La distancia hace que cada vez que nos vemos parezca la primera. No la recomiendo, pero tiene eso."</em></li>
+<li><em>"Kilómetros: muchos. Ganas de dejarlo: cero."</em></li>
+</ul>
+
+<h2>Si el año ha sido difícil</h2>
+<p>No todos los aniversarios llegan en un buen momento, y fingir que sí suena falso. Estos funcionan mejor:</p>
+<ul>
+<li><em>"Este año ha sido duro y no voy a fingir que no. Gracias por no soltarme."</em></li>
+<li><em>"No ha sido nuestro mejor año. Ha sido el año que más me ha demostrado que quiero estar aquí."</em></li>
+<li><em>"Celebrar esto hoy me parece casi un acto de terquedad. Vamos a celebrarlo igual."</em></li>
+</ul>
+
+<h2>Cortos, para acompañar un regalo</h2>
+<ul>
+<li><em>"Otro año. Otra vez tú."</em></li>
+<li><em>"Sigo eligiéndote."</em></li>
+<li><em>"Contigo hasta que te canses. Y luego un poco más."</em></li>
+<li><em>"Feliz aniversario a la mejor decisión que he tomado."</em></li>
+</ul>
+
+<h2>Cómo hacer que no sea sólo un mensaje</h2>
+<p>Un mensaje de WhatsApp se lee y queda enterrado bajo cincuenta más. Si quieres que dure, dale un sitio propio: algo que se pueda volver a abrir dentro de un año.</p>
+<p>En <a href="/create">Love Pages puedes crear una página de aniversario gratis</a>: escribes el mensaje, eliges el diseño y le mandas un enlace único. Sabrás cuándo la abre y qué contesta. Si buscas ideas para el día en sí, mira también <a href="/blog/como-celebrar-aniversario-especial">cómo celebrar un aniversario especial</a>.</p>
+
+<h2>Un consejo final</h2>
+<p>El mejor mensaje de aniversario no es el más bonito: es el que sólo tiene sentido entre vosotros dos. Si alguien de fuera lo lee y no lo entiende del todo, vas por buen camino.</p>
+        `,
+    },
+    {
+        slug: 'como-pedir-perdon-a-tu-pareja',
+        title: 'Cómo pedir perdón a tu pareja (y que sirva de algo)',
+        description:
+            'Qué hace que una disculpa funcione, los cinco errores que la convierten en otra discusión, ejemplos según lo que pasó y qué hacer si no te perdona.',
+        category: 'Consejos',
+        publishedAt: '2026-02-23',
+        readingTime: 7,
+        content: `
+<p>Casi todas las disculpas fallan por la misma razón: quien pide perdón está intentando dejar de sentirse mal, no que la otra persona deje de sentirse mal. Y se nota. Este artículo va de la diferencia entre las dos cosas.</p>
+
+<h2>Las cuatro partes de una disculpa que funciona</h2>
+<ol>
+<li><strong>Nombrar lo que hiciste, concretamente.</strong> No "siento lo de ayer" sino "siento haberte quitado la razón delante de tus amigos".</li>
+<li><strong>Demostrar que entiendes el daño.</strong> "Te dejé en ridículo justo delante de la gente cuya opinión te importa."</li>
+<li><strong>No añadir un "pero".</strong> Todo lo que va después de un "pero" borra lo que iba antes.</li>
+<li><strong>Decir qué vas a hacer distinto.</strong> Sin esto, la disculpa es una promesa vacía y ambos lo sabéis.</li>
+</ol>
+<p>Fíjate en que en ninguna de las cuatro aparece la palabra "perdóname". Pedir perdón explícitamente es opcional; las cuatro partes no.</p>
+
+<h2>Los cinco errores que la arruinan</h2>
+<ul>
+<li><strong>"Siento que te hayas sentido así."</strong> No es una disculpa: es culpar a la otra persona por su reacción.</li>
+<li><strong>"Perdón, pero es que tú..."</strong> Convierte la disculpa en el siguiente asalto de la discusión.</li>
+<li><strong>Disculparse demasiado rápido.</strong> Si contestas "vale, perdón" a los diez segundos, comunicas que quieres cerrar el tema, no entenderlo.</li>
+<li><strong>Compensar en vez de reparar.</strong> Las flores no sustituyen a la conversación. Sirven después, no en lugar de.</li>
+<li><strong>Pedir perdón muchas veces.</strong> Repetirlo traslada el peso a la otra persona, que acaba teniendo que consolarte.</li>
+</ul>
+
+<h2>Ejemplos según lo que pasó</h2>
+<h3>Si dijiste algo hiriente en una discusión</h3>
+<p><em>"Lo que te dije ayer sobre tu trabajo lo dije para hacerte daño y funcionó. No lo pienso, y aunque lo pensara no tenía por qué decirlo así. Sé que llevas meses inseguro con ese tema y usé justo eso."</em></p>
+<h3>Si se te olvidó algo importante</h3>
+<p><em>"Se me olvidó y no tengo excusa. Lo peor no es el día en sí, es que te haya hecho sentir que no eres una prioridad. Voy a apuntar las fechas que importan, que es lo mínimo."</em></p>
+<h3>Si no estuviste cuando te necesitaba</h3>
+<p><em>"Estabas mal y yo estaba con mis cosas. Me di cuenta y aun así no cambié de plan. Siento haberte dejado sola justo el día que no tocaba."</em></p>
+<h3>Si fue un patrón, no un hecho aislado</h3>
+<p><em>"No es la primera vez y por eso una disculpa suelta no vale de mucho. Llevo tiempo haciendo lo mismo. Lo que te puedo ofrecer no es una promesa sino un cambio que puedas ir comprobando."</em></p>
+
+<h2>Por escrito o en persona</h2>
+<p>En persona es mejor casi siempre, con una excepción: cuando la conversación en directo termina siempre en discusión. Escribirlo tiene tres ventajas concretas: puedes pensar antes de hablar, ella puede leerlo sin la presión de responder al momento, y queda constancia de lo que dijiste.</p>
+<p>Si eliges escribirlo, evita el mensaje largo de WhatsApp: se lee entre otras cosas y se pierde. Una carta o una <a href="/create">página hecha para ella</a> tiene otro peso, porque el esfuerzo se nota antes incluso de leer el contenido.</p>
+
+<h2>Después de disculparte</h2>
+<p>Aquí es donde casi todo el mundo la estropea. Pedir perdón no da derecho a que te perdonen inmediatamente. Si respondes al silencio con impaciencia — "ya te pedí perdón, ¿qué más quieres?" — acabas de deshacerlo todo.</p>
+<p>Lo correcto es dar espacio y demostrar el cambio en los días siguientes, no en el mensaje. Una disculpa se juzga a dos semanas vista, no en el momento.</p>
+
+<h2>Si no te perdona</h2>
+<p>Puede pasar: a veces porque el daño fue grande, a veces porque fue la gota que colmó algo más largo. Hay dos cosas que sí puedes controlar: no insistir hasta agotarla, y no convertir tu culpa en un problema que ella tenga que gestionar.</p>
+<p>Y si te perdona, la única forma de que la disculpa haya valido algo es que dentro de seis meses ella pueda decir que cambiaste. Todo lo demás son palabras bien ordenadas.</p>
+
+<p>¿Quieres decírselo de una forma que no se pierda entre mensajes? <a href="/create">Crea una página con tu disculpa</a>: es gratis y sabrás cuándo la abre.</p>
+        `,
+    },
 ];
 
 export function getBlogPost(slug: string): BlogPost | undefined {

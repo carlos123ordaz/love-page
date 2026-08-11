@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ProPageRenderer } from '@/components/ProPageRenderer';
@@ -244,27 +245,61 @@ function renderMsg(text: string): React.ReactNode {
     );
 }
 
-// ── YesScene ──────────────────────────────────────────────────
-function YesScene({ recipient, sender, onReset }: { recipient: string; sender?: string; onReset: () => void }) {
+// ── AnswerScene ───────────────────────────────────────────────
+// Quien acaba de responder una carta es la persona con más intención de
+// crear la suya: está en una relación y acaba de vivir algo con el producto.
+// Antes esta pantalla sólo ofrecía «ver carta otra vez».
+function AnswerScene({
+    recipient,
+    answer,
+    onReset,
+    t,
+}: {
+    recipient: string;
+    answer: 'yes' | 'no' | null;
+    onReset: () => void;
+    t: any;
+}) {
+    const isYes = answer !== 'no';
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', animation: 'fadeUp .6s ease' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                 <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
-                <span className="mono-eyebrow" style={{ fontSize: 10 }}>respuesta registrada</span>
+                <span className="mono-eyebrow" style={{ fontSize: 10 }}>{t.publicPage.responseRegistered}</span>
                 <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
             </div>
+
             <h1 className="serif-display mis-red" style={{ fontSize: 'clamp(96px, 26vw, 140px)', margin: 0, lineHeight: 0.86 }}>
-                sí.
+                {isYes ? t.publicPage.answeredYes : t.publicPage.answeredNo}
             </h1>
+
             <div style={{ marginTop: 24, fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 18, color: 'var(--ink-black)', maxWidth: 340, lineHeight: 1.5 }}>
-                {recipient} ya recibió la noticia.
+                {(isYes ? t.publicPage.answeredYesNote : t.publicPage.answeredNoNote).replace('{name}', recipient)}
             </div>
+
+            {/* El bucle: de destinatario a autor */}
+            <div style={{ marginTop: 44, paddingTop: 32, borderTop: '1.5px solid var(--rule)', maxWidth: 360, width: '100%' }}>
+                <h2 className="serif-display" style={{ fontSize: 'clamp(26px, 7vw, 34px)', margin: 0, lineHeight: 1, color: 'var(--ink-black)' }}>
+                    {t.publicPage.ctaHeading}
+                </h2>
+                <p style={{ marginTop: 12, fontFamily: 'var(--mono)', fontSize: 12, lineHeight: 1.6, color: 'var(--ink-soft)' }}>
+                    {t.publicPage.ctaBody}
+                </p>
+                <Link href="/create?ref=carta" style={{ display: 'inline-block', marginTop: 20 }}>
+                    <button className="btn-accent" style={{ padding: '14px 28px', fontSize: 12 }}>
+                        {t.publicPage.ctaButton}
+                    </button>
+                </Link>
+            </div>
+
             <button
                 onClick={onReset}
-                style={{ marginTop: 28, background: 'transparent', border: '1.5px solid var(--ink-blue)', padding: '8px 16px', borderRadius: 0, cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-blue)', textTransform: 'uppercase', letterSpacing: '0.15em' }}
+                style={{ marginTop: 32, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.15em' }}
             >
-                ← ver carta otra vez
+                {t.publicPage.seeAgain}
             </button>
+
             <style>{`@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }`}</style>
         </div>
     );
@@ -391,6 +426,18 @@ export default function PublicPageView() {
                                 {selectedAnswer === 'yes' ? t.publicPage.thanks : t.publicPage.understood}
                             </h2>
                             <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--mono)', fontSize: 13 }}>{t.publicPage.responseRecorded}</p>
+
+                            {/* Mismo bucle que en las páginas estándar */}
+                            <div style={{ marginTop: 26, paddingTop: 22, borderTop: '1.5px solid var(--rule)' }}>
+                                <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 17, color: 'var(--ink-black)', margin: '0 0 14px', lineHeight: 1.4 }}>
+                                    {t.publicPage.ctaHeading}
+                                </p>
+                                <Link href="/create?ref=carta">
+                                    <button className="btn-accent" style={{ padding: '12px 24px', fontSize: 12 }}>
+                                        {t.publicPage.ctaButton}
+                                    </button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -563,13 +610,20 @@ export default function PublicPageView() {
                         {/* Footer */}
                         <div style={{ position: 'absolute', bottom: 16, left: 24, right: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-soft)' }}>
                             <span>printed with ♥</span>
-                            <span>lovepages · mx</span>
+                            <Link
+                                href="/?ref=carta"
+                                style={{ color: 'var(--ink-soft)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}
+                            >
+                                {t.publicPage.brandFooter}
+                            </Link>
                         </div>
                     </>
                 ) : (
-                    <YesScene
+                    <AnswerScene
                         recipient={page.recipientName || ''}
+                        answer={selectedAnswer}
                         onReset={() => { setAnswered(false); setSelectedAnswer(null); }}
+                        t={t}
                     />
                 )}
             </div>

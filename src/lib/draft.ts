@@ -30,6 +30,7 @@ const PERSISTED_FIELDS = [
     'backgroundMusic',
     'videoUrl',
     'customSlug',
+    'occasionDate',
 ] as const;
 
 export type PersistedField = (typeof PERSISTED_FIELDS)[number];

@@ -69,7 +69,7 @@ const en: Translations = {
     ctaCreate: 'Create my page for free',
     ctaDemo: 'See demo',
     unlimitedPages: 'Unlimited pages',
-    proPrice: 'PRO for only $1.39',
+    proPrice: 'PRO for $9 a year',
     aiDesign: 'AI Design',
 
     // Showcase
@@ -104,7 +104,7 @@ const en: Translations = {
 
     // PRO upsell
     proUpsellTitle: 'Want something even more special?',
-    proUpsellDesc: 'With PRO you unlock AI design, personalized URL with their name, background music, premium animations and unlimited pages. All for just <strong>$1.39 USD</strong> — one-time payment.',
+    proUpsellDesc: 'With PRO you unlock AI design, personalized URL with their name, background music, premium animations and unlimited pages. All for <strong>$9 USD a year</strong>.',
     getPro: 'Get PRO',
 
     // Demo
@@ -125,7 +125,7 @@ const en: Translations = {
     finalCtaDesc: 'Create your first page for free in less than 2 minutes. No credit card required.',
     goToMyPages: 'Go to My Pages',
     createPageFree: 'Create Free Page',
-    freeLimitReached: 'You already used your 1 free page. Upgrade to PRO for unlimited pages.',
+    freeLimitReached: 'You already have an active page. Deactivate it from your pages, or go PRO for unlimited at once.',
 
     // Demo builder
     demoPageTitle: 'Your page title',
@@ -193,7 +193,7 @@ const en: Translations = {
     noEscapesAnnotation: 'the "no" escapes →',
     statsPagesLabel: 'pages created',
     statsSiLabel: 'say yes',
-    statsProLabel: 'pro · one time',
+    statsProLabel: 'pro · per year',
 
     // Riso redesign — DemoPhone
     demoCardBadge: '✦ a letter for you',
@@ -233,12 +233,12 @@ const en: Translations = {
     pricingBadge: '04 · pricing',
     pricingRecommended: 'recommended ★',
     freePlanPitch: 'enough for that important letter',
-    freePlanFeature1: '2 active pages',
+    freePlanFeature1: '1 active page at a time',
     freePlanFeature2: 'basic animations',
     freePlanFeature3: 'URL lovepages.ink/p/xxxx',
     freePlanFeature4: 'subtle watermark',
     freePlanCtaLabel: 'start free',
-    proPlanSub: 'once · lifetime',
+    proPlanSub: 'per year · renewable',
     proPlanPitch: 'for those who fall in love often',
     proPlanFeature1: 'unlimited pages',
     proPlanFeature2: 'AI design ✦',
@@ -279,7 +279,7 @@ const en: Translations = {
     statsNo: 'no',
     noPublished: 'unpublished',
     limitModalTitle: "you've used your free page",
-    limitModalDesc: 'The free plan includes 1 page. Go PRO for $1.75 just once and create unlimited pages, add music, effects and more.',
+    limitModalDesc: 'The free plan allows 1 active page at a time. Go PRO for $9 a year for unlimited pages, no expiry, music and effects.',
     limitModalCta: 'see PRO plan ✨',
     limitModalDecline: 'not now',
     proUser: 'PRO User - Premium features unlocked',
@@ -421,7 +421,7 @@ const en: Translations = {
     wantNameInLink: 'Want their name in the link? 💕',
     yourPageWillHave: 'Your page will have:',
     withProCouldBe: 'With PRO it could be:',
-    makeMoreSpecial: 'Make it more special – $1.75',
+    makeMoreSpecial: 'Make it more special – $9/yr',
     summaryTitle: 'Title',
     summaryFor: 'For',
     summaryMessage: 'Message',
@@ -442,7 +442,7 @@ const en: Translations = {
     titleRequired: 'Title is required',
     recipientRequired: 'Recipient name is required',
     needProPlan: 'You need the PRO plan',
-    freeLimitReached: 'You already used your 1 free page. Upgrade to PRO for unlimited pages.',
+    freeLimitReached: 'You already have an active page. Deactivate it from your pages, or go PRO for unlimited at once.',
     pageCreated: 'Page created successfully!',
     createError: 'Error creating page',
     imageTooLarge: 'Image must not exceed 5MB',
@@ -504,6 +504,9 @@ const en: Translations = {
     fieldVideo: 'video embed',
     fieldUrlCustom: 'custom URL',
     fieldPrivacy: 'privacy',
+    fieldOccasion: 'date of the occasion',
+    occasionHint: 'optional',
+    occasionHelp: 'Save it and we will remind you 3 days before the next anniversary, so it does not slip by.',
 
     // Preview panel
     previewForLabel: 'a letter for',
@@ -521,7 +524,7 @@ const en: Translations = {
     expirationMobileUpgrade: 'Upgrade to PRO',
     expirationLinkTitle: 'this link lives for 7 days',
     expirationLinkDesc: 'After that week the letter stops opening. With PRO it stays forever.',
-    expirationLinkCta: 'make it permanent · $1.75',
+    expirationLinkCta: 'make it permanent · $9/yr',
 
     // Local draft
     draftSavedNow: 'saved just now',
@@ -722,7 +725,7 @@ const en: Translations = {
     selectPayment: 'Select your payment method:',
     mercadoPagoDesc: 'Cards, cash and more',
     paypalDesc: 'PayPal, cards',
-    unlockProPrice: 'Unlock PRO for $1.75 USD',
+    unlockProPrice: 'Unlock PRO — $9 USD/yr',
     securePayment: 'Secure payment processed by',
 
     freePlan: 'Free Plan',
@@ -867,6 +870,17 @@ const en: Translations = {
     understood: 'Understood',
     responseRecorded: 'Your response has been recorded',
     madeWith: 'Made with Love Pages 💕',
+    // Recipient loop: whoever just received a letter is the likeliest person
+    // to create one, and until now this screen offered them nothing.
+    answeredYes: 'yes.',
+    answeredNo: 'maybe.',
+    answeredYesNote: '{name} already got the news.',
+    answeredNoNote: '{name} already saw your answer.',
+    ctaHeading: 'and you, who are you writing to?',
+    ctaBody: 'Make your letter in two minutes. Free, no card needed.',
+    ctaButton: 'create my letter',
+    seeAgain: '← read the letter again',
+    brandFooter: 'made with love pages',
   },
 
   // ============================================================
@@ -894,7 +908,7 @@ const en: Translations = {
 
     // QR Modal
     qrProDesc: 'With PRO you can generate a QR code for your page to print on cards, gifts or invitations 💌',
-    getProPrice: 'Get PRO — $1.75 USD',
+    getProPrice: 'Get PRO — $9 USD/yr',
     notNow: 'Not now',
 
     // Page info
@@ -974,7 +988,7 @@ const en: Translations = {
     loadingAd: 'Loading ad...',
     rewardsAvailable: 'rewards available today',
     preferNoAds: 'Prefer no ads?',
-    goProUnlimited: 'Go PRO for $1.75 — Unlimited pages',
+    goProUnlimited: 'Go PRO — $9/yr, unlimited pages',
     watchAdToEarn: 'Watch the ad to earn 1 page',
     waitSeconds: 'Wait {seconds} seconds to claim your reward',
     adCompleted: 'Ad completed!',

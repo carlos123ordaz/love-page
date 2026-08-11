@@ -245,6 +245,22 @@
 }
 
 /* Grain overlay — simulates riso paper texture */
+/* Altura del editor móvil.
+   `vh` en móvil se mide contra el viewport grande (barra de direcciones
+   oculta), así que con la barra visible el contenido se sale por abajo.
+   `dvh` sigue al viewport real; se deja `vh` de reserva para navegadores
+   antiguos, que es lo que había hasta ahora. */
+:root {
+  --app-h: 100vh;
+  --preview-h: 38vh;
+}
+@supports (height: 1dvh) {
+  :root {
+    --app-h: 100dvh;
+    --preview-h: 38dvh;
+  }
+}
+
 .grain { position: relative; }
 .grain::after {
   content: '';

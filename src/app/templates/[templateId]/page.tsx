@@ -510,7 +510,7 @@ export default function TemplateDetailPage() {
                                                     <Link href="/upgrade">
                                                         <button className="btn-accent" style={{ padding: '10px 20px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                                                             <Crown style={{ width: 13, height: 13 }} />
-                                                            Obtener PRO — $1.75 USD
+                                                            Obtener PRO — $9 USD/año
                                                         </button>
                                                     </Link>
                                                 </div>

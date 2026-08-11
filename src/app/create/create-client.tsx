@@ -349,6 +349,8 @@ interface PageFormData {
     // Extras
     showWatermark: boolean; // free = true siempre
     customSlug: string;
+    /** Fecha que celebra la carta; alimenta el recordatorio anual. */
+    occasionDate: string;
 }
 
 type Step = 'content' | 'design' | 'media' | 'effects' | 'preview';
@@ -499,7 +501,7 @@ function ProDecisionModal({
                             style={{ width: '100%', padding: '13px 18px', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--mono)', letterSpacing: '0.08em' }}
                         >
                             <Crown style={{ width: 14, height: 14 }} />
-                            Desbloquearlas · $1.75
+                            Desbloquearlas · $9/año
                         </button>
                         <button
                             onClick={onPublishFree}
@@ -601,6 +603,15 @@ export default function CreatePageEnhanced() {
     const [fontsLoaded, setFontsLoaded] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [previewCollapsed, setPreviewCollapsed] = useState(false);
+    /**
+     * Hay un campo de texto enfocado, o sea que el teclado está abierto.
+     *
+     * En un móvil de ~700px el bloque fijo (cabecera + maqueta + secciones)
+     * ocupa unos 350px. Con el teclado encima no quedaba sitio para ver lo que
+     * se está escribiendo, así que mientras se escribe la maqueta se pliega y
+     * la barra de publicar se aparta.
+     */
+    const [typing, setTyping] = useState(false);
     const [showMobileColorPicker, setShowMobileColorPicker] = useState<'bg' | 'text' | 'accent' | null>(null);
     const isMobile = useMediaQuery('(max-width: 1023px)');
     const { t } = useTranslation();
@@ -651,6 +662,7 @@ export default function CreatePageEnhanced() {
         videoUrl: '',
         showWatermark: !isPro,
         customSlug: '',
+        occasionDate: '',
     });
 
     // Cargar Google Fonts dinámicamente (todas, para poder previsualizar la lista)
@@ -708,6 +720,29 @@ export default function CreatePageEnhanced() {
         const mins = Math.round(secs / 60);
         return t.create.draftSavedMinutes.replace('{n}', String(mins));
     })();
+
+    /** ¿El foco está en algo que abre teclado? */
+    const isEditable = (el: EventTarget | Element | null) => {
+        const node = el as HTMLElement | null;
+        if (!node || !node.tagName) return false;
+        return ['INPUT', 'TEXTAREA', 'SELECT'].includes(node.tagName) || node.isContentEditable;
+    };
+
+    const handleEditorFocus = (e: React.FocusEvent) => {
+        if (isEditable(e.target)) setTyping(true);
+    };
+
+    // Al saltar de un campo a otro se dispara blur antes que el focus del
+    // siguiente; sin esta comprobación la maqueta parpadearía entre campos.
+    const handleEditorBlur = () => {
+        setTimeout(() => setTyping(isEditable(document.activeElement)), 0);
+    };
+
+    // Cambiar de sección estando desplazado dejaba al usuario a media página.
+    useEffect(() => {
+        if (!isMobile) return;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentStep, isMobile]);
 
     const discardDraft = () => {
         clearDraft();
@@ -999,6 +1034,9 @@ export default function CreatePageEnhanced() {
             }
             data.append('selectedStickers', JSON.stringify(values.selectedStickers));
             data.append('showWatermark', values.showWatermark.toString());
+            if (values.occasionDate) {
+                data.append('occasionDate', values.occasionDate);
+            }
 
             // Imágenes
             if (values.backgroundImage) {
@@ -1040,6 +1078,10 @@ export default function CreatePageEnhanced() {
     };
 
     const handleSubmit = async () => {
+        // La sesión aún se está resolviendo: publicar ahora pediría login a
+        // alguien que quizá ya lo tiene.
+        if (authLoading) return;
+
         // 1. Lo que falta se resuelve antes que nada, y llevando al campo.
         if (missingFields.length > 0) {
             focusMissing();
@@ -1089,14 +1131,11 @@ export default function CreatePageEnhanced() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
-    // ---- Loading guard ----
-    if (authLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', animation: 'spin 1s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-            </div>
-        );
-    }
+    // Antes había aquí un spinner a pantalla completa mientras se resolvía la
+    // sesión. El editor no necesita usuario para funcionar — la cuenta sólo
+    // hace falta al publicar — así que bloquearlo metía una pantalla en blanco
+    // y un spinner entre la landing y el editor. Ahora pinta de inmediato y
+    // los datos de la cuenta (isPro, límite) llegan cuando llegan.
 
     // ---- Steps config ----
     const steps: { key: Step; label: string; icon: React.ReactNode }[] = [
@@ -1740,6 +1779,20 @@ export default function CreatePageEnhanced() {
                                 </div>
                             </DField>
 
+                            {/* La fecha alimenta el recordatorio anual: es lo que
+                                da un motivo para volver fuera de San Valentín. */}
+                            <DField label={t.create.fieldOccasion} hint={t.create.occasionHint}>
+                                <input
+                                    type="date"
+                                    value={formData.occasionDate}
+                                    onChange={e => updateForm({ occasionDate: e.target.value })}
+                                    style={dI}
+                                />
+                                <p style={{ marginTop: 8, fontSize: 10.5, lineHeight: 1.5, color: 'var(--ink-soft)', fontFamily: 'var(--mono)' }}>
+                                    {t.create.occasionHelp}
+                                </p>
+                            </DField>
+
                             <DField label={t.create.fieldPrivacy}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                     <label style={{ padding: 12, border: '2px solid var(--ink-red)', background: 'var(--paper)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -1827,7 +1880,12 @@ export default function CreatePageEnhanced() {
         {/* ═══════════════════════════════════════════════════════
             MOBILE — step wizard (< lg)
         ═══════════════════════════════════════════════════════ */}
-        <div className="lg:hidden min-h-screen" style={{ background: 'var(--paper)', paddingBottom: 96 }}>
+        <div
+            className="lg:hidden"
+            style={{ background: 'var(--paper)', minHeight: 'var(--app-h)', paddingBottom: typing ? 24 : 96 }}
+            onFocusCapture={handleEditorFocus}
+            onBlurCapture={handleEditorBlur}
+        >
 
             {/* ── Cabecera + vista previa en vivo (fija) ──
                 El editor móvil era un asistente lineal donde la maqueta vivía
@@ -1863,19 +1921,21 @@ export default function CreatePageEnhanced() {
                     miniatura ilegible. */}
                 <div
                     style={{
-                        height: previewCollapsed ? 0 : '38vh',
+                        // Se pliega también mientras se escribe: es cuando hace
+                        // falta la pantalla y cuando menos se mira la maqueta.
+                        height: previewCollapsed || typing ? 0 : 'var(--preview-h)',
                         overflow: 'hidden',
                         transition: 'height 220ms ease',
                         background: 'var(--paper-3)',
                     }}
                 >
-                    <div style={{ height: '38vh', width: '100%' }}>
+                    <div style={{ height: 'var(--preview-h)', width: '100%' }}>
                         {previewContent()}
                     </div>
                 </div>
 
                 {/* Secciones: misma navegación y mismas etiquetas que en desktop */}
-                <div style={{ display: 'flex', overflowX: 'auto', borderTop: '1.5px solid var(--ink-black)', WebkitOverflowScrolling: 'touch' }}>
+                <div style={{ display: 'flex', borderTop: '1.5px solid var(--ink-black)' }}>
                     {([[t.create.tabContent, 'content'], [t.create.tabDesign, 'design'], [t.create.tabMedia, 'media'], [t.create.tabEffects, 'effects'], [t.create.tabLink, 'preview']] as [string, Step][]).map(([label, key]) => {
                         const active = currentStep === key;
                         return (
@@ -1883,16 +1943,19 @@ export default function CreatePageEnhanced() {
                                 key={key}
                                 onClick={() => setCurrentStep(key)}
                                 style={{
-                                    flex: '1 0 auto', minWidth: 78, minHeight: 44,
-                                    padding: '11px 10px',
+                                    // 5 × 78px = 390px: en un móvil de 360 el
+                                    // último quedaba fuera y no se descubría.
+                                    flex: '1 1 0', minWidth: 0, minHeight: 44,
+                                    padding: '11px 4px',
                                     background: active ? 'var(--paper)' : 'transparent',
                                     border: 'none',
                                     borderRight: '1.5px solid var(--ink-black)',
                                     borderBottom: active ? '3px solid var(--ink-red)' : '3px solid transparent',
                                     color: active ? 'var(--ink-black)' : 'var(--ink-soft)',
-                                    fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 600,
-                                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                                    fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 600,
+                                    letterSpacing: '0.04em', textTransform: 'uppercase',
                                     cursor: 'pointer', whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
                                 }}
                             >
                                 {label}
@@ -2599,6 +2662,21 @@ export default function CreatePageEnhanced() {
                                     <CardContent className="space-y-4 px-4 lg:px-6">
                                         {/* La maqueta ya está fija arriba: repetirla aquí sobraba */}
 
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                                {t.create.fieldOccasion} <span className="text-gray-400">({t.create.occasionHint})</span>
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={formData.occasionDate}
+                                                onChange={(e) => updateForm({ occasionDate: e.target.value })}
+                                                className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                                                {t.create.occasionHelp}
+                                            </p>
+                                        </div>
+
                                         {isPro && formData.customSlug && (
                                             <div className="p-4" style={{ background: 'var(--paper-soft)', border: '2px solid var(--ink-black)' }}>
                                                 <div className="flex items-center gap-2 mb-2">
@@ -2750,7 +2828,19 @@ export default function CreatePageEnhanced() {
             {/* ── Barra inferior: publicar desde cualquier sección ──
                 Ya no hay «Atrás / Siguiente»: el orden lo sugieren las secciones,
                 no lo impone la barra. Si falta algo, aquí se dice qué. */}
-            <div className="fixed bottom-0 left-0 right-0 z-30 px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))]" style={{ background: 'var(--paper-soft)', borderTop: '2px solid var(--ink)' }}>
+            {/* Con el teclado abierto, una barra fija se queda flotando encima
+                en iOS y tapa el campo. Se aparta mientras se escribe. */}
+            <div
+                className="fixed bottom-0 left-0 right-0 z-30 px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))]"
+                style={{
+                    background: 'var(--paper-soft)',
+                    borderTop: '2px solid var(--ink)',
+                    transform: typing ? 'translateY(110%)' : 'none',
+                    transition: 'transform 180ms ease',
+                    pointerEvents: typing ? 'none' : 'auto',
+                }}
+                aria-hidden={typing}
+            >
                 <div className="max-w-md mx-auto flex flex-col gap-1.5">
                     {missingFields.length > 0 && (
                         <button

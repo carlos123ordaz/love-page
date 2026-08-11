@@ -8,10 +8,49 @@ const LANGUAGES: { code: Locale; label: string; abbr: string }[] = [
   { code: 'en', label: 'English', abbr: 'EN' },
 ];
 
-export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
+/**
+ * Paletas del selector.
+ *
+ * El componente usa el mismo token para el borde y para el texto, así que
+ * sobre fondo oscuro no basta con redefinir variables: hace falta una variante
+ * explícita. `light` reproduce exactamente el aspecto anterior.
+ */
+const TONES = {
+  light: {
+    border: 'var(--ink-black)',
+    text: 'var(--ink-black)',
+    openBg: 'var(--ink-blue)',
+    openText: 'var(--paper)',
+    menuBg: 'var(--paper-soft)',
+    menuBorder: 'var(--ink-black)',
+    activeBg: 'var(--ink-red)',
+    activeText: 'var(--paper)',
+    divider: 'var(--rule)',
+  },
+  dark: {
+    border: '#2f2721',
+    text: '#f0e7d5',
+    openBg: '#1d1815',
+    openText: '#f0e7d5',
+    menuBg: '#1d1815',
+    menuBorder: '#2f2721',
+    activeBg: '#c98a52',
+    activeText: '#141110',
+    divider: '#2f2721',
+  },
+} as const;
+
+export function LanguageSwitcher({
+  compact = false,
+  tone = 'light',
+}: {
+  compact?: boolean;
+  tone?: keyof typeof TONES;
+}) {
   const { locale, setLocale } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const c = TONES[tone];
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -33,9 +72,9 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         onClick={() => setOpen(!open)}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
-          border: '1.5px solid var(--ink-black)',
-          background: open ? 'var(--ink-blue)' : 'transparent',
-          color: open ? 'var(--paper)' : 'var(--ink-black)',
+          border: `1.5px solid ${c.border}`,
+          background: open ? c.openBg : 'transparent',
+          color: open ? c.openText : c.text,
           padding: compact ? '4px 8px' : '6px 12px',
           fontFamily: 'var(--mono)',
           fontSize: 11,
@@ -47,6 +86,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
           transition: 'background 120ms, color 120ms',
         }}
         aria-label="Change language"
+        aria-expanded={open}
       >
         <span>{current.abbr}</span>
         <span style={{ fontSize: 7, opacity: 0.7 }}>{open ? '▲' : '▼'}</span>
@@ -55,8 +95,8 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       {open && (
         <div style={{
           position: 'absolute', right: 0, top: '100%',
-          background: 'var(--paper-soft)',
-          border: '1.5px solid var(--ink-black)',
+          background: c.menuBg,
+          border: `1.5px solid ${c.menuBorder}`,
           borderTop: 'none',
           zIndex: 50,
           minWidth: 120,
@@ -73,10 +113,10 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
                 fontSize: 11,
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                background: locale === lang.code ? 'var(--ink-red)' : 'transparent',
-                color: locale === lang.code ? 'var(--paper)' : 'var(--ink-black)',
+                background: locale === lang.code ? c.activeBg : 'transparent',
+                color: locale === lang.code ? c.activeText : c.text,
                 border: 'none',
-                borderBottom: i < LANGUAGES.length - 1 ? '1px solid var(--rule)' : 'none',
+                borderBottom: i < LANGUAGES.length - 1 ? `1px solid ${c.divider}` : 'none',
                 cursor: 'pointer',
                 fontWeight: locale === lang.code ? 700 : 400,
                 textAlign: 'left',

@@ -67,7 +67,7 @@
     ctaCreate: 'Crear mi página gratis',
     ctaDemo: 'Ver demo',
     unlimitedPages: 'Páginas ilimitadas',
-    proPrice: 'PRO por solo $1.39',
+    proPrice: 'PRO por $9 al año',
     aiDesign: 'Diseño con IA',
 
     // Showcase
@@ -102,7 +102,7 @@
 
     // PRO upsell
     proUpsellTitle: '¿Quieres algo aún más especial?',
-    proUpsellDesc: 'Con PRO desbloqueas diseño con IA, URL personalizada con su nombre, música de fondo, animaciones premium y páginas ilimitadas. Todo por solo <strong>$1.39 USD</strong> — pago único.',
+    proUpsellDesc: 'Con PRO desbloqueas diseño con IA, URL personalizada con su nombre, música de fondo, animaciones premium y páginas ilimitadas. Todo por <strong>$9 USD al año</strong>.',
     getPro: 'Obtener PRO',
 
     // Demo
@@ -123,7 +123,7 @@
     finalCtaDesc: 'Crea tu primera página gratis en menos de 2 minutos. Sin tarjeta de crédito.',
     goToMyPages: 'Ir a Mis Páginas',
     createPageFree: 'Crear Página Gratis',
-    freeLimitReached: 'Ya usaste tu 1 página gratis. Pasa a PRO para crear páginas ilimitadas.',
+    freeLimitReached: 'Ya tienes una página activa. Desactívala desde tus páginas, o pasa a PRO para tener ilimitadas a la vez.',
 
     // Demo builder
     demoPageTitle: 'Título de tu página',
@@ -191,7 +191,7 @@
     noEscapesAnnotation: 'el "no" se escapa →',
     statsPagesLabel: 'páginas creadas',
     statsSiLabel: 'dicen sí',
-    statsProLabel: 'pro · una vez',
+    statsProLabel: 'pro · al año',
 
     // Riso redesign — DemoPhone
     demoCardBadge: '✦ una carta para ti',
@@ -231,12 +231,12 @@
     pricingBadge: '04 · precios',
     pricingRecommended: 'recomendado ★',
     freePlanPitch: 'suficiente para esa carta importante',
-    freePlanFeature1: '2 páginas activas',
+    freePlanFeature1: '1 página activa a la vez',
     freePlanFeature2: 'animaciones básicas',
     freePlanFeature3: 'URL lovepages.ink/p/xxxx',
     freePlanFeature4: 'marca de agua sutil',
     freePlanCtaLabel: 'empezar gratis',
-    proPlanSub: 'una vez · de por vida',
+    proPlanSub: 'al año · renovable',
     proPlanPitch: 'para los que se enamoran seguido',
     proPlanFeature1: 'páginas ilimitadas',
     proPlanFeature2: 'diseño con IA ✦',
@@ -277,7 +277,7 @@
     statsNo: 'no',
     noPublished: 'sin publicar',
     limitModalTitle: 'ya usaste tu página gratis',
-    limitModalDesc: 'El plan free incluye 1 página. Hazte PRO por $1.75 una sola vez y crea páginas ilimitadas, añade música, efectos y más.',
+    limitModalDesc: 'El plan gratis permite 1 página activa a la vez. Hazte PRO por $9 al año y ten páginas ilimitadas, sin caducidad, con música y efectos.',
     limitModalCta: 'ver plan PRO ✨',
     limitModalDecline: 'ahora no',
     proUser: 'Usuario PRO - Features premium desbloqueadas',
@@ -419,7 +419,7 @@
     wantNameInLink: '¿Quieres que el enlace diga su nombre? 💕',
     yourPageWillHave: 'Tu página tendrá:',
     withProCouldBe: 'Con PRO podría ser:',
-    makeMoreSpecial: 'Hacerlo más especial – $1.75',
+    makeMoreSpecial: 'Hacerlo más especial – $9/año',
     summaryTitle: 'Título',
     summaryFor: 'Para',
     summaryMessage: 'Mensaje',
@@ -440,7 +440,7 @@
     titleRequired: 'El título es requerido',
     recipientRequired: 'El nombre del destinatario es requerido',
     needProPlan: 'Necesitas el plan PRO',
-    freeLimitReached: 'Ya usaste tu 1 página gratis. Pasa a PRO para crear páginas ilimitadas.',
+    freeLimitReached: 'Ya tienes una página activa. Desactívala desde tus páginas, o pasa a PRO para tener ilimitadas a la vez.',
     pageCreated: '¡Página creada exitosamente!',
     createError: 'Error al crear la página',
     imageTooLarge: 'La imagen no debe superar 5MB',
@@ -502,6 +502,9 @@
     fieldVideo: 'video embed',
     fieldUrlCustom: 'URL personalizada',
     fieldPrivacy: 'privacidad',
+    fieldOccasion: 'fecha de la ocasión',
+    occasionHint: 'opcional',
+    occasionHelp: 'Guárdala y te avisamos 3 días antes del próximo aniversario, para que no se te pase.',
 
     // Preview panel
     previewForLabel: 'una carta para',
@@ -519,7 +522,7 @@
     expirationMobileUpgrade: 'Actualiza a PRO',
     expirationLinkTitle: 'este enlace vive 7 días',
     expirationLinkDesc: 'Pasada esa semana la carta deja de abrirse. Con PRO se queda para siempre.',
-    expirationLinkCta: 'hacerlo permanente · $1.75',
+    expirationLinkCta: 'hacerlo permanente · $9/año',
 
     // Borrador local
     draftSavedNow: 'guardado ahora',
@@ -720,7 +723,7 @@
     selectPayment: 'Selecciona tu método de pago:',
     mercadoPagoDesc: 'Tarjetas, efectivo y más',
     paypalDesc: 'PayPal, tarjetas',
-    unlockProPrice: 'Desbloquear PRO por $1.75 USD',
+    unlockProPrice: 'Desbloquear PRO — $9 USD/año',
     securePayment: 'Pago seguro procesado por',
 
     freePlan: 'Plan Gratuito',
@@ -865,6 +868,17 @@
     understood: 'Entendido',
     responseRecorded: 'Tu respuesta ha sido registrada',
     madeWith: 'Hecho con Love Pages 💕',
+    // Bucle del destinatario: quien acaba de recibir una carta es el mejor
+    // candidato a crear la suya, y hasta ahora esta pantalla no le ofrecía nada.
+    answeredYes: 'sí.',
+    answeredNo: 'quizá.',
+    answeredYesNote: '{name} ya recibió la noticia.',
+    answeredNoNote: '{name} ya vio tu respuesta.',
+    ctaHeading: '¿y tú, a quién le escribes?',
+    ctaBody: 'Crea tu carta en dos minutos. Es gratis y no hace falta tarjeta.',
+    ctaButton: 'crear mi carta',
+    seeAgain: '← ver carta otra vez',
+    brandFooter: 'hecho con love pages',
   },
 
   // ============================================================
@@ -892,7 +906,7 @@
 
     // QR Modal
     qrProDesc: 'Con PRO puedes generar un código QR de tu página para imprimirlo en cartas, regalos o invitaciones 💌',
-    getProPrice: 'Obtener PRO — $1.75 USD',
+    getProPrice: 'Obtener PRO — $9 USD/año',
     notNow: 'Ahora no',
 
     // Page info
@@ -972,7 +986,7 @@
     loadingAd: 'Cargando anuncio...',
     rewardsAvailable: 'de recompensas disponibles hoy',
     preferNoAds: '¿Prefieres no ver anuncios?',
-    goProUnlimited: 'Pasa a PRO por $1.75 — Páginas ilimitadas',
+    goProUnlimited: 'Pasa a PRO — $9/año, páginas ilimitadas',
     watchAdToEarn: 'Mira el anuncio para ganar 1 página',
     waitSeconds: 'Espera {seconds} segundos para reclamar tu recompensa',
     adCompleted: '¡Anuncio completado!',
