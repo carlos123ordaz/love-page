@@ -79,12 +79,12 @@ export default function TemplatesPage() {
                             <span className="sticker-badge" style={{ background: 'var(--lila)', marginBottom: 12 }}>
                                 {t.templates.badgeLabel}
                             </span>
-                            <h1 className="serif-display" style={{ fontSize: 'clamp(36px, 5vw, 56px)', margin: '12px 0 0', color: 'var(--ink)', lineHeight: 0.95 }}>
+                            <h1 className="serif-display" style={{ fontSize: 'clamp(36px, 5vw, 56px)', margin: '12px 0 0', color: 'var(--ink)', lineHeight: 1.12 }}>
                                 {t.templates.heroTitle}
                             </h1>
                         </div>
                         {/* Search */}
-                        <div style={{ display: 'flex', alignItems: 'center', border: '2px solid var(--ink)', borderRadius: 0, background: 'white', overflow: 'hidden', boxShadow: '3px 3px 0 var(--ink)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--hairline)', borderRadius: 10, background: 'white', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
                             <span style={{ padding: '0 14px', fontSize: 16 }}>🔍</span>
                             <input
                                 value={searchQuery}
@@ -101,8 +101,8 @@ export default function TemplatesPage() {
                             <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                                    borderRadius: 0, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                                    border: '2px solid var(--ink)',
+                                    borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                                    border: '1px solid var(--hairline)',
                                     background: activeCategory === cat.id ? CAT_TONES[cat.id] : 'white',
                                     boxShadow: activeCategory === cat.id ? '3px 3px 0 var(--ink)' : '2px 2px 0 var(--ink)',
                                     color: 'var(--ink)',
@@ -116,7 +116,7 @@ export default function TemplatesPage() {
 
                 {/* Count */}
                 {!loading && (
-                    <div className="mono-eyebrow" style={{ marginBottom: 20, fontSize: 12 }}>
+                    <div className="mono-eyebrow" style={{ marginBottom: 20, fontSize: 15 }}>
                         {t.templates.templateCount.replace('{count}', String(filtered.length)).replace('{plural}', filtered.length !== 1 ? 's' : '')}
                     </div>
                 )}
@@ -124,13 +124,13 @@ export default function TemplatesPage() {
                 {/* Grid */}
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '80px 0' }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 0, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+                        <div style={{ width: 48, height: 48, borderRadius: 10, border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
                         <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '80px 24px', border: '2px dashed var(--ink)', borderRadius: 0 }}>
+                    <div style={{ textAlign: 'center', padding: '80px 24px', border: '2px dashed var(--ink)', borderRadius: 10 }}>
                         <span style={{ fontSize: 64 }}>📭</span>
-                        <h3 className="serif-display" style={{ fontSize: 32, margin: '16px 0 8px', fontStyle: 'italic', color: 'var(--ink)' }}>
+                        <h3 className="serif-display" style={{ fontSize: 32, margin: '16px 0 8px', color: 'var(--ink)' }}>
                             {searchQuery ? t.templates.tryOtherSearch : t.templates.noTemplates}
                         </h3>
                         <p style={{ color: 'var(--ink-soft)', fontSize: 15 }}>
@@ -144,11 +144,11 @@ export default function TemplatesPage() {
                             return (
                                 <div key={template._id}
                                     onClick={() => router.push(`/templates/${template._id}`)}
-                                    style={{ border: '2px solid var(--ink)', borderRadius: 0, background: 'white', overflow: 'hidden', boxShadow: '5px 5px 0 var(--ink)', cursor: 'pointer', transition: 'transform 120ms' }}
+                                    style={{ border: '1px solid var(--hairline)', borderRadius: 10, background: 'white', overflow: 'hidden', boxShadow: 'var(--shadow-card)', cursor: 'pointer', transition: 'transform 120ms' }}
                                     className="hover:-translate-y-0.5 transition-transform">
 
                                     {/* Preview */}
-                                    <div style={{ height: 180, background: catTone, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '2px solid var(--ink)', overflow: 'hidden' }}>
+                                    <div style={{ height: 180, background: catTone, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '1px solid var(--hairline)', overflow: 'hidden' }}>
                                         {template.previewImageUrl ? (
                                             <img src={template.previewImageUrl} alt={template.name}
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
@@ -159,12 +159,12 @@ export default function TemplatesPage() {
                                         )}
 
                                         {template.isPro && (
-                                            <span style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--butter)', border: '2px solid var(--ink)', borderRadius: 0, fontSize: 10, fontWeight: 700, color: 'var(--ink)', boxShadow: '2px 2px 0 var(--ink)' }}>
+                                            <span style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--butter)', border: '1px solid var(--hairline)', borderRadius: 10, fontSize: 14, fontWeight: 700, color: 'var(--ink)', boxShadow: 'var(--shadow-card)' }}>
                                                 <Crown style={{ width: 10, height: 10 }} /> PRO
                                             </span>
                                         )}
 
-                                        <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 10px', background: 'rgba(255,255,255,0.85)', border: '1.5px solid var(--ink)', borderRadius: 0, fontSize: 10, fontWeight: 600, color: 'var(--ink)' }}>
+                                        <span style={{ position: 'absolute', top: 10, left: 10, padding: '3px 10px', background: 'rgba(255,255,255,0.85)', border: '1px solid var(--hairline)', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>
                                             {CATEGORIES.find((c) => c.id === template.category)?.emoji}{' '}
                                             {CATEGORIES.find((c) => c.id === template.category)?.name}
                                         </span>
@@ -175,15 +175,15 @@ export default function TemplatesPage() {
                                         <h3 className="serif-display" style={{ fontSize: 20, margin: '0 0 6px', color: 'var(--ink)', lineHeight: 1.1 }}>
                                             {template.name}
                                         </h3>
-                                        <p style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.5, margin: '0 0 14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                        <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.5, margin: '0 0 14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {template.description}
                                         </p>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--ink-soft)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, color: 'var(--ink-soft)' }}>
                                                 <Users style={{ width: 12, height: 12 }} />
                                                 {t.templates.usesLabel.replace('{count}', String(template.usageCount))}
                                             </div>
-                                            <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '2px solid var(--ink)', borderRadius: 0, fontSize: 12, fontWeight: 600, cursor: 'pointer', background: template.isPro ? 'var(--butter)' : 'var(--mint)', boxShadow: '2px 2px 0 var(--ink)', color: 'var(--ink)' }}>
+                                            <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '1px solid var(--hairline)', borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: 'pointer', background: template.isPro ? 'var(--butter)' : 'var(--mint)', boxShadow: 'var(--shadow-card)', color: 'var(--ink)' }}>
                                                 <Eye style={{ width: 12, height: 12 }} />
                                                 {t.templates.useBtn}
                                             </button>

@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Juegos para Parejas y Amigos',
+    title: 'Preguntas Anónimas para Parejas y Amigos',
     description:
-        'Diviértete con juegos interactivos: Tutti Frutti, Quiz de Compatibilidad, Pictionary, Buscaminas y más. Juega gratis online.',
+        'Recibe preguntas y mensajes anónimos de tus amigos y tu pareja. Comparte tu link y descubre qué te quieren decir sin filtros. Gratis y online.',
     alternates: {
         canonical: '/games',
     },
     openGraph: {
-        title: 'Juegos para Parejas - Love Pages',
+        title: 'Preguntas Anónimas - Love Pages',
         description:
-            'Juegos multijugador para parejas y amigos. Tutti Frutti, Quiz, Pictionary y más.',
+            'Comparte tu link y recibe preguntas anónimas de tus amigos y tu pareja.',
         url: '/games',
     },
 };

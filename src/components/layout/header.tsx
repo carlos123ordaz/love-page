@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useAuthStore } from '@/store';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { Menu, X, LogOut, Crown } from 'lucide-react';
+import { Menu, X, LogOut, Crown, Heart } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,23 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { LoginButton } from '@/components/auth/login-page';
 import { useTranslation } from '@/i18n';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+
+/** Píldora neutra reutilizada por casi todos los controles del header. */
+const softButton: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '10px 16px',
+    background: 'var(--paper-2)',
+    border: 'none',
+    borderRadius: 10,
+    fontFamily: 'var(--sans)',
+    fontSize: 15,
+    fontWeight: 600,
+    color: 'var(--ink-black)',
+    cursor: 'pointer',
+    transition: 'background 140ms',
+};
 
 export function Header() {
     const { user, firebaseUser } = useAuthStore();
@@ -34,6 +51,12 @@ export function Header() {
 
     const closeMobile = () => setMobileMenuOpen(false);
 
+    const navLinks = [
+        { href: '/templates', label: t.nav.templates },
+        { href: '/games', label: t.nav.games },
+        { href: '/contact', label: t.nav.contact },
+    ];
+
     return (
         <>
         <header
@@ -41,41 +64,46 @@ export function Header() {
             style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 position: 'sticky', top: 0, zIndex: 50,
-                background: 'var(--paper)',
-                borderBottom: '1.5px solid var(--ink-black)',
+                background: 'rgba(249, 248, 252, 0.85)',
+                backdropFilter: 'blur(12px)',
+                borderBottom: '1px solid var(--hairline)',
             }}
             className="px-5 py-3 sm:px-10 sm:py-4"
         >
-            {/* Logo — riso misregistered */}
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-                <span className="serif-display mis-red" style={{ fontSize: 22 }}>love</span>
-                <span style={{ width: 8, height: 8, background: 'var(--ink-blue)', display: 'inline-block', flexShrink: 0 }} />
-                <span className="serif-display mis-blue" style={{ fontSize: 22 }}>pages</span>
+                <span
+                    aria-hidden="true"
+                    style={{
+                        width: 32, height: 32, borderRadius: 11, background: 'var(--accent-soft)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}
+                >
+                    <Heart size={17} fill="var(--accent-hex)" stroke="none" />
+                </span>
+                <span style={{ fontFamily: 'var(--display)', fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ink-black)' }}>
+                    love pages
+                </span>
             </Link>
 
-            {/* Desktop nav */}
-            <nav className="hidden md:flex" style={{ gap: 0, alignItems: 'center', fontFamily: 'var(--mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                {[
-                    { href: '/templates', label: t.nav.templates },
-                    { href: '/games', label: t.nav.games },
-                    { href: '/contact', label: t.nav.contact },
-                ].map(({ href, label }) => (
+            {/* Nav de escritorio */}
+            <nav className="hidden md:flex" style={{ gap: 6, alignItems: 'center' }}>
+                {navLinks.map(({ href, label }) => (
                     <Link key={href} href={href}
-                        style={{ padding: '8px 14px', color: 'var(--ink-black)', textDecoration: 'none', fontWeight: 400 }}
-                        className="hover:bg-black/5 transition-colors">
+                        style={{ padding: '8px 14px', borderRadius: 8, color: 'var(--ink-soft)', textDecoration: 'none', fontSize: 15, fontWeight: 500 }}
+                        className="hover:bg-paper-2 hover:!text-[#494a5f] transition-colors">
                         {label}
                     </Link>
                 ))}
                 {user && (
                     <Link href="/dashboard"
-                        style={{ padding: '8px 14px', color: 'var(--ink-soft)', textDecoration: 'none' }}
-                        className="hover:bg-black/5 transition-colors">
+                        style={{ padding: '8px 14px', borderRadius: 8, color: 'var(--ink-soft)', textDecoration: 'none', fontSize: 15, fontWeight: 500 }}
+                        className="hover:bg-paper-2 hover:!text-[#494a5f] transition-colors">
                         {t.nav.myPages}
                     </Link>
                 )}
             </nav>
 
-            {/* Desktop user actions */}
+            {/* Acciones de escritorio */}
             <div className="hidden md:flex" style={{ alignItems: 'center', gap: 8 }}>
                 <LanguageSwitcher compact />
                 {user ? (
@@ -83,40 +111,45 @@ export function Header() {
                         <NotificationBell />
                         {!user.isPro && (
                             <Link href="/upgrade">
-                                <button style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', background: 'var(--paper-2)', border: '1.5px solid var(--ink-black)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-black)' }}>
-                                    <Crown style={{ width: 11, height: 11 }} />
+                                <button style={softButton} className="hover:brightness-95">
+                                    <Crown size={14} />
                                     {t.nav.upgradePro}
                                 </button>
                             </Link>
                         )}
                         {user.isPro && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', background: 'var(--ink-blue)', border: '1.5px solid var(--ink-black)', fontSize: 11, fontWeight: 700, color: 'var(--paper)', fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                                <Crown style={{ width: 11, height: 11 }} /> PRO
+                            <span
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px',
+                                    background: 'var(--accent-hex)', borderRadius: 999,
+                                    fontSize: 14, fontWeight: 600, color: '#fff',
+                                }}
+                            >
+                                <Crown size={13} /> PRO
                             </span>
                         )}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', background: 'var(--paper-soft)', border: '1.5px solid var(--ink-black)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px 6px 6px', background: 'var(--paper-2)', borderRadius: 999 }}>
                             {firebaseUser?.photoURL ? (
-                                <Image src={firebaseUser.photoURL} alt={user.displayName} width={22} height={22} style={{ borderRadius: '50%' }} />
+                                <Image src={firebaseUser.photoURL} alt={user.displayName} width={28} height={28} style={{ borderRadius: '50%' }} />
                             ) : (
-                                <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--ink-red)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <span style={{ fontSize: 11, color: 'var(--paper)', fontFamily: 'var(--display)', fontWeight: 700 }}>{user.displayName?.[0]?.toUpperCase()}</span>
+                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-hex)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <span style={{ fontSize: 15, color: '#fff', fontFamily: 'var(--display)', fontWeight: 700 }}>{user.displayName?.[0]?.toUpperCase()}</span>
                                 </div>
                             )}
-                            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-black)', fontFamily: 'var(--mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{user.displayName}</span>
+                            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink-black)' }}>{user.displayName}</span>
                         </div>
                         <button onClick={handleLogout}
-                            style={{ width: 32, height: 32, border: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{ width: 40, height: 40, border: 'none', borderRadius: 10, background: 'var(--paper-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            className="hover:brightness-95 transition-all"
                             title={t.nav.closeSession}>
-                            <LogOut style={{ width: 13, height: 13, color: 'var(--ink-soft)' }} />
+                            <LogOut size={16} style={{ color: 'var(--ink-soft)' }} />
                         </button>
                     </>
                 ) : (
                     <>
-                        <span style={{ fontSize: 11, color: 'var(--ink-soft)', cursor: 'pointer', fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                            <LoginButton />
-                        </span>
+                        <LoginButton />
                         <Link href="/create">
-                            <button className="btn-accent" style={{ padding: '9px 16px', fontSize: 11 }}>
+                            <button className="btn-accent" style={{ padding: '11px 20px', fontSize: 15 }}>
                                 {t.nav.createPage}
                             </button>
                         </Link>
@@ -124,21 +157,21 @@ export function Header() {
                 )}
             </div>
 
-            {/* Mobile right side */}
+            {/* Lado derecho en móvil */}
             <div className="flex md:hidden" style={{ alignItems: 'center', gap: 8 }}>
                 <LanguageSwitcher compact />
                 {user && <NotificationBell />}
                 <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    style={{ width: 36, height: 36, border: '1.5px solid var(--ink-black)', background: 'var(--paper-soft)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: 40, height: 40, border: 'none', borderRadius: 10, background: 'var(--paper-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     aria-label="Menú"
                 >
-                    {mobileMenuOpen ? <X style={{ width: 16, height: 16 }} /> : <Menu style={{ width: 16, height: 16 }} />}
+                    {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
                 </button>
             </div>
         </header>
 
-        {/* Mobile menu */}
+        {/* Menú móvil */}
         {mobileMenuOpen && (
             <div
                 className="md:hidden"
@@ -147,38 +180,36 @@ export function Header() {
                     top: headerRef.current ? headerRef.current.getBoundingClientRect().bottom : 60,
                     left: 0, right: 0, bottom: 0,
                     background: 'var(--paper)',
-                    borderBottom: '1.5px solid var(--ink-black)',
-                    padding: '16px 20px',
-                    display: 'flex', flexDirection: 'column', gap: 0,
+                    padding: '20px',
+                    display: 'flex', flexDirection: 'column', gap: 4,
                     zIndex: 49, overflowY: 'auto',
                     maxHeight: 'calc(100vh - 60px)',
                 }}
             >
                 {[
-                    { href: '/templates', label: t.nav.templates },
-                    { href: '/games', label: t.nav.games },
-                    { href: '/contact', label: t.nav.contact },
+                    ...navLinks,
                     ...(user ? [{ href: '/dashboard', label: t.nav.myPages }] : []),
                 ].map(({ href, label }) => (
                     <Link key={href} href={href} onClick={closeMobile}
-                        style={{ padding: '14px 0', fontSize: 12, fontWeight: 500, color: 'var(--ink-black)', textDecoration: 'none', display: 'block', borderBottom: '1px solid var(--rule)', fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        style={{ padding: '15px 16px', borderRadius: 12, fontSize: 17, fontWeight: 600, color: 'var(--ink-black)', textDecoration: 'none', display: 'block' }}
+                        className="active:bg-paper-2">
                         {label}
                     </Link>
                 ))}
 
-                <div style={{ paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {user ? (
                         <>
                             {!user.isPro && (
                                 <Link href="/upgrade" onClick={closeMobile}>
-                                    <button style={{ width: '100%', padding: '12px 16px', fontSize: 11, fontWeight: 700, color: 'var(--ink-black)', background: 'var(--paper-2)', border: '1.5px solid var(--ink-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                                        <Crown style={{ width: 13, height: 13 }} /> {t.nav.upgradePro}
+                                    <button style={{ ...softButton, width: '100%', justifyContent: 'center', padding: '14px 16px', fontSize: 17 }}>
+                                        <Crown size={16} /> {t.nav.upgradePro}
                                     </button>
                                 </Link>
                             )}
                             <button onClick={() => { handleLogout(); closeMobile(); }}
-                                style={{ width: '100%', padding: '12px 16px', fontSize: 11, fontWeight: 500, color: 'var(--ink-black)', background: 'var(--paper-soft)', border: '1.5px solid var(--ink-black)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                                <LogOut style={{ width: 13, height: 13 }} />
+                                style={{ ...softButton, width: '100%', justifyContent: 'center', padding: '14px 16px', fontSize: 17 }}>
+                                <LogOut size={16} />
                                 {t.nav.closeSession}
                             </button>
                         </>
@@ -186,7 +217,7 @@ export function Header() {
                         <>
                             <LoginButton />
                             <Link href="/create" onClick={closeMobile}>
-                                <button className="btn-accent" style={{ width: '100%', padding: '13px 20px', fontSize: 12 }}>
+                                <button className="btn-accent" style={{ width: '100%', padding: '15px 20px' }}>
                                     {t.nav.createPageFree}
                                 </button>
                             </Link>

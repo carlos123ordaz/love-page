@@ -1,47 +1,28 @@
 import type { Metadata } from 'next';
-import { Fraunces, Caveat, Anton, Antonio, DM_Mono, Newsreader } from 'next/font/google';
+import { Poppins, Inter, Dancing_Script } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { LanguageProvider } from '@/i18n';
 import './globals.css';
 import Script from 'next/script';
 
-const fraunces = Fraunces({
+// Poppins titula, Inter es la fuente de trabajo y Dancing Script firma.
+const poppins = Poppins({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-fraunces',
-  axes: ['SOFT', 'WONK', 'opsz'],
-  style: ['italic'],
-});
-const caveat = Caveat({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-caveat',
-});
-const anton = Anton({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-anton',
-  weight: '400',
-});
-const antonio = Antonio({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-antonio',
+  variable: '--font-poppins',
   weight: ['400', '500', '600', '700'],
 });
-const dmMono = DM_Mono({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-dm-mono',
-  weight: ['300', '400', '500'],
+  variable: '--font-inter',
 });
-const newsreader = Newsreader({
+const dancingScript = Dancing_Script({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-newsreader',
-  weight: ['400', '500'],
-  style: ['normal', 'italic'],
+  variable: '--font-dancing',
+  weight: ['400', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -102,7 +83,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning className={`${fraunces.variable} ${caveat.variable} ${anton.variable} ${antonio.variable} ${dmMono.variable} ${newsreader.variable}`}>
+    <html lang="es" suppressHydrationWarning className={`${poppins.variable} ${inter.variable} ${dancingScript.variable}`}>
       <head>
         {/* Preconnect to critical third-party origins */}
         <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
@@ -149,7 +130,14 @@ export default function RootLayout({
               position="top-center"
               toastOptions={{
                 duration: 3000,
-                style: { background: '#fff', color: '#363636' },
+                style: {
+                  background: '#fff',
+                  color: '#494a5f',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  fontSize: '15px',
+                  boxShadow: '0 2px 8px rgba(73,74,95,.05), 0 12px 32px -12px rgba(73,74,95,.18)',
+                },
                 success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
                 error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
               }}

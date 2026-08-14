@@ -2,109 +2,146 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Design tokens — Risograph print aesthetic ── */
+/* ── Design tokens — soft, airy, friendly ──
+   Ligero por defecto: fondos casi blancos con un toque lila, tipografía
+   grande y respirada, esquinas redondas y cero bordes duros. */
 :root {
-  /* Paper — warm cream stock */
-  --paper: #f3ead4;
-  --paper-2: #ebdfc1;
-  --paper-3: #ddd0ad;
-  --paper-soft: #f8f1de;
+  /* Superficies — de más al fondo a más al frente */
+  --paper: #f9f8fc;        /* fondo de la app */
+  --paper-2: #f3f1f9;      /* superficie sutil (chips, rows) */
+  --paper-3: #ebe7f5;      /* superficie hundida / hover */
+  --paper-soft: #ffffff;   /* tarjetas */
+  --surface-blur: rgba(255, 255, 255, 0.88); /* barras fijas con desenfoque */
+  --surface-tint: #f1edf7; /* lila muy suave, para pills y iconos */
 
-  /* Two-ink palette — Negro + Fucsia (riso mono) */
-  --ink-blue: #1a1410;
-  --ink-blue-soft: rgba(26, 20, 16, 0.85);
-  --ink-red: #e8378a;
-  --ink-red-soft: rgba(232, 55, 138, 0.85);
-  --ink-overlap: #4a1f6e;
-  --ink-black: #1a1410;
-  --ink-soft: #6b5a4a;
-  --rule: #c4b896;
-
-  /* Aliases — kept for component compatibility */
+  /* Tinta — jerarquía de texto en 3 niveles */
+  --ink-black: #494a5f;    /* títulos */
   --ink: var(--ink-black);
-  --ink-2: #2a2520;
-  --lila: rgba(26, 20, 16, 0.14);
-  --lila-2: rgba(26, 20, 16, 0.28);
-  --lila-soft: var(--paper-soft);
-  --melocoton: rgba(232, 55, 138, 0.14);
-  --melocoton-2: rgba(232, 55, 138, 0.28);
-  --mint: rgba(74, 31, 110, 0.1);
-  --butter: var(--paper-2);
-  --plum: var(--ink-overlap);
-  --accent-hex: var(--ink-red);
-  --accent-2-hex: var(--ink-blue);
-  --accent-3-hex: var(--ink-overlap);
-  --accent-deep-hex: var(--ink-overlap);
+  --ink-2: #5c5d72;
+  --ink-soft: #71677e;     /* texto secundario */
+  --ink-faint: #9b93a6;    /* placeholders, metadatos */
 
-  /* Misregistration offset */
-  --mis-x: 2px;
-  --mis-y: 2px;
+  /* Acento — morado suave */
+  --accent-hex: #a772e3;
+  --accent-strong: #9256d8;
+  --accent-soft: #f1edf7;
+  --accent-2-hex: #7c5cbf;
+  --accent-3-hex: #c9a6f0;
+  --accent-deep-hex: #7c5cbf;
+  --on-accent-default: #ffffff;
 
-  /* No soft shadows — riso is flat */
-  --shadow-soft: none;
-  --shadow-card: none;
-  --shadow-sticker: none;
+  /* Error — suave, no alarmante */
+  --destructive-hex: #e05c6e;
+  --destructive-soft: #fdeef0;
+  --destructive-border: #f3b9c1;
 
-  /* Sharp corners — print aesthetic */
-  --r-sm: 0px;
-  --r-md: 0px;
-  --r-lg: 0px;
-  --r-xl: 0px;
+  /* Acentos secundarios para categorías/ilustración */
+  --mint: #cfe8b8;
+  --butter: #ffe9b0;
+  --melocoton: #ffd3c2;
+  --plum: #a772e3;
 
-  /* Type — chunky display, mono workhorse */
-  --display: var(--font-anton), 'Anton', Impact, sans-serif;
-  --sans: var(--font-antonio), 'Antonio', system-ui, sans-serif;
-  --serif: var(--font-newsreader), 'Newsreader', Georgia, serif;
-  --serif-italic: var(--font-fraunces), 'Newsreader', Georgia, serif;
-  --mono: var(--font-dm-mono), 'DM Mono', 'Space Mono', ui-monospace, monospace;
-  --hand: var(--font-caveat), 'Caveat', cursive;
+  /* Líneas — casi invisibles; la separación se hace con espacio y fondo */
+  --rule: #eceaf3;
+  --hairline: #f0f0f4;
+  --lila: #ede8f7;
+  --lila-2: #ddd3ef;
+  --lila-soft: #f5f1fb;
 
-  /* Kept for compatibility */
-  --serif-text: var(--serif);
+  /* Sombras — apenas perceptibles, nunca duras */
+  --shadow-soft: 0 1px 2px rgba(73, 74, 95, 0.04);
+  --shadow-card: 0 2px 8px rgba(73, 74, 95, 0.05), 0 12px 32px -12px rgba(73, 74, 95, 0.08);
+  --shadow-sticker: 0 8px 24px -8px rgba(167, 114, 227, 0.35);
+  --shadow-focus: 0 0 0 3px rgba(167, 114, 227, 0.18);
 
-  /* shadcn/ui variables — mapped to riso palette */
-  --background: 43 53% 89%;
-  --foreground: 22 8% 8%;
-  --card: 44 60% 96%;
-  --card-foreground: 22 8% 8%;
-  --popover: 44 60% 96%;
-  --popover-foreground: 22 8% 8%;
-  --primary: 330 79% 56%;
-  --primary-foreground: 43 53% 89%;
-  --secondary: 23 22% 8%;
-  --secondary-foreground: 43 53% 89%;
-  --muted: 40 44% 82%;
-  --muted-foreground: 28 10% 42%;
-  --accent: 40 44% 82%;
-  --accent-foreground: 22 8% 8%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 40 28% 70%;
-  --input: 40 28% 70%;
-  --ring: 330 79% 56%;
-  --radius: 0rem;
+  /* Radios — generosos */
+  --r-sm: 10px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* Escala tipográfica — nada por debajo de 14px */
+  --fs-eyebrow: 13px;
+  --fs-caption: 14px;
+  --fs-body: 16px;
+  --fs-body-lg: 17px;
+  --fs-lead: 20px;
+  --fs-h3: 24px;
+  --fs-h2: 34px;
+  --fs-h1: 48px;
+  --fs-hero: clamp(2.5rem, 6vw, 4.375rem);
+
+  /* Tipos — Poppins titula, Inter trabaja, Dancing Script firma */
+  --display: var(--font-poppins), 'Poppins', system-ui, sans-serif;
+  --sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --serif: var(--font-poppins), 'Poppins', system-ui, sans-serif;
+  --serif-italic: var(--font-dancing), 'Dancing Script', cursive;
+  --mono: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --hand: var(--font-dancing), 'Dancing Script', cursive;
+  --serif-text: var(--sans);
+
+  /* Sin desregistro de impresión */
+  --mis-x: 0px;
+  --mis-y: 0px;
+
+  /* shadcn/ui — mapeado a la paleta nueva */
+  --background: 260 33% 98%;
+  --foreground: 237 13% 33%;
+  --card: 0 0% 100%;
+  --card-foreground: 237 13% 33%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 237 13% 33%;
+  --primary: 271 66% 67%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 262 33% 95%;
+  --secondary-foreground: 237 13% 33%;
+  --muted: 262 33% 95%;
+  --muted-foreground: 271 8% 45%;
+  --accent: 271 55% 95%;
+  --accent-foreground: 271 45% 40%;
+  --destructive: 0 72% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 260 20% 94%;
+  --input: 260 20% 94%;
+  --ring: 271 66% 67%;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --background: 22 8% 8%;
-  --foreground: 43 53% 89%;
-  --card: 22 8% 10%;
-  --card-foreground: 43 53% 89%;
-  --popover: 22 8% 10%;
-  --popover-foreground: 43 53% 89%;
-  --primary: 330 79% 56%;
-  --primary-foreground: 43 53% 89%;
-  --secondary: 23 22% 8%;
-  --secondary-foreground: 43 53% 89%;
-  --muted: 22 8% 18%;
-  --muted-foreground: 40 28% 60%;
-  --accent: 22 8% 18%;
-  --accent-foreground: 43 53% 89%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 22 8% 20%;
-  --input: 22 8% 20%;
-  --ring: 330 79% 56%;
+  --paper: #17151d;
+  --paper-2: #1e1b26;
+  --paper-3: #262230;
+  --paper-soft: #1e1b26;
+  --surface-blur: rgba(30, 27, 38, 0.88);
+  --surface-tint: #272033;
+  --ink-black: #ece9f2;
+  --ink-2: #d4d0dd;
+  --ink-soft: #a9a2b6;
+  --ink-faint: #7d768a;
+  --rule: #2b2735;
+  --hairline: #262230;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 12px 32px -12px rgba(0, 0, 0, 0.45);
+
+  --background: 260 15% 10%;
+  --foreground: 262 22% 93%;
+  --card: 258 16% 13%;
+  --card-foreground: 262 22% 93%;
+  --popover: 258 16% 13%;
+  --popover-foreground: 262 22% 93%;
+  --primary: 271 66% 67%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 258 16% 18%;
+  --secondary-foreground: 262 22% 93%;
+  --muted: 258 16% 18%;
+  --muted-foreground: 262 10% 65%;
+  --accent: 258 16% 20%;
+  --accent-foreground: 262 22% 93%;
+  --destructive: 0 62% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 258 16% 20%;
+  --input: 258 16% 20%;
+  --ring: 271 66% 67%;
 }
 
 @layer base {
@@ -114,137 +151,159 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--mono);
-    font-size: 13px;
+    font-family: var(--sans);
+    font-size: var(--fs-body);
+    line-height: 1.55;
     color: var(--ink-black);
     background: var(--paper);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Paper texture */
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.3  0 0 0 0 0.1  0 0 0 0.4 0'/></filter><rect width='300' height='300' filter='url(%23n)' opacity='0.4'/></svg>");
-    background-size: 300px 300px;
   }
+  h1, h2, h3, h4 {
+    font-family: var(--display);
+    color: var(--ink-black);
+    letter-spacing: -0.01em;
+  }
+  ::placeholder { color: var(--ink-faint); }
 }
 
-/* ── Typography classes ── */
+/* ── Tipografía ── */
 .serif-display {
   font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-transform: none;
+}
+.serif-text {
+  font-family: var(--sans);
   font-weight: 400;
-  letter-spacing: 0;
-  line-height: 0.88;
-  text-transform: uppercase;
+  font-style: normal;
+  color: var(--ink-soft);
 }
-.serif-text { font-family: var(--serif); font-weight: 400; font-style: italic; }
-.hand { font-family: var(--hand); font-weight: 600; }
+.hand {
+  font-family: var(--hand);
+  font-weight: 700;
+  color: var(--accent-hex);
+}
+/* Antes era un eyebrow mono diminuto en mayúsculas; ahora es una etiqueta
+   legible. Se conserva el nombre porque hay ~48 usos en la app. */
 .mono-eyebrow {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-blue);
-  font-weight: 500;
+  font-family: var(--sans);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-soft);
+  font-weight: 600;
 }
 
-/* ── Misregistered text — riso two-ink effect ── */
-.mis-red {
-  color: var(--ink-red);
-  text-shadow: calc(var(--mis-x) * -1) calc(var(--mis-y) * -1) 0 var(--ink-blue);
-}
-.mis-blue {
-  color: var(--ink-blue);
-  text-shadow: var(--mis-x) var(--mis-y) 0 var(--ink-red);
-}
-.mis-overlap { color: var(--ink-overlap); }
+/* Sin desregistro: los .mis-* quedan como color plano */
+.mis-red { color: var(--accent-hex); text-shadow: none; }
+.mis-blue { color: var(--ink-black); text-shadow: none; }
+.mis-overlap { color: var(--accent-2-hex); text-shadow: none; }
 
-/* ── Shared UI components ── */
+/* ── Superficies ── */
 .paper-card {
   background: var(--paper-soft);
-  border: 1.5px solid var(--ink-black);
-  border-radius: 0;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
 }
 
 @layer components {
-  /* Riso primary button — flat with misregistered shadow layer */
-  .btn-ink {
-    background: var(--ink-black);
-    color: var(--paper);
-    border: 2px solid var(--ink-black);
-    padding: 12px 22px;
-    font-family: var(--sans);
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 0;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    position: relative;
-    transition: transform 120ms;
-  }
-  .btn-ink::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--ink-blue);
-    transform: translate(4px, 4px);
-    z-index: -1;
-  }
-  .btn-ink:hover { transform: translate(-2px, -2px); }
-  .btn-ink:active { transform: translate(0, 0); }
-
+  .btn-ink,
   .btn-accent {
-    background: var(--ink-red);
-    /* --on-accent lo define la paleta de la carta; el resto de la app
-       (landing, modales) no lo declara y conserva --paper. */
-    color: var(--on-accent, var(--paper));
-    border: 2px solid var(--ink-black);
-    padding: 12px 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 24px;
     font-family: var(--sans);
+    font-size: var(--fs-body-lg);
     font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-transform: none;
+    border-radius: var(--r-md);
+    border: none;
     cursor: pointer;
-    border-radius: 0;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    position: relative;
-    transition: transform 120ms;
+    transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
   }
-  .btn-accent::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--ink-blue);
-    transform: translate(4px, 4px);
-    z-index: -1;
+  .btn-ink::before,
+  .btn-accent::before { content: none; }
+
+  /* Secundario — relleno neutro, sin borde */
+  .btn-ink {
+    background: var(--paper-3);
+    color: var(--ink-black);
   }
-  .btn-accent:hover { transform: translate(-2px, -2px); }
-  .btn-accent:active { transform: translate(0, 0); }
+  .btn-ink:hover { background: var(--lila-2); transform: translateY(-1px); }
+  .btn-ink:active { transform: translateY(0); }
+
+  /* Primario — morado sólido */
+  .btn-accent {
+    background: var(--accent-hex);
+    color: var(--on-accent, var(--on-accent-default));
+  }
+  .btn-accent:hover {
+    background: var(--accent-strong);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sticker);
+  }
+  .btn-accent:active { transform: translateY(0); box-shadow: none; }
+
+  .btn-ink:disabled,
+  .btn-accent:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Campo de texto suave — sin borde, se apoya en el relleno */
+  .field-soft {
+    width: 100%;
+    background: var(--paper-2);
+    border: 1px solid transparent;
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+    font-family: var(--sans);
+    font-size: var(--fs-body-lg);
+    color: var(--ink-black);
+    outline: none;
+    transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  }
+  .field-soft:focus {
+    background: var(--paper-soft);
+    border-color: var(--accent-3-hex);
+    box-shadow: var(--shadow-focus);
+  }
 }
 
-/* Stamp / label — mono, uppercase, hard border */
+/* Pill / etiqueta — redonda y suave */
 .sticker-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--ink-black);
-  color: var(--ink-black);
-  border-radius: 0;
-  padding: 5px 12px;
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 500;
   gap: 6px;
-  background: var(--paper-soft);
+  border: none;
+  color: var(--accent-2-hex);
+  background: var(--accent-soft);
+  border-radius: var(--r-pill);
+  padding: 7px 14px;
+  font-family: var(--sans);
+  font-size: var(--fs-caption);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 600;
 }
 
-.rule { border-top: 1.5px solid var(--rule); }
+.rule { border-top: 1px solid var(--rule); }
 
 .squiggle {
-  border-bottom: 2px solid var(--ink-red);
+  border-bottom: 2px solid var(--accent-3-hex);
 }
 
-/* Grain overlay — simulates riso paper texture */
 /* Altura del editor móvil.
    `vh` en móvil se mide contra el viewport grande (barra de direcciones
    oculta), así que con la barra visible el contenido se sale por abajo.
@@ -261,17 +320,10 @@
   }
 }
 
+/* El grano de la estética riso desaparece; se deja la clase neutralizada
+   porque sigue aplicada en varias secciones. */
 .grain { position: relative; }
-.grain::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/></filter><rect width='240' height='240' filter='url(%23n)' opacity='0.7'/></svg>");
-  mix-blend-mode: multiply;
-  opacity: 0.18;
-  pointer-events: none;
-  z-index: 0;
-}
+.grain::after { content: none; }
 
 /* ── Animations ── */
 @keyframes scroll-x {
@@ -330,7 +382,7 @@
 }
 
 /* ── Custom scrollbar ── */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--paper-2); }
-::-webkit-scrollbar-thumb { background: var(--ink-blue); border-radius: 0; }
-::-webkit-scrollbar-thumb:hover { background: var(--ink-overlap); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--lila-2); border-radius: 999px; border: 3px solid var(--paper); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-3-hex); }

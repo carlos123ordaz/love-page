@@ -7,7 +7,7 @@ import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ProPageRenderer } from '@/components/ProPageRenderer';
 import { ParticleCanvas, animToKind, hasParticles } from '@/components/ParticleCanvas';
-import { pageThemeVars, titleFontFamily, bodyFontFamily, googleFontsHref, isDarkColor, RISO_FONT } from '@/lib/page-theme';
+import { pageThemeVars, titleFontFamily, bodyFontFamily, googleFontsHref, DEFAULT_FONT } from '@/lib/page-theme';
 import { fleeDelta, clampDelta } from '@/lib/escape-button';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
@@ -196,17 +196,15 @@ function EscapeNoButton({
                 position: 'relative',
                 transform: `translate(${pos.x}px, ${pos.y}px)`,
                 transition: 'transform 180ms cubic-bezier(.2,.9,.3,1.1)',
-                background: 'transparent',
-                color: 'var(--ink-blue)',
-                border: '2px solid var(--ink-blue)',
-                padding: '12px 28px',
-                borderRadius: 0,
+                background: 'var(--paper-2)',
+                color: 'var(--ink-black)',
+                border: 'none',
+                padding: '14px 28px',
+                borderRadius: 12,
                 fontFamily: 'var(--sans)',
                 fontWeight: 600,
-                fontSize: 14,
+                fontSize: 16,
                 cursor: escaping ? 'default' : 'pointer',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
                 touchAction: 'manipulation',
                 userSelect: 'none',
             }}
@@ -221,7 +219,7 @@ function VideoEmbed({ url }: { url: string }) {
     const embedUrl = getEmbedUrl(url);
     if (!embedUrl) return null;
     return (
-        <div style={{ width: '100%', maxWidth: 480, margin: '20px auto', border: '2px solid var(--ink-black)' }}>
+        <div style={{ width: '100%', maxWidth: 480, margin: '20px auto', borderRadius: 16, overflow: 'hidden' }}>
             <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
                 <iframe
                     src={embedUrl}
@@ -265,9 +263,9 @@ function AnswerScene({
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', animation: 'fadeUp .6s ease' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
+                <span style={{ width: 24, height: 1.5, background: 'var(--ink-black)' }} />
                 <span className="mono-eyebrow" style={{ fontSize: 10 }}>{t.publicPage.responseRegistered}</span>
-                <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
+                <span style={{ width: 24, height: 1.5, background: 'var(--ink-black)' }} />
             </div>
 
             <h1 className="serif-display mis-red" style={{ fontSize: 'clamp(96px, 26vw, 140px)', margin: 0, lineHeight: 0.86 }}>
@@ -373,7 +371,7 @@ export default function PublicPageView() {
     if (loading) {
         return (
             <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', animation: 'spin 1s linear infinite' }} />
+                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', animation: 'spin 1s linear infinite' }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
             </div>
         );
@@ -382,9 +380,9 @@ export default function PublicPageView() {
     // ── Expired ───────────────────────────────────────────────
     if (pageExpired) {
         return (
-            <div className="grain" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)', padding: 24, fontFamily: 'var(--mono)' }}>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)', padding: 24, fontFamily: 'var(--mono)' }}>
                 <div style={{ textAlign: 'center', maxWidth: 400 }}>
-                    <div className="mono-eyebrow" style={{ marginBottom: 16, color: 'var(--ink-red)' }}>— página expirada —</div>
+                    <div className="mono-eyebrow" style={{ marginBottom: 16, color: 'var(--accent-hex)' }}>— página expirada —</div>
                     <h1 className="serif-display" style={{ fontSize: 'clamp(48px, 10vw, 72px)', lineHeight: 0.88, color: 'var(--ink-black)', marginBottom: 16 }}>
                         <span className="mis-red">esta</span> <span className="mis-blue">página</span> ya no está activa
                     </h1>
@@ -402,9 +400,9 @@ export default function PublicPageView() {
     // ── Not found ─────────────────────────────────────────────
     if (!page) {
         return (
-            <div className="grain" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)', padding: 24, fontFamily: 'var(--mono)' }}>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)', padding: 24, fontFamily: 'var(--mono)' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div className="mono-eyebrow" style={{ marginBottom: 16, color: 'var(--ink-blue)' }}>— 404 —</div>
+                    <div className="mono-eyebrow" style={{ marginBottom: 16, color: 'var(--ink-black)' }}>— 404 —</div>
                     <h1 className="serif-display mis-red" style={{ fontSize: 'clamp(48px, 10vw, 72px)', lineHeight: 0.88, marginBottom: 12 }}>
                         {t.publicPage.pageNotFound}
                     </h1>
@@ -420,7 +418,7 @@ export default function PublicPageView() {
             <>
                 {answered && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div style={{ background: 'var(--paper)', border: '2px solid var(--ink-black)', padding: '32px 40px', textAlign: 'center', maxWidth: 400 }}>
+                        <div style={{ background: 'var(--paper-soft)', borderRadius: 20, boxShadow: 'var(--shadow-card)', padding: '32px 40px', textAlign: 'center', maxWidth: 400 }}>
                             <div style={{ fontSize: 48, marginBottom: 12 }}>{selectedAnswer === 'yes' ? '💕' : '😊'}</div>
                             <h2 className="serif-display" style={{ fontSize: 36, color: 'var(--ink-black)', marginBottom: 8 }}>
                                 {selectedAnswer === 'yes' ? t.publicPage.thanks : t.publicPage.understood}
@@ -455,20 +453,14 @@ export default function PublicPageView() {
         );
     }
 
-    // ── FREE page — Risograph zine aesthetic ──────────────────
+    // ── Página FREE ───────────────────────────────────────────
     const stickers = (page.selectedStickers || []).map((id: string) => STICKER_MAP[id] || '💖');
-    const words = (page.title || '').trim().split(/\s+/);
     const hasMusic = page.backgroundMusic && page.backgroundMusic !== 'none';
     const hasAnimation = hasParticles(page.animation);
-    const customTitleFont = Boolean(page.titleFont) && page.titleFont !== RISO_FONT;
-    const customBodyFont = Boolean(page.bodyFont) && page.bodyFont !== RISO_FONT;
-    // `multiply` desaparece sobre papel oscuro; ahí las tintas van en `screen`.
-    const inkBlend: 'multiply' | 'screen' = isDarkColor(page.backgroundColor) ? 'screen' : 'multiply';
 
     return (
         <div
             ref={containerRef}
-            className="grain"
             style={{
                 // Misma traducción de paleta que usa el editor: lo que se ve en
                 // el preview es literalmente lo que se publica.
@@ -477,9 +469,8 @@ export default function PublicPageView() {
                 minHeight: '100vh',
                 width: '100%',
                 background: 'var(--paper)',
-                backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.3  0 0 0 0 0.1  0 0 0 0 0 0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>\")",
                 overflow: 'hidden',
-                fontFamily: 'var(--mono)',
+                fontFamily: 'var(--sans)',
                 color: 'var(--ink-black)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -498,13 +489,15 @@ export default function PublicPageView() {
             {/* Particle canvas */}
             {hasAnimation && <ParticleCanvas kind={animToKind(page.animation)} />}
 
-            {/* Riso circles — top right */}
-            <svg style={{ position: 'absolute', top: -60, right: -80, width: 320, height: 320, mixBlendMode: inkBlend, opacity: 0.78, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
-                <circle cx="100" cy="100" r="90" fill="var(--ink-red)" />
-            </svg>
-            <svg style={{ position: 'absolute', top: -40, right: -100, width: 320, height: 320, mixBlendMode: inkBlend, opacity: 0.7, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 200 200">
-                <circle cx="100" cy="100" r="86" fill="var(--ink-blue)" />
-            </svg>
+            {/* Halo del acento — el mismo que dibuja el preview del editor */}
+            <div
+                aria-hidden="true"
+                style={{
+                    position: 'absolute', top: '-14%', right: '-18%', width: 460, height: 460,
+                    background: 'radial-gradient(closest-side, var(--melocoton-2), transparent 72%)',
+                    pointerEvents: 'none', zIndex: 0,
+                }}
+            />
 
             {/* Audio */}
             {hasMusic && <audio ref={audioRef} src={MUSIC_URLS[page.backgroundMusic]} loop preload="auto" />}
@@ -515,7 +508,7 @@ export default function PublicPageView() {
                     <button
                         onClick={toggleMusic}
                         aria-label="música"
-                        style={{ width: 34, height: 34, borderRadius: 0, border: '2px solid var(--ink-blue)', background: musicOn ? 'var(--ink-blue)' : 'transparent', color: musicOn ? 'var(--paper)' : 'var(--ink-blue)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontFamily: 'var(--mono)' }}
+                        style={{ width: 40, height: 40, borderRadius: 999, border: 'none', background: musicOn ? 'var(--accent-hex)' : 'var(--paper-2)', color: musicOn ? 'var(--on-accent)' : 'var(--ink-soft)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}
                     >
                         ♪
                     </button>
@@ -528,44 +521,37 @@ export default function PublicPageView() {
                 {!answered ? (
                     <>
                         {/* Eyebrow */}
-                        <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
-                            <span className="mono-eyebrow" style={{ fontSize: 10 }}>una carta para {(page.recipientName || '').toLowerCase()}</span>
-                            <span style={{ width: 24, height: 1.5, background: 'var(--ink-blue)' }} />
+                        <div style={{ marginBottom: 22 }}>
+                            <span style={{ display: 'inline-block', padding: '8px 18px', borderRadius: 999, background: 'var(--melocoton)', color: 'var(--ink-red-ink)', fontSize: 15, fontWeight: 600 }}>
+                                Una carta para {page.recipientName}
+                            </span>
                         </div>
 
                         {/* Stickers + title */}
                         <div style={{ position: 'relative' }}>
                             {stickers[0] && (
-                                <span style={{ position: 'absolute', left: -28, top: 4, fontSize: 26, color: 'var(--ink-red)', transform: 'rotate(-18deg)' }}>{stickers[0]}</span>
+                                <span style={{ position: 'absolute', left: -28, top: 4, fontSize: 26, color: 'var(--accent-hex)', transform: 'rotate(-18deg)' }}>{stickers[0]}</span>
                             )}
                             {stickers[1] && (
-                                <span style={{ position: 'absolute', right: -24, top: -10, fontSize: 22, color: 'var(--ink-blue)', transform: 'rotate(14deg)' }}>{stickers[1]}</span>
+                                <span style={{ position: 'absolute', right: -24, top: -10, fontSize: 22, color: 'var(--ink-black)', transform: 'rotate(14deg)' }}>{stickers[1]}</span>
                             )}
                             <h1
                                 className="serif-display"
                                 style={{
                                     fontFamily: titleFontFamily(page.titleFont),
-                                    textTransform: customTitleFont ? 'none' : 'uppercase',
-                                    lineHeight: customTitleFont ? 1.04 : 0.86,
-                                    fontSize: 'clamp(54px, 13vw, 80px)', margin: 0, maxWidth: 360,
+                                    textTransform: 'none',
+                                    lineHeight: 1.15,
+                                    letterSpacing: '-0.025em',
+                                    fontSize: 'clamp(40px, 10vw, 62px)', margin: 0, maxWidth: 380,
                                 }}
                             >
-                                {words.map((w: string, i: number) => (
-                                    <span
-                                        key={i}
-                                        className={i % 2 === 0 ? 'mis-red' : 'mis-blue'}
-                                        style={{ display: 'inline-block', marginRight: '0.18em' }}
-                                    >
-                                        {w}
-                                    </span>
-                                ))}
+                                {page.title}
                             </h1>
                         </div>
 
                         {/* Message */}
                         {page.message && (
-                            <div style={{ marginTop: 26, fontFamily: bodyFontFamily(page.bodyFont), fontSize: 17, fontStyle: customBodyFont ? 'normal' : 'italic', color: 'var(--ink-black)', maxWidth: 320, lineHeight: 1.55 }}>
+                            <div style={{ marginTop: 24, fontFamily: bodyFontFamily(page.bodyFont), fontSize: 18, color: 'var(--ink-soft)', maxWidth: 340, lineHeight: 1.6 }}>
                                 {renderMsg(page.message)}
                             </div>
                         )}
@@ -574,7 +560,7 @@ export default function PublicPageView() {
                         {(page.decorativeImageUrls || []).length > 0 && (
                             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
                                 {page.decorativeImageUrls.slice(0, 3).map((url: string, i: number) => (
-                                    <img key={i} src={url} alt="" style={{ width: 80, height: 80, objectFit: 'cover', border: '2px solid var(--ink-black)' }} />
+                                    <img key={i} src={url} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 14 }} />
                                 ))}
                             </div>
                         )}
@@ -585,7 +571,7 @@ export default function PublicPageView() {
                         {/* Sender */}
                         <div style={{ marginTop: 18, display: 'flex', alignItems: 'center', gap: 10 }}>
                             <span style={{ width: 18, height: 1, background: 'var(--ink-red-ink)' }} />
-                            <span style={{ fontSize: 24, color: 'var(--ink-red-ink)', fontFamily: 'var(--hand)' }}>— con amor</span>
+                            <span style={{ fontSize: 26, color: 'var(--ink-red-ink)', fontFamily: 'var(--hand)' }}>Con amor</span>
                             {stickers[2] && <span style={{ fontSize: 18 }}>{stickers[2]}</span>}
                         </div>
 

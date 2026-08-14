@@ -32,10 +32,10 @@ export default function HomePage() {
           <li>Plan gratuito disponible - sin tarjeta de crédito</li>
           <li>Plan PRO con diseño IA, URL personalizada y páginas ilimitadas</li>
         </ul>
-        <h2>Juegos para Parejas</h2>
+        <h2>Preguntas Anónimas</h2>
         <p>
-          Diviértete con juegos interactivos: Tutti Frutti, Quiz de Compatibilidad,
-          ¿Qué Prefieres?, Pictionary y más.
+          Comparte tu link y recibe preguntas y mensajes anónimos de tus amigos
+          y tu pareja, sin filtros.
         </p>
         <h2>Plantillas</h2>
         <p>

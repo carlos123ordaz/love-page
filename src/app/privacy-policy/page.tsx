@@ -21,11 +21,11 @@ export default function PrivacyPolicyPage() {
 
             <main className="container max-w-3xl mx-auto px-4 py-10 sm:py-16">
                 <div className="mb-8">
-                    <h1 className="serif-display" style={{ fontSize: 'clamp(28px, 5vw, 48px)', marginBottom: 8, lineHeight: 0.9 }}>
+                    <h1 className="serif-display" style={{ fontSize: 'clamp(28px, 5vw, 48px)', marginBottom: 8, lineHeight: 1.12 }}>
                         <span className="mis-red">política de</span>{' '}
                         <span className="mis-blue">privacidad</span>
                     </h1>
-                    <p style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Última actualización: {lastUpdated}</p>
+                    <p style={{ fontSize: 14, color: 'var(--ink-soft)', fontFamily: 'var(--mono)', letterSpacing: 0, textTransform: 'none' }}>Última actualización: {lastUpdated}</p>
                 </div>
 
                 <div className="prose prose-gray max-w-none space-y-8 text-gray-700 leading-relaxed">

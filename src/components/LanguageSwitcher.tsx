@@ -2,6 +2,7 @@
 
 import { useTranslation, type Locale } from '@/i18n';
 import { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 const LANGUAGES: { code: Locale; label: string; abbr: string }[] = [
   { code: 'es', label: 'Español', abbr: 'ES' },
@@ -11,32 +12,27 @@ const LANGUAGES: { code: Locale; label: string; abbr: string }[] = [
 /**
  * Paletas del selector.
  *
- * El componente usa el mismo token para el borde y para el texto, así que
- * sobre fondo oscuro no basta con redefinir variables: hace falta una variante
- * explícita. `light` reproduce exactamente el aspecto anterior.
+ * `light` es la de la app; `dark` queda para superficies oscuras (la maqueta
+ * del teléfono, páginas publicadas con tema oscuro).
  */
 const TONES = {
   light: {
-    border: 'var(--ink-black)',
-    text: 'var(--ink-black)',
-    openBg: 'var(--ink-blue)',
-    openText: 'var(--paper)',
+    bg: 'var(--paper-2)',
+    text: 'var(--ink-soft)',
+    openBg: 'var(--accent-soft)',
+    openText: 'var(--accent-2-hex)',
     menuBg: 'var(--paper-soft)',
-    menuBorder: 'var(--ink-black)',
-    activeBg: 'var(--ink-red)',
-    activeText: 'var(--paper)',
-    divider: 'var(--rule)',
+    activeBg: 'var(--accent-soft)',
+    activeText: 'var(--accent-2-hex)',
   },
   dark: {
-    border: '#2f2721',
-    text: '#f0e7d5',
-    openBg: '#1d1815',
-    openText: '#f0e7d5',
-    menuBg: '#1d1815',
-    menuBorder: '#2f2721',
-    activeBg: '#c98a52',
-    activeText: '#141110',
-    divider: '#2f2721',
+    bg: 'rgba(255,255,255,0.1)',
+    text: 'rgba(255,255,255,0.85)',
+    openBg: 'rgba(255,255,255,0.18)',
+    openText: '#fff',
+    menuBg: '#262230',
+    activeBg: 'rgba(255,255,255,0.12)',
+    activeText: '#fff',
   },
 } as const;
 
@@ -71,59 +67,61 @@ export function LanguageSwitcher({
       <button
         onClick={() => setOpen(!open)}
         style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          border: `1.5px solid ${c.border}`,
-          background: open ? c.openBg : 'transparent',
+          display: 'flex', alignItems: 'center', gap: 6,
+          border: 'none',
+          background: open ? c.openBg : c.bg,
           color: open ? c.openText : c.text,
-          padding: compact ? '4px 8px' : '6px 12px',
-          fontFamily: 'var(--mono)',
-          fontSize: 11,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          fontWeight: 500,
+          padding: compact ? '9px 13px' : '11px 16px',
+          fontFamily: 'var(--sans)',
+          fontSize: 14,
+          letterSpacing: 0,
+          textTransform: 'none',
+          fontWeight: 600,
           cursor: 'pointer',
-          borderRadius: 0,
-          transition: 'background 120ms, color 120ms',
+          borderRadius: 10,
+          transition: 'background 140ms, color 140ms',
         }}
         aria-label="Change language"
         aria-expanded={open}
       >
         <span>{current.abbr}</span>
-        <span style={{ fontSize: 7, opacity: 0.7 }}>{open ? '▲' : '▼'}</span>
+        <ChevronDown size={13} strokeWidth={2.5} style={{ opacity: 0.6, transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 140ms' }} />
       </button>
 
       {open && (
         <div style={{
-          position: 'absolute', right: 0, top: '100%',
+          position: 'absolute', right: 0, top: 'calc(100% + 6px)',
           background: c.menuBg,
-          border: `1.5px solid ${c.menuBorder}`,
-          borderTop: 'none',
+          border: 'none',
+          borderRadius: 12,
+          boxShadow: 'var(--shadow-card)',
+          padding: 5,
           zIndex: 50,
-          minWidth: 120,
+          minWidth: 148,
+          overflow: 'hidden',
         }}>
-          {LANGUAGES.map((lang, i) => (
+          {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
               onClick={() => { setLocale(lang.code); setOpen(false); }}
               style={{
                 width: '100%',
                 display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 12px',
-                fontFamily: 'var(--mono)',
-                fontSize: 11,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
+                padding: '10px 12px',
+                fontFamily: 'var(--sans)',
+                fontSize: 15,
+                letterSpacing: 0,
+                textTransform: 'none',
                 background: locale === lang.code ? c.activeBg : 'transparent',
                 color: locale === lang.code ? c.activeText : c.text,
                 border: 'none',
-                borderBottom: i < LANGUAGES.length - 1 ? `1px solid ${c.divider}` : 'none',
+                borderRadius: 8,
                 cursor: 'pointer',
-                fontWeight: locale === lang.code ? 700 : 400,
+                fontWeight: locale === lang.code ? 600 : 500,
                 textAlign: 'left',
               }}
             >
-              <span>{lang.abbr}</span>
-              <span style={{ opacity: 0.55, fontSize: 10 }}>{lang.label}</span>
+              <span>{lang.label}</span>
             </button>
           ))}
         </div>

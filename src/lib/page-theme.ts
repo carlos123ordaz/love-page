@@ -1,12 +1,12 @@
 import type { CSSProperties } from 'react';
 
 /**
- * Traduce la paleta y la tipografía elegidas en el editor a las variables riso
- * que usan tanto el preview como la página publicada.
+ * Traduce la paleta y la tipografía elegidas en el editor a las variables que
+ * usan tanto el preview como la página publicada.
  *
- * Todo el diseño (círculos, misregistración, reglas, botones) está escrito
- * contra `--paper`, `--ink-black`, `--ink-red` y sus derivadas. Redefiniéndolas
- * en el contenedor, la carta entera adopta la paleta sin tocar un solo estilo.
+ * Todo el diseño de la carta está escrito contra `--paper`, `--ink-black`,
+ * `--accent-hex` y sus derivadas. Redefiniéndolas en el contenedor, la carta
+ * entera adopta la paleta sin tocar un solo estilo.
  */
 
 export interface PagePalette {
@@ -17,11 +17,29 @@ export interface PagePalette {
     bodyFont?: string | null;
 }
 
-/** Identificadores de la paleta y la tipografía originales del producto. */
-export const RISO_THEME_ID = 'riso';
-export const RISO_FONT = 'Riso';
+/**
+ * Identificadores de la paleta y la tipografía por defecto.
+ *
+ * El valor sigue siendo `'riso'` porque es uno de los que acepta el enum de
+ * `theme` en el backend y las páginas ya publicadas lo tienen guardado; lo que
+ * cambió es la paleta a la que apunta, que ahora es la de la app.
+ */
+export const DEFAULT_THEME_ID = 'riso';
+export const DEFAULT_FONT = 'Love Pages';
 
-const RISO_COLORS = { bg: '#f3ead4', text: '#1a1410', accent: '#e8378a' };
+/** Los primarios de la app: papel lila casi blanco, tinta pizarra, acento morado. */
+export const DEFAULT_COLORS = { bg: '#f9f8fc', text: '#494a5f', accent: '#a772e3' };
+
+/**
+ * ¿Es la tipografía del producto, y no una Google Font?
+ *
+ * `'Riso'` es como se llamaba antes y está guardado en las páginas ya
+ * publicadas. Sin este alias se pediría a Google Fonts una familia inexistente
+ * y esas cartas perderían su tipografía.
+ */
+function isBuiltInFont(font?: string | null): boolean {
+    return !font || font === DEFAULT_FONT || font === 'Riso';
+}
 
 function parseHex(hex: string): [number, number, number] | null {
     const h = hex.trim().replace('#', '');
@@ -83,9 +101,9 @@ function readableInk(accent: string, bg: string, text: string): string {
  * contenedor de la carta, tanto en el editor como en la página pública.
  */
 export function pageThemeVars(palette: PagePalette): CSSProperties {
-    const bg = palette.backgroundColor || RISO_COLORS.bg;
-    const text = palette.textColor || RISO_COLORS.text;
-    const accent = palette.accentColor || RISO_COLORS.accent;
+    const bg = palette.backgroundColor || DEFAULT_COLORS.bg;
+    const text = palette.textColor || DEFAULT_COLORS.text;
+    const accent = palette.accentColor || DEFAULT_COLORS.accent;
 
     return {
         // Papel y sus profundidades
@@ -122,17 +140,17 @@ export function pageThemeVars(palette: PagePalette): CSSProperties {
 }
 
 /**
- * Familia tipográfica para los títulos. `Riso` conserva la display condensada
- * del producto; cualquier otra es una Google Font elegida en el editor.
+ * Familia tipográfica para los títulos. La opción por defecto usa la display de
+ * la app; cualquier otra es una Google Font elegida en el editor.
  */
 export function titleFontFamily(font?: string | null): string {
-    if (!font || font === RISO_FONT) return 'var(--display)';
+    if (isBuiltInFont(font)) return 'var(--display)';
     return `'${font}', var(--display)`;
 }
 
 /** Familia para el cuerpo del mensaje. */
 export function bodyFontFamily(font?: string | null): string {
-    if (!font || font === RISO_FONT) return 'var(--serif)';
+    if (isBuiltInFont(font)) return 'var(--serif)';
     return `'${font}', var(--serif)`;
 }
 
@@ -142,7 +160,7 @@ export function bodyFontFamily(font?: string | null): string {
  */
 export function googleFontsHref(fonts: (string | null | undefined)[]): string | null {
     const families = Array.from(
-        new Set(fonts.filter((f): f is string => Boolean(f) && f !== RISO_FONT))
+        new Set(fonts.filter((f): f is string => !isBuiltInFont(f)))
     );
     if (families.length === 0) return null;
     const query = families.map((f) => `family=${f.replace(/ /g, '+')}:wght@400;700`).join('&');

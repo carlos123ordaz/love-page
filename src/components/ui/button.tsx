@@ -3,24 +3,24 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-body font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45 active:translate-y-0',
     {
         variants: {
             variant: {
-                default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md',
-                destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-                outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-                secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                ghost: 'hover:bg-accent hover:text-accent-foreground',
+                default: 'bg-primary text-primary-foreground hover:bg-accent-strong hover:-translate-y-px hover:shadow-sticker',
+                destructive: 'bg-destructive text-destructive-foreground hover:opacity-90',
+                outline: 'bg-transparent text-ink hover:bg-paper-2 ring-1 ring-inset ring-hairline',
+                secondary: 'bg-paper-3 text-ink hover:bg-lila-2 hover:-translate-y-px',
+                ghost: 'text-ink-soft hover:bg-paper-2 hover:text-ink',
                 link: 'text-primary underline-offset-4 hover:underline',
-                gradient: 'bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600 shadow-lg',
+                gradient: 'bg-primary text-primary-foreground hover:bg-accent-strong hover:-translate-y-px hover:shadow-sticker',
             },
             size: {
-                default: 'h-10 px-4 py-2',
-                sm: 'h-9 rounded-md px-3',
-                lg: 'h-11 rounded-lg px-8',
-                xl: 'h-14 rounded-xl px-10 text-base',
-                icon: 'h-10 w-10',
+                default: 'h-11 px-5',
+                sm: 'h-9 rounded-sm px-4 text-caption',
+                lg: 'h-12 rounded-md px-6 text-body-lg',
+                xl: 'h-14 rounded-lg px-8 text-lead',
+                icon: 'h-11 w-11 rounded-full',
             },
         },
         defaultVariants: {

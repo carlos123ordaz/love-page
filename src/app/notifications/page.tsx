@@ -165,7 +165,7 @@ export default function NotificationsPage() {
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin h-12 w-12" style={{ border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', borderRadius: '50%' }} />
+                <div className="animate-spin h-12 w-12" style={{ border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', borderRadius: '50%' }} />
             </div>
         );
     }
@@ -185,10 +185,10 @@ export default function NotificationsPage() {
                         </Link>
                         <div>
                             <h1 className="serif-display flex items-center gap-2" style={{ fontSize: 32, color: 'var(--ink-black)' }}>
-                                <Bell className="w-5 h-5" style={{ color: 'var(--ink-red)' }} />
+                                <Bell className="w-5 h-5" style={{ color: 'var(--accent-hex)' }} />
                                 notificaciones
                                 {unreadCount > 0 && (
-                                    <span style={{ padding: '2px 8px', background: 'var(--ink-red)', color: 'var(--paper)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                                    <span style={{ padding: '2px 8px', background: 'var(--accent-hex)', color: 'var(--paper)', fontSize: 14, fontWeight: 700, fontFamily: 'var(--mono)', letterSpacing: 0 }}>
                                         {unreadCount}
                                     </span>
                                 )}
@@ -201,7 +201,7 @@ export default function NotificationsPage() {
                             onClick={handleMarkAllAsRead}
                             variant="ghost"
                             size="sm"
-                            className="gap-1" style={{ color: 'var(--ink-blue)' }}
+                            className="gap-1" style={{ color: 'var(--ink-black)' }}
                         >
                             <CheckCheck className="w-4 h-4" />
                             <span className="hidden sm:inline">Marcar todas como leídas</span>
@@ -217,11 +217,11 @@ export default function NotificationsPage() {
                             key={filter.id}
                             onClick={() => setActiveFilter(filter.id)}
                             style={{
-                                padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 120ms',
+                                padding: '6px 14px', fontSize: 15, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 120ms',
                                 background: activeFilter === filter.id ? 'var(--ink-black)' : 'var(--paper-soft)',
                                 color: activeFilter === filter.id ? 'var(--paper)' : 'var(--ink-black)',
-                                border: '2px solid var(--ink-black)',
-                                fontFamily: 'var(--mono)', letterSpacing: '0.06em',
+                                border: '1px solid var(--hairline)',
+                                fontFamily: 'var(--mono)', letterSpacing: 0,
                             }}
                         >
                             {filter.label}
@@ -237,7 +237,7 @@ export default function NotificationsPage() {
                 {/* Notification list */}
                 {loading ? (
                     <div className="flex justify-center py-16">
-                        <div className="animate-spin h-10 w-10" style={{ border: '3px solid var(--lila)', borderTopColor: 'var(--ink-red)', borderRadius: '50%' }} />
+                        <div className="animate-spin h-10 w-10" style={{ border: '3px solid var(--lila)', borderTopColor: 'var(--accent-hex)', borderRadius: '50%' }} />
                     </div>
                 ) : filteredNotifications.length === 0 ? (
                     <div className="text-center py-16">
@@ -312,8 +312,8 @@ export default function NotificationsPage() {
                                                             style={{ flexShrink: 0, padding: 4, cursor: 'pointer', background: 'none', border: 'none' }}
                                                             title="Marcar como leída"
                                                         >
-                                                            <div style={{ width: 10, height: 10, background: 'var(--ink-red)', borderRadius: '50%' }} />
-                                                            <Check style={{ width: 14, height: 14, color: 'var(--ink-blue)', display: 'none' }} />
+                                                            <div style={{ width: 10, height: 10, background: 'var(--accent-hex)', borderRadius: '50%' }} />
+                                                            <Check style={{ width: 14, height: 14, color: 'var(--ink-black)', display: 'none' }} />
                                                         </button>
                                                     )}
                                                 </div>
@@ -325,7 +325,7 @@ export default function NotificationsPage() {
                                                     </span>
                                                     {notification.actionUrl &&
                                                         notification.actionText && (
-                                                            <span style={{ fontSize: 11, color: 'var(--ink-blue)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--mono)', letterSpacing: '0.06em' }}>
+                                                            <span style={{ fontSize: 14, color: 'var(--ink-black)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--mono)', letterSpacing: 0 }}>
                                                                 {notification.actionText}
                                                                 <ExternalLink className="w-3 h-3" />
                                                             </span>
@@ -345,7 +345,7 @@ export default function NotificationsPage() {
                                     onClick={handleLoadMore}
                                     variant="ghost"
                                     disabled={loadingMore}
-                                    style={{ color: 'var(--ink-blue)' }}
+                                    style={{ color: 'var(--ink-black)' }}
                                 >
                                     {loadingMore ? (
                                         <>

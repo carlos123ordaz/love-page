@@ -91,7 +91,7 @@ export default function OGImage() {
                             display: 'flex',
                         }}
                     >
-                        ★ gratis
+                        Gratis
                     </div>
                 </div>
 
